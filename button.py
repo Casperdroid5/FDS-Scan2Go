@@ -20,30 +20,3 @@ class Button:
     def detach_callback(self):
         self.callback = None
 
-
-# Define a simple callback function for testing
-def test_callback():
-    print("Button pressed!")
-
-def main():
-    # Create a Button instance with pin number 10 and the test_callback as the callback function
-    button = Button(pin_number=5, callback=test_callback)
-
-    # Simulate button press
-    print("Is button pressed?", button.is_pressed())
-
-    # Detach callback
-    button.detach_callback()
-
-    # Simulate button press after detaching callback
-    print("Is button pressed?", button.is_pressed())
-
-    # Attach callback again
-    button.attach_callback(test_callback)
-
-    # Simulate button press after attaching callback again
-    print("Is button pressed?", button.is_pressed())
-
-
-if __name__ == "__main__":
-    main()
