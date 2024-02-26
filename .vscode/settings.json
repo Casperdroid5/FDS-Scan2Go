@@ -12,5 +12,14 @@
     ],
     "python.analysis.extraPaths": [
         ".vscode\\Pico-W-Stub"
-    ]
+    ],
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        ".",
+        "-p",
+        "test_*.py"
+    ],
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true
 }
