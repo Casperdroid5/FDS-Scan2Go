@@ -1,6 +1,11 @@
 from machine import Pin, PWM
 from time import sleep
 
+"""
+This is the RGB_LED control class.
+"""
+
+
 class RGB_LED:
     def __init__(self, pin_blue, pin_green, pin_red):
         self.pin_red = PWM(Pin(pin_red, Pin.OUT))
@@ -29,34 +34,36 @@ class RGB_LED:
 
 if __name__ == "__main__":
     # Define the pins for each color of the RGB LEDs
-    ledScanner = RGB_LED(12, 13, 14)  # Example pins for RGB LED 1
-    ledDoor2 = RGB_LED(20, 19, 18)    # Example pins for RGB LED 2
+    ledDoor2 = RGB_LED(10, 11, 12)  # Example pins for RGB LED 1
+    ledScanner = RGB_LED(6, 7, 8)    # Example pins for RGB LED 2
     ledDoor1 = RGB_LED(2, 3, 4)       # Example pins for RGB LED 3
 
-    print('RGB LED Example')
-
-    try:
+    print("LEDtest")
         # Test individual LEDs
-        ledDoor1.set_color(6000, 0, 0)   # Red
-        sleep(2)
-        ledDoor1.off()
-        sleep(2)
-        ledDoor2.set_color(0, 6000, 0)   # Green
-        sleep(2)
-        ledDoor2.off()
-        sleep(2)
-        ledScanner.set_color(0, 0, 6000)   # Blue
-        sleep(2)
-        ledScanner.off()
+# Test individual LEDs
+    ledDoor1.set_color(6000, 0, 0)   # Red
+    sleep(0.5)
+    ledDoor1.set_color(0, 6000, 0)   # Green
+    sleep(0.5)
+    ledDoor1.set_color(0, 0, 6000)   # Blue
+    sleep(0.5)
 
-        # Now, test the scenario where both doors have different colors
-        ledDoor1.set_color(6000, 0, 0)   # Red
-        sleep(2)
-        ledDoor1.off()
-        sleep(2)
-        ledDoor2.set_color(0, 6000, 0)   # Green
-        sleep(2)
-        ledDoor2.off()
+    # For LED Scanner
+    ledScanner.set_color(6000, 0, 0)   # Red
+    sleep(0.5)
+    ledScanner.set_color(0, 6000, 0)   # Green
+    sleep(0.5)
+    ledScanner.set_color(0, 0, 6000)   # Blue
+    sleep(0.5)
 
-    except Exception as e:
-        print("An error occurred:", e)
+    # For LED Door 2
+    ledDoor2.set_color(6000, 0, 0)   # Red
+    sleep(0.5)
+    ledDoor2.set_color(0, 6000, 0)   # Green
+    sleep(0.5)
+    ledDoor2.set_color(0, 0, 6000)   # Blue
+    sleep(0.5)
+
+    ledDoor1.off()
+    ledScanner.off()
+    ledDoor2.off()
