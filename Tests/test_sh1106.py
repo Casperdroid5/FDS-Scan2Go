@@ -1,7 +1,7 @@
-from machine import Pin, I2C
 import sh1106
 import time 
-import framebuf
+from machine import Pin, I2C
+
 # Define the pins for I2C communication
 scl_pin, sda_pin = Pin(1), Pin(0)
 
