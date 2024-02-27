@@ -14,9 +14,7 @@ if __name__ == "__main__":
     button1 = Button(pin_number=5, callback=pressed_callback)
 
     # Continuously check the button state
-import time
-
-while True:  # You need a colon after `while 1` and `while True`
+while True:  
     if button1.is_pressed():
         pressed_callback()  # Call the callback function
         # Add a small delay to avoid high CPU usage
