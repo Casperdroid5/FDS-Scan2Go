@@ -1,6 +1,6 @@
 from machine import Pin, PWM
 
-class LED:
+class pwm:
     def __init__(self, pin_number):
         self.pin = PWM(Pin(pin_number, Pin.OUT))
         self.pin.freq(1000)  # Set PWM frequency to 1 kHz

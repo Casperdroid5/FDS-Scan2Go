@@ -4,14 +4,14 @@ import time
 from button import Button
 from potmeter import Potentiometer
 from rgbled import RGBLED
-from led import LED
+from pwm import LED
 from sh1106 import SH1106_I2C
 
 
 
 ledDoor2Lock = RGBLED(10, 11, 12) 
-ledScanner = RGBLED(6, 7, 8)      
 ledDoor1Lock = RGBLED(2, 3, 4)     
+ledScanner = RGBLED(6, 7, 8)      
 
 ledDoor1Motor = LED(21) 
 ledDoor2Motor = LED(22) 
@@ -19,6 +19,11 @@ ledDoor2Motor = LED(22)
 Button1 = Button(pin_number=5, callback=None)
 Button2 = Button(pin_number=9, callback=None)
 Button3 = Button(pin_number=13, callback=None)
+
+Switch1 = Button(pin_number=20, callback=None)
+Switch2 = Button(pin_number=19, callback=None)
+Switch3 = Button(pin_number=18, callback=None)
+Switch4 = Button(pin_number=17, callback=None)
 
 Pot1 = Potentiometer(pin_number=27, callback=None)
 
