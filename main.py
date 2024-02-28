@@ -105,7 +105,9 @@ class InitialState(State):
     def update_door_status(self):
         display = self.hardware.initialize_display()
         door1_status = "Unlocked" if self.hardware.Switch1.is_pressed() else "Locked"
-        door2_status = "Closed" if self.hardware.Switch2.is_pressed() else "Open"
+        self.hardware.ledDoor1Lock.set_color(0, 6000, 0)  # Green
+        door2_status = "Locked" if self.hardware.Switch2.is_pressed() else "Unlocked"
+        self.hardware.ledDoor2Lock.set_color(6000, 0, 0)  # Red
         display.text("Door 1: {}".format(door1_status), 0, 10, 1)
         display.text("Door 2: {}".format(door2_status), 0, 20, 1)
         display.text("Area: A", 0, 30, 1)
@@ -127,7 +129,9 @@ class DoorClosingState(State):
     def update_door_status(self):
         display = self.hardware.initialize_display()
         door1_status = "Closing"
-        door2_status = "Closed" if self.hardware.Switch2.is_pressed() else "Open"
+        self.hardware.ledDoor1Lock.set_color(6000, 5000, 0)  # Yellow
+        door2_status = "Locked" if self.hardware.Switch2.is_pressed() else "Unlocked"
+        self.hardware.ledDoor2Lock.set_color(6000, 0, 0)  # Red        
         display.text("Door 1: {}".format(door1_status), 0, 10, 1)
         display.text("Door 2: {}".format(door2_status), 0, 20, 1)
         display.text("Area: A", 0, 30, 1)
@@ -149,7 +153,9 @@ class FerrometalDetectionState(State):
     def update_door_status(self):
         display = self.hardware.initialize_display()
         door1_status = "Locked"
-        door2_status = "Closed" if self.hardware.Switch2.is_pressed() else "Open"
+        self.hardware.ledDoor1Lock.set_color(6000, 0, 0)  # Red
+        door2_status = "Locked" if self.hardware.Switch2.is_pressed() else "Open"
+        self.hardware.ledDoor2Lock.set_color(6000, 0, 0)  # Red
         display.text("Door 1: {}".format(door1_status), 0, 10, 1)
         display.text("Door 2: {}".format(door2_status), 0, 20, 1)
         display.text("Area: A", 0, 30, 1)
@@ -166,11 +172,11 @@ class FerrometalDetectionState(State):
             return Door2UnlockState(self.hardware)
 
         elif 10000 <= pot_value < 30000:
-            self.hardware.ledScanner.set_color(6000, 6000, 0)  # Yellow            
-            print("Transitioning to YellowState")
+            self.hardware.ledScanner.set_color(6000, 5000, 0)  # Yellow            
+            print("YellowState")
         elif 30000 <= pot_value <= 70000:
             self.hardware.ledScanner.set_color(6000, 0, 0)  # Red           
-            print("Transitioning to RedState")
+            print("RedState")
         ("No transition in FerrometalDetectionState")
         return None  # Blijf in dezelfde state totdat aan de voorwaarden is voldaan
         
@@ -181,12 +187,12 @@ class Door2UnlockState(State):
     def __init__(self, hardware):
         super().__init__(hardware, States.DOOR2_UNLOCK)
         time.sleep(2)
-        self.hardware.ledScanner.set_color(0, 0, 0)  # Green    
+        self.hardware.ledScanner.set_color(0, 0, 0)  # RGB Led off    
     def enter_state(self):
         print("Entering Door2UnlockState")
         super().enter_state()
         # Voeg code toe voor deur 2 ontgrendelen
-        self.hardware.ledDoor2Lock.set_color(0, 6000, 0)  # Groen
+        self.hardware.ledDoor2Lock.set_color(0, 6000, 0)  # Green
         self.update_door_status()
 
     def update_door_status(self):
