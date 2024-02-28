@@ -161,17 +161,16 @@ class FerrometalDetectionState(State):
         pot_value = self.hardware.Pot1.read_value()
         print("Potentiometer value:", pot_value)
         if 0 <= pot_value < 10000:
-            self.hardware.ledScanner.set_color(0, 6000, 0)  # Green    
-            print("Transitioning to Door2UnlockState")
+            self.hardware.ledScanner.set_color(0, 6000, 0)  # Green   
+            print("Transitioning to Door2UnlockState")             
             return Door2UnlockState(self.hardware)
+
         elif 10000 <= pot_value < 30000:
             self.hardware.ledScanner.set_color(6000, 6000, 0)  # Yellow            
             print("Transitioning to YellowState")
-            return FerrometalDetectionState(self.hardware)
-        elif 30000 <= pot_value <= 60000:
+        elif 30000 <= pot_value <= 70000:
             self.hardware.ledScanner.set_color(6000, 0, 0)  # Red           
             print("Transitioning to RedState")
-            return FerrometalDetectionState(self.hardware)
         ("No transition in FerrometalDetectionState")
         return None  # Blijf in dezelfde state totdat aan de voorwaarden is voldaan
         
