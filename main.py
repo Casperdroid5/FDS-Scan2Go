@@ -55,7 +55,7 @@ class StateMachine:
     
     def start(self):
         # Define initial state and actions
-        self.current_state = InitialState()
+        self.current_state = LockedState()  # Starting state is LockedState
         self.current_state.enter_state()
 
     def update(self):
@@ -68,8 +68,11 @@ class StateMachine:
         self.current_state.execute_action()
 
 class State:
-    def __init__(self):
-        pass
+    def __init__(self, display, button1, button2, button3):
+        self.display = display
+        self.button1 = button1
+        self.button2 = button2
+        self.button3 = button3
 
     def enter_state(self):
         pass
@@ -82,22 +85,103 @@ class State:
 
     def execute_action(self):
         pass
+
 
 class InitialState(State):
-    def __init__(self):
-        super().__init__()
-
     def enter_state(self):
-        pass
-
-    def exit_state(self):
-        pass
+        self.display.fill(0)  # Clear the display
+        self.display.text("Initial State", 0, 0, 1)  # Display initial state message
+        self.display.show()
 
     def check_transition(self):
-        pass
+        if self.button1.is_pressed():
+            return LockedState(self.display, self.button1, self.button2, self.button3)
+        return None
 
     def execute_action(self):
         pass
+
+
+class LockedState(State):
+    def enter_state(self):
+        self.display.fill(0)  # Clear the display
+        self.display.text("Door is locked", 0, 0, 1)  # Display locked state message
+        self.display.show()
+
+    def check_transition(self):
+        if self.button2.is_pressed():
+            return UnlockingState(self.display, self.button1, self.button2, self.button3)
+        return None
+
+    def execute_action(self):
+        pass
+
+
+class UnlockingState(State):
+    def enter_state(self):
+        self.display.fill(0)  # Clear the display
+        self.display.text("Unlocking door", 0, 0, 1)  # Display unlocking state message
+        self.display.show()
+
+    def check_transition(self):
+        if self.button3.is_pressed():
+            return OpenState(self.display, self.button1, self.button2, self.button3)
+        return None
+
+    def execute_action(self):
+        pass
+
+
+class OpenState(State):
+    def enter_state(self):
+        self.display.fill(0)  # Clear the display
+        self.display.text("Door is open", 0, 0, 1)  # Display open state message
+        self.display.show()
+
+    def check_transition(self):
+        if self.button1.is_pressed():
+            return ClosingState(self.display, self.button1, self.button2, self.button3)
+        return None
+
+    def execute_action(self):
+        pass
+
+
+class ClosingState(State):
+    def enter_state(self):
+        self.display.fill(0)  # Clear the display
+        self.display.text("Closing door", 0, 0, 1)  # Display closing state message
+        self.display.show()
+
+    def check_transition(self):
+        if self.button2.is_pressed():
+            return LockedState(self.display, self.button1, self.button2, self.button3)
+        return None
+
+    def execute_action(self):
+        pass
+
+
+class StateMachine:
+    def __init__(self):
+        self.display = display
+        self.button1 = Button1
+        self.button2 = Button2
+        self.button3 = Button3
+        self.current_state = None
+
+    def start(self):
+        self.current_state = InitialState(self.display, self.button1, self.button2, self.button3)
+        self.current_state.enter_state()
+
+    def update(self):
+        new_state = self.current_state.check_transition()
+        if new_state:
+            self.current_state.exit_state()
+            self.current_state = new_state
+            self.current_state.enter_state()
+        self.current_state.execute_action()
+
 
 if __name__ == "__main__":
     machine = StateMachine()
