@@ -94,90 +94,176 @@ class State:
         pass
 
 class InitialState(State):
-    print("Entering InitialState")
     def __init__(self, hardware):
         super().__init__(hardware, States.INITIAL)
+
+    def enter_state(self):
+        print("Entering InitialState")
+        super().enter_state()
+        self.update_door_status()
+
+    def update_door_status(self):
+        display = self.hardware.initialize_display()
+        door1_status = "Unlocked" if self.hardware.Switch1.is_pressed() else "Locked"
+        door2_status = "Closed" if self.hardware.Switch2.is_pressed() else "Open"
+        display.text("Door 1: {}".format(door1_status), 0, 10, 1)
+        display.text("Door 2: {}".format(door2_status), 0, 20, 1)
+        display.text("Area: A", 0, 30, 1)
+        display.show()
 
     def check_transition(self):
         if self.hardware.Switch3.is_pressed():
             return DoorClosingState(self.hardware)
 
 class DoorClosingState(State):
-    print("Entering DoorClosingState")
     def __init__(self, hardware):
         super().__init__(hardware, States.DOOR_CLOSING)
+
+    def enter_state(self):
+        print("Entering DoorClosingState")
+        super().enter_state()
+        self.update_door_status()
+
+    def update_door_status(self):
+        display = self.hardware.initialize_display()
+        door1_status = "Closing"
+        door2_status = "Closed" if self.hardware.Switch2.is_pressed() else "Open"
+        display.text("Door 1: {}".format(door1_status), 0, 10, 1)
+        display.text("Door 2: {}".format(door2_status), 0, 20, 1)
+        display.text("Area: A", 0, 30, 1)
+        display.show()
 
     def check_transition(self):
         if not self.hardware.Switch1.is_pressed():
             return FerrometalDetectionState(self.hardware)
 
 class FerrometalDetectionState(State):
-    print("Entering FerrometalDetectionState")
     def __init__(self, hardware):
         super().__init__(hardware, States.FERROMETAL_DETECTION)
 
     def enter_state(self):
+        print("Entering FerrometalDetectionState")
         super().enter_state()
-        self.display = self.hardware.initialize_display()
+        self.update_door_status()
 
-    def check_transition(self):
-        if not self.hardware.Switch3.is_pressed() and self.hardware.Switch4.is_pressed():
-            pot_value = self.hardware.Pot1.read_value()
-            if not (0 <= pot_value < 1000):  # Overgang als de waarde buiten het bereik ligt
-                return Door2UnlockState(self.hardware)
-        # Geen overgang als de waarde binnen het bereik ligt
-        return super().check_transition()
-
-    def update_display(self, display):
-        super().update_display(display)
-        pot_value = self.hardware.Pot1.read_value()
-        display.text("Pot: {}".format(pot_value), 0, 10, 1)
+    def update_door_status(self):
+        display = self.hardware.initialize_display()
+        door1_status = "Locked"
+        door2_status = "Closed" if self.hardware.Switch2.is_pressed() else "Open"
+        display.text("Door 1: {}".format(door1_status), 0, 10, 1)
+        display.text("Door 2: {}".format(door2_status), 0, 20, 1)
+        display.text("Area: A", 0, 30, 1)
         display.show()
 
+    def check_transition(self):
+        print("Checking transition in FerrometalDetectionState")
+        #if not self.hardware.Switch3.is_pressed() and self.hardware.Switch4.is_pressed():
+        pot_value = self.hardware.Pot1.read_value()
+        print("Potentiometer value:", pot_value)
+        if 0 <= pot_value < 10000:
+            self.hardware.ledScanner.set_color(0, 6000, 0)  # Green    
+            print("Transitioning to Door2UnlockState")
+            return Door2UnlockState(self.hardware)
+        elif 10000 <= pot_value < 30000:
+            self.hardware.ledScanner.set_color(6000, 6000, 0)  # Yellow            
+            print("Transitioning to YellowState")
+            return FerrometalDetectionState(self.hardware)
+        elif 30000 <= pot_value <= 60000:
+            self.hardware.ledScanner.set_color(6000, 0, 0)  # Red           
+            print("Transitioning to RedState")
+            return FerrometalDetectionState(self.hardware)
+        ("No transition in FerrometalDetectionState")
+        return None  # Blijf in dezelfde state totdat aan de voorwaarden is voldaan
+        
 
 class Door2UnlockState(State):
+  
     print("Entering Door2UnlockState")
     def __init__(self, hardware):
         super().__init__(hardware, States.DOOR2_UNLOCK)
-
+        time.sleep(2)
+        self.hardware.ledScanner.set_color(0, 0, 0)  # Green    
     def enter_state(self):
-        print("Entering Door2UnlockState")  # Tijdelijke uitvoer toevoegen
+        print("Entering Door2UnlockState")
         super().enter_state()
+        # Voeg code toe voor deur 2 ontgrendelen
+        self.hardware.ledDoor2Lock.set_color(0, 6000, 0)  # Groen
+        self.update_door_status()
+
+    def update_door_status(self):
+        display = self.hardware.initialize_display()
+        door1_status = "Locked"
+        door2_status = "Unlocked"
+        display.text("Door 1: {}".format(door1_status), 0, 10, 1)
+        display.text("Door 2: {}".format(door2_status), 0, 20, 1)
+        display.text("Area: A", 0, 30, 1)
+        display.show()
 
     def check_transition(self):
         if not self.hardware.Switch2.is_pressed():
             return Door2WaitingState(self.hardware)
 
-    def update_display(self, display):
-        print("Updating display in Door2UnlockState")  # Tijdelijke uitvoer toevoegen
-        super().update_display(display)
-
 class Door2WaitingState(State):
-    print("Entering Door2WaitingState")
     def __init__(self, hardware):
         super().__init__(hardware, States.DOOR2_WAITING)
 
+    def enter_state(self):
+        print("Entering Door2WaitingState")
+        super().enter_state()
+
     def check_transition(self):
-        if self.hardware.Switch2.is_pressed() and self.hardware.Switch4.is_pressed():
+        if self.hardware.Switch2.is_pressed() and not self.hardware.Switch4.is_pressed():
             return Door2LockingState(self.hardware)
 
 class Door2LockingState(State):
-    print("Entering Door2LockingState")
     def __init__(self, hardware):
         super().__init__(hardware, States.DOOR2_LOCKING)
 
+    def enter_state(self):
+        print("Entering Door2LockingState")
+        super().enter_state()
+        # Voeg code toe voor deur 2 vergrendelen
+        self.hardware.ledDoor2Lock.set_color(6000, 0, 0)  # Rood
+        self.update_door_status()
+
+    def update_door_status(self):
+        display = self.hardware.initialize_display()
+        door1_status = "Unlocked"
+        door2_status = "Closed"
+        display.text("Door 1: {}".format(door1_status), 0, 10, 1)
+        display.text("Door 2: {}".format(door2_status), 0, 20, 1)
+        display.text("Area: A", 0, 30, 1)
+        display.show()
+
     def check_transition(self):
-        if not self.hardware.Switch2.is_pressed():
+        if not self.hardware.Switch2.is_pressed() and self.hardware.Switch4.is_pressed():
             return Door1UnlockState(self.hardware)
 
 class Door1UnlockState(State):
-    print("Entering Door1UnlockState")
     def __init__(self, hardware):
         super().__init__(hardware, States.DOOR1_UNLOCK)
+
+    def enter_state(self):
+        print("Entering Door1UnlockState")
+        super().enter_state()
+        # Voeg code toe voor deur 1 ontgrendelen
+        self.hardware.ledDoor1Lock.set_color(0, 6000, 0)  # Groen
+        self.update_door_status()
+
+    def update_door_status(self):
+        display = self.hardware.initialize_display()
+        door1_status = "Unlocked"
+        door2_status = "Closed"
+        display.text("Door 1: {}".format(door1_status), 0, 10, 1)
+        display.text("Door 2: {}".format(door2_status), 0, 20, 1)
+        display.text("Area: A", 0, 30, 1)
+        display.show()
 
     def check_transition(self):
         if not self.hardware.Switch1.is_pressed():
             return InitialState(self.hardware)
+
+# Voeg andere states toe zoals hierboven beschreven...
 
 if __name__ == "__main__":
     hardware = Hardware()
