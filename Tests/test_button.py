@@ -11,7 +11,7 @@ if __name__ == "__main__":
     def notpressed_callback():
         print("Button not pressed")
     # Create a Button instance with pin number 5 and the pressed_callback as the callback function
-    button1 = Button(pin_number=5, callback=pressed_callback)
+    button1 = Button(pin_number=17, callback=pressed_callback)
 
     # Continuously check the button state
 while True:  
