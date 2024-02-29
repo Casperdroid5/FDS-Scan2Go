@@ -1,8 +1,7 @@
 from machine import Pin, PWM
 
 class Servo(PWM):
-    
-    get_current_angle = lambda self: self.current_angle
+
     def __init__(self, pin_number):
         super().__init__(Pin(pin_number, Pin.OUT))
         self.freq(50)  # Set PWM frequency to 50 Hz for servo control
@@ -17,4 +16,6 @@ class Servo(PWM):
         duty_cycle = int(pulse_width_us / 20000 * 65535)  # 20000 microseconds = 20 milliseconds (period)
         self.duty_u16(duty_cycle)  # Set duty cycle to control servo position
         self.current_angle = angle  # Update current angle
-        return self.get_current_angle()
+
+    def get_current_angle(self):
+        return self.current_angle
