@@ -1,41 +1,47 @@
 State machine states
 
-Initial_State:
-
+State0: Initialisation
 Initialiseer de systeemvariabelen en hardware-instellingen.
-Ga naar State: Door1_Unlocked
+Ga naar State: Wait for client
 
 
-Door1_Unlocked:
-
-Wacht op de handmatige ontgrendeling van Deur 1 (Switch 1 low).
-Toon deurenstatus op OLED: "Deur 1: Ontgrendeld", "Deur 2: Vergrendeld".
-Als Deur 1 handmatig wordt ontgrendeld, ga naar State: Door1_Open_With_Person.
+State1: Waitforclient
+Wacht op verzoek tot toedreding FDS vanuit persoon (Switch 1 low).
+Als Deur 1 handmatig wordt geopend, ga naar State: ClientEntersZoneA.
 Anders blijf in deze staat.
 
 
-Door1_Open_With_Person:
-
+State2: ClientEntersScanZone
 Wacht tot persoon wordt gedetecteerd in gebied A (Switch 3 high).
 Als er een persoon wordt gedetecteerd, wacht dan op het handmatig sluiten van Deur 1 (Switch 1 high).
-Als Deur 1 wordt gesloten, ga naar State: Ferrometal_Detection.
-Als er geen persoon wordt gedetecteerd en Deur 1 wordt gesloten, ga terug naar State: Door1_Unlocked.
+wanneer Deur 1 wordt gesloten terwijl er personen worden gedetecteerd in gebied A en/of B (switch 3 en/of 4 high), ga naar State: FerrometalDetection.
+Als er geen persoon wordt gedetecteerd in gebied A en/of B en Deur 1 wordt gesloten, ga terug naar State: Wait for client.
 
 
-Ferrometal_Detection:
+State3: FerrometalDetection:
+Verzoek iedereen om in ruimte A plaats te nemen. 
+indien iedereen in ruimte A bevind en niemand in ruimte b (dus switch 3 high en switch 4 low) wordt het scanprocess gestart. 
+verzoek iedereen om zich van ruimte A naar ruimte B te verplaatsen
+Meet de aanwezigheid van ferrometaal op de personen tijdens het verplaatsproces van personen (Potentiometerwaarde).
+Pas de kleur van de LED Scanner aan op basis van de potentiometerwaarde, led wordt rood als metaal wordt gedetecteerd en groen wanneer het niet wordt gedetecteerd.
+Controleer of gebied A persoonvrij is en gebied B personen bevat (Switch 3 low en Switch 4 high).
+Als er geen metaal is gedetecteerd bij passage van gebied A naar B door alle mensen, ga naar volgende state: waitforclientMRI.
+Indien ferrometaal is gedetecteerd, ga naar State6: ferrometaldetected.
 
-Meet de aanwezigheid van ferrometaal (Potentiometerwaarde).
-Pas de kleur van de LED Scanner aan op basis van de potentiometerwaarde.
-Controleer of er alleen mensen bevinden in gebied B (Switch 3 low en Switch 4 high).
-Als er geen metaaldetectie is bij passage van gebied A naar B, vergrendel Deur 1 en ontgrendel Deur 2.
-Ga naar State: Door2_Open_With_Person.
 
-
-Door2_Open_With_Person:
-
+State4: waitforclientMRI
 Wacht tot Deur 2 wordt geopend (Switch 2 low).
-Als Deur 2 wordt geopend, wacht dan tot Deur 2 weer wordt gesloten (Switch 2 high).
-Als Deur 2 wordt gesloten, vergrendel Deur 2 (Switch 2 high).
-Controleer of er mensen zijn in gebied A of B (Switch 3 high en Switch 4 high).
-Als er mensen zijn, vergrendel Deur 1 en ontgrendel Deur 2.
-Ga terug naar State: Door1_Unlocked.
+Als Deur 2 wordt geopend, wacht dan tot Deur 2 weer wordt dichtgedaan (Switch 2 high).
+Controleer of er mensen zijn in gebied A en/of B (Switch 3 high en/of Switch 4 high).
+indien dit het geval is wordt Deur 2 vergrendelt en deur 1 ontgrendeld en de personen worden verzocht het scangebeid te verlaten door deur 1. Wanneer het scangebied leeg is (switch 3 & 4 zijn low) ga naar state1.
+
+
+
+State6: ferrometaldetected
+houd deur 2 vergrendeld. geef indicatie aan personen dat metaal is gedetecteerd en ontgrendel en open deur 1. wacht tot alle personen de ruimte hebben verlaten en ga daarna door naar state 1
+
+State7: Exitrequest
+
+Stage8: Bypass request
+
+Stage9: Systemfailure

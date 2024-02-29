@@ -15,11 +15,10 @@ class Door1Unlocked:
         pass
 
     def execute(self, statemachine):
-        print("Deur 1: Ontgrendeld")
-        print("Deur 2: Vergrendeld")
+        print("FDS: IDLE")
         print("\nMogelijke acties:")
-        print("1. Handmatig sluiten van Deur 1")
-        print("2. Ruimte weer verlaten")
+        print("1. Verzoek FDS tot openen van deur 1 en betreed gebied A")
+        print("2. Loop weg van FDS")
         choice = input("Voer uw keuze in: ")
         if choice == "1":
             statemachine.set_state(Door1UnlockedWithPerson())
