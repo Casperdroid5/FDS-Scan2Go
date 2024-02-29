@@ -1,0 +1,40 @@
+
+statemachine moet bij opstart deur 2 gesloten hebben (dus switch 2, das de simulatie vana deur 2) moet high zijn en deur 1 (switch 1) ontgrendeld, dus switch 1 moet low zijn (deuren vergrendelstatus moet op OLED worden getoond in tekst). vervolgens moet als switch 3 high wordt gezet een persoon worden geconstateerd en moet deur 1 worden gesloten. Er moet gewacht worden tot deur 1 is gesloten (switch 1 high). vervolgens wordt overgegaan naar de ferrometaaldetectie state en wordt gekeken naar de potmeter. Als die een waarde meet tussen 0 en 1000 word de ledScanner rgb led groen. tussen 1000 en 2000 word de led geel. tussen 2000 en 6000 wordt de led rood. Ondertussen word gekeken of switch 3 low is en switch 4 high, oftewel, of mensen zich bevinden in gebied B (en niet in gebied A, switch 3). Indien dat het geval is en de potmeter waarde is ook tussen de 0 en 1000, wordt deur 2 ontgrendeld (toon weer de deuren vergrendelstatus op OLED). Vervolgens wordt gekeken naar switch 2 of deur2 open of gesloten is. wanneer deur 2 gesloten is (oftewel switch 2 high) en niemand bevind zich in gebied B (dus switch 2 is low), wordt gewacht tot deze weer wordt geopend (low). Wanneer deur 2 weer wordt geopened en gesloten en er bevinden zich mensen in gebied B (switch 4 high, dan wordt deur 2 vergrendeld en wordt deur 1 ontgrendeld (ook dit moet weer op OLED getoont worden. Ik wil dat je dit onder states onderverdeelt en alle states en deurvergrendelstatussen weergeeft in 3 lijnen op de OLED
+
+STATEMACHINE:
+
+InitialState:
+    - Set deuren: Deur 1 ontgrendeld (Switch 1 low), Deur 2 gesloten (Switch 2 high)
+    - Toon deurenstatus op OLED: "Deur 1: Ontgrendeld", "Deur 2: Vergrendeld"
+    - Ga naar State: WaitingForPerson
+
+WaitingForPerson:
+    - Wacht tot persoon wordt gedetecteerd in gebied A (switch 3 high)
+    - Ga naar State: WaitClosingDoor1
+
+WaitClosingDoor1:
+    - Wacht op (handmatig) sluiten van Deur 1 (Switch 1 high)
+    - Controleer of er nog steeds personen in gebied A zijn (switch 3 high)
+        - Indien ja, ga terug naar WaitingForPerson
+    - Ga naar State: FerrometalDetection
+
+FerrometalDetection:
+    - Meet ferrometaal aanwezigheid (Potmeter waarde)
+    - Stel LED Scanner-kleur in op basis van de potentiometerwaarde:
+        - Groen: 0-10000, Geel: 10000-30000, Rood: 30000-60000
+    - Controleer of er alleen mensen zijn in gebied B (Switch 3 laag en Switch 4 hoog)
+        - Als geen metalen worden gedetecteerd bij passage van A naar B
+            - Vergrendel Deur 1 en ontgrendel Deur 2 
+    - Ga naar State: WaitingForDoor2
+
+WaitingForDoor2:
+    - Open deur 2
+    - Wacht tot Deur 2 is geopend (Switch 2 laag)
+    - Wacht tot Deur 2 weer is gesloten (Switch 2 hoog)
+    - Ga naar State: LockingDoor2
+
+LockingDoor2:
+    - Vergrendel Deur 2 (Switch 2 hoog)
+    - Controleer of er mensen zijn in gebied A of B (Switch 3 hoog en Switch 4 hoog)
+        - Als ja, vergrendel Deur 1 en ontgrendel Deur 2
+    - Ga naar State: WaitingForPerson

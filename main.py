@@ -6,6 +6,7 @@ from rgbled import RGBLED
 from pwm import pwm
 from sh1106 import SH1106_I2C
 
+
 # Define hardware objects
 class Hardware:
     def __init__(self):
@@ -163,7 +164,6 @@ class FerrometalDetectionState(State):
 
     def check_transition(self):
         print("Checking transition in FerrometalDetectionState")
-        #if not self.hardware.Switch3.is_pressed() and self.hardware.Switch4.is_pressed():
         pot_value = self.hardware.Pot1.read_value()
         print("Potentiometer value:", pot_value)
         if 0 <= pot_value < 10000:
@@ -177,7 +177,7 @@ class FerrometalDetectionState(State):
         elif 30000 <= pot_value <= 70000:
             self.hardware.ledScanner.set_color(6000, 0, 0)  # Red           
             print("RedState")
-        ("No transition in FerrometalDetectionState")
+        print("No transition in FerrometalDetectionState")
         return None  # Blijf in dezelfde state totdat aan de voorwaarden is voldaan
         
 
@@ -276,4 +276,5 @@ if __name__ == "__main__":
     machine.start()
     while True:
         machine.update()
-        time.sleep(0.1)
+        time.sleep(0.1) 
+        
