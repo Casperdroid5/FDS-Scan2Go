@@ -1,29 +1,41 @@
-STATEMACHINE:
+State machine states
 
 Initial_State:
-    - Set deuren: Deur 1 ontgrendeld (Switch 1 low), Deur 2 gesloten (Switch 2 high)
-    - Toon deurenstatus op OLED: "Deur 1: Ontgrendeld", "Deur 2: Vergrendeld"
-    - Ga naar State: Door1_Closed_With_Person
 
-Door1_Closed_With_Person:
-    - Wacht tot persoon wordt gedetecteerd in gebied A (switch 3 high)
-    - Wacht op (handmatig) sluiten van Deur 1 (Switch 1 high)
-    - Controlleer of er nog steeds personen in gebied A zijn (switch 3 high).
-    - Ga naar State: Ferrometal_Detection
+Initialiseer de systeemvariabelen en hardware-instellingen.
+Ga naar State: Door1_Unlocked
+
+
+Door1_Unlocked:
+
+Wacht op de handmatige ontgrendeling van Deur 1 (Switch 1 low).
+Toon deurenstatus op OLED: "Deur 1: Ontgrendeld", "Deur 2: Vergrendeld".
+Als Deur 1 handmatig wordt ontgrendeld, ga naar State: Door1_Open_With_Person.
+Anders blijf in deze staat.
+
+
+Door1_Open_With_Person:
+
+Wacht tot persoon wordt gedetecteerd in gebied A (Switch 3 high).
+Als er een persoon wordt gedetecteerd, wacht dan op het handmatig sluiten van Deur 1 (Switch 1 high).
+Als Deur 1 wordt gesloten, ga naar State: Ferrometal_Detection.
+Als er geen persoon wordt gedetecteerd en Deur 1 wordt gesloten, ga terug naar State: Door1_Unlocked.
+
 
 Ferrometal_Detection:
-    - Meet ferrometaal aanwezigheid (Potmeter waarde)
-    - Zet de kleur van de LED Scanner op basis van de potentiometerwaarde:
-        - Groen: 0-10000, Geel: 10000-30000, Rood: 30000-60000
-    - Controleer of er zich alleen mensen bevinden in gebied B (Switch 3 low en Switch 4 high)
-        - als er bij passage van gebied A naar B geen metalen zijn gedetecteerd 
-            - vergrendel Deur 1 en ontgrendel Deur 2 
-    - Ga naar State: Door2_Closed_With_Person
 
-Door2_Closed_With_Person:
-    - Wacht tot Deur 2 is geopend (Switch 2 low)
-    - Wacht tot Deur 2 weer is gesloten (Switch 2 high)
-    - Vergrendel Deur 2 (Switch 2 high)
-    - Controleer of er mensen bevinden in gebied A of gebied B switch 3 high en switch 4 high 
-        - Als ja, vergrendel Deur 1 en ontgrendel Deur 2
-    - Ga naar State: Door1_Closed_With_Person
+Meet de aanwezigheid van ferrometaal (Potentiometerwaarde).
+Pas de kleur van de LED Scanner aan op basis van de potentiometerwaarde.
+Controleer of er alleen mensen bevinden in gebied B (Switch 3 low en Switch 4 high).
+Als er geen metaaldetectie is bij passage van gebied A naar B, vergrendel Deur 1 en ontgrendel Deur 2.
+Ga naar State: Door2_Open_With_Person.
+
+
+Door2_Open_With_Person:
+
+Wacht tot Deur 2 wordt geopend (Switch 2 low).
+Als Deur 2 wordt geopend, wacht dan tot Deur 2 weer wordt gesloten (Switch 2 high).
+Als Deur 2 wordt gesloten, vergrendel Deur 2 (Switch 2 high).
+Controleer of er mensen zijn in gebied A of B (Switch 3 high en Switch 4 high).
+Als er mensen zijn, vergrendel Deur 1 en ontgrendel Deur 2.
+Ga terug naar State: Door1_Unlocked.
