@@ -15,6 +15,7 @@ class Door1Unlocked:
         pass
 
     def execute(self, statemachine):
+        print("State1: Door1Unlocked")
         print("FDS: IDLE")
         print("\nMogelijke acties:")
         print("1. Verzoek FDS tot openen van deur 1 en betreed gebied A")
@@ -34,6 +35,7 @@ class Door1UnlockedWithPerson:
         pass
 
     def execute(self, statemachine):
+        print("State2: Door1UnlockedWithPerson")
         print("Persoon gedetecteerd in gebied A en Deur 1 gesloten")
         print("\nMogelijke acties:")
         print("1. Vergrendelen van Deur 1")
@@ -52,6 +54,7 @@ class FerrometalDetection:
         pass
 
     def execute(self, statemachine):
+        print("State3: FerrometalDetection")
         print("Ferrometaaldetectie wordt uitgevoerd")
         print("\nMogelijke acties:")
         print("1. Ferrometaal wordt NIET gedetecteerd")
@@ -72,6 +75,7 @@ class Door2UnlockedWithPerson:
         pass
 
     def execute(self, statemachine):
+        print("State4: Door2UnlockedWithPerson")
         print("Deur 2 ontgrendeld")
         print("\nMogelijke acties:")
         print("1. Verlaat FDS door deur 2 naar MRI-Ruimte. ")
@@ -90,6 +94,7 @@ class Door2Unlocked:
         pass
 
     def execute(self, statemachine):
+        print("State5: Door2Unlocked")
         print("Deur 2 ontgrendeld")
         print("\nMogelijke acties:")
         print("1. Patient keert terug naar FDS")
@@ -110,6 +115,7 @@ class Door2Locked:
         pass
 
     def execute(self, statemachine):
+        print("State6: Door2Locked")
         print("Deur 2 ontgrendeld")
         print("\nMogelijke acties:")
         print("1. Patiënt sluit deur 2")
