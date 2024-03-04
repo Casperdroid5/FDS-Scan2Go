@@ -88,11 +88,11 @@ class Initialisation(State):
         display.fill(0)
         display.text("-State: 0-", 0, 0, 1)
         display.show()
-        self.hardware.ledDoor2Lock.set_color(0, 0, 0) # OFF
-        self.hardware.ledDoor1Lock.set_color(0, 0, 0) # OFF
-        self.hardware.ledScanner.set_color(0, 0, 0) # OFF
+        self.hardware.ledDoor2Lock.off # OFF
+        self.hardware.ledDoor1Lock.off # OFF
+        self.hardware.ledScanner.off # OFF
         self.hardware.Door2Motor.set_angle(90)  # Close the door by rotating the servo to 90 degrees
-
+        self.hardware.Door1Motor.set_angle(0)  # Open the door by rotating the servo to 0 degrees
     
     def check_transition(self):
         return WaitForUserFieldA(self.hardware)

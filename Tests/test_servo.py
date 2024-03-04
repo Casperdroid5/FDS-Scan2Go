@@ -2,7 +2,7 @@ from servo import Servo
 import time
 
 if __name__ == "__main__":
-    servo1 = Servo(pin_number=28)  # Assuming pin 28 is connected to the servo
+    servo1 = Servo(pin_number=26)  # Assuming pin 28 is connected to the servo
     
     # Move to initial positions gradually
     servo1.set_angle(0)  # Set the initial position as 0
