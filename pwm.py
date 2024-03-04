@@ -16,11 +16,3 @@ class pwm:
         # Set brightness level as a percentage (0 to 100)
         brightness = int(percent / 100 * self.max_duty)
         self.pin.duty_u16(brightness)
-
-    def toggle(self):
-        # Toggle the LED state (on/off)
-        current_duty = self.pin.duty_u16()
-        if current_duty == 0:
-            self.on()
-        else:
-            self.off()

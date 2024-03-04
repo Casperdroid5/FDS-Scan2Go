@@ -16,14 +16,14 @@ class Hardware:
         self.Door1Motor = Servo(28)
         self.Door2Motor = Servo(26)
         self.Piezo = pwm(16)
-        self.Button1 = Button(pin_number=5, callback=None)
-        self.Button2 = Button(pin_number=9, callback=None)
-        self.Button3 = Button(pin_number=13, callback=None)
-        self.Switch1 = Button(pin_number=20, callback=None)
-        self.Switch2 = Button(pin_number=19, callback=None)
-        self.Switch3 = Button(pin_number=18, callback=None)
-        self.Switch4 = Button(pin_number=17, callback=None)
-        self.Pot1 = Potentiometer(pin_number=27, callback=None)
+        self.Button1 = Button(pin_number=5)
+        self.Button2 = Button(pin_number=9)
+        self.Button3 = Button(pin_number=13)
+        self.Switch1 = Button(pin_number=20)
+        self.Switch2 = Button(pin_number=19)
+        self.Switch3 = Button(pin_number=18)
+        self.Switch4 = Button(pin_number=17)
+        self.Pot1 = Potentiometer(pin_number=27)
 
     def initialize_display(self):
         scl_pin, sda_pin = Pin(1), Pin(0)
@@ -35,8 +35,11 @@ class Hardware:
 # Define Constants
 class States:
     Initialisation = 0
-    FerrometalDetectionState = 1
-    Unlockandopendoor1 = 2
+    WaitForUserFieldA = 1
+    FerrometalDetection = 2
+    WaitForUserFieldB = 3
+    Unlockandopendoor2 = 4
+    Lockandclosedoor2 = 5
 
 # Define State Machine
 class StateMachine:
@@ -85,14 +88,19 @@ class Initialisation(State):
         display.fill(0)
         display.text("-State: 0-", 0, 0, 1)
         display.show()
-        
-    def check_transition(self):
-        return FerrometalDetectionState(self.hardware)
+        self.hardware.ledDoor2Lock.set_color(0, 0, 0) # OFF
+        self.hardware.ledDoor1Lock.set_color(0, 0, 0) # OFF
+        self.hardware.ledScanner.set_color(0, 0, 0) # OFF
+        self.hardware.Door2Motor.set_angle(90)  # Close the door by rotating the servo to 90 degrees
 
-class FerrometalDetectionState(State):
+    
+    def check_transition(self):
+        return WaitForUserFieldA(self.hardware)
+
+class WaitForUserFieldA(State):
     def __init__(self, hardware):
         super().__init__(hardware)
-
+        
     def enter_state(self):
         display = self.hardware.initialize_display()
         display.fill(0)
@@ -100,34 +108,69 @@ class FerrometalDetectionState(State):
         display.show()
 
     def check_transition(self):
-        print("Checking transition in FerrometalDetectionState")
+        if self.hardware.Switch3.is_pressed() and self.hardware.Switch4.is_not_pressed():
+            self.hardware.ledDoor1Lock.set_color(0, 6000, 0) # Green
+            return FerrometalDetection(self.hardware)
+        else:
+            return None  # Stay in the same state
+        
+class FerrometalDetection(State):
+    def __init__(self, hardware):
+        super().__init__(hardware)
+
+    def enter_state(self):
+        display = self.hardware.initialize_display()
+        display.fill(0)
+        display.text("-State: 2-", 0, 0, 1)
+        display.show()
+
+    def check_transition(self):
+        print("Checking transition in FerrometalDetection")
         pot_value = self.hardware.Pot1.read_value()
         print("Potentiometer value:", pot_value)
         if 0 <= pot_value < 40000:
             self.hardware.ledScanner.set_color(0, 6000, 0)  # Green    
             print("Transitioning to Unlockandopendoor2")
-            return Unlockandopendoor2(self.hardware)
+            return WaitForUserFieldB(self.hardware)
         elif 40000 <= pot_value <= 66000:
             self.hardware.ledScanner.set_color(6000, 0, 0)  # Red           
             print("Transitioning to Lockandclosedoor2")
             return Lockandclosedoor2(self.hardware)
         return Unlockandopendoor2(self.hardware)
 
-class Unlockandopendoor2(State):
+class WaitForUserFieldB(State):
     def __init__(self, hardware):
         super().__init__(hardware)
         
     def enter_state(self):
         display = self.hardware.initialize_display()
         display.fill(0)
-        display.text("-State: 2-", 0, 0, 1)
+        display.text("-State: 3-", 0, 0, 1)
         display.show()
-        self.hardware.Door2Motor.set_angle(0)  # Set the initial position to 90 degrees
+
+    def check_transition(self):
+        if self.hardware.Switch3.is_not_pressed() and self.hardware.Switch4.is_pressed():
+            self.hardware.ledDoor2Lock.set_color(0, 6000, 0)
+            return Unlockandopendoor2(self.hardware)
+        else:
+            return None  # Stay in the same state
+
+
+class Unlockandopendoor2(State):
+    def __init__(self, hardware):
+        super().__init__(hardware)
+
+    def enter_state(self):
+        display = self.hardware.initialize_display()
+        display.fill(0)
+        display.text("-State: 4-", 0, 0, 1)
+        display.show()
+        self.hardware.Door2Motor.set_angle(0)  # open the door by rotating the servo to 0 degrees
 
 
     def check_transition(self):
-        return FerrometalDetectionState(self.hardware)
-    
+        return Initialisation(self.hardware)
+
 class Lockandclosedoor2(State):
     def __init__(self, hardware):
         super().__init__(hardware)
@@ -135,13 +178,13 @@ class Lockandclosedoor2(State):
     def enter_state(self):
         display = self.hardware.initialize_display()
         display.fill(0)
-        display.text("-State: 4-", 0, 0, 1)
+        display.text("-State: 5-", 0, 0, 1)
         display.show()
         self.hardware.Door2Motor.set_angle(90)  # Set the initial position to 90 degrees
 
 
     def check_transition(self):
-        return Initialisation(self.hardware)
+        return FerrometalDetection(self.hardware)
 
 if __name__ == "__main__":
     hardware = Hardware()

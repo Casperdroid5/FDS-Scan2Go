@@ -1,22 +1,13 @@
 from machine import Pin
 
-
 class Button:
-    def __init__(self, pin_number, callback=None):
+    def __init__(self, pin_number):
         self.pin = Pin(pin_number, Pin.IN, Pin.PULL_UP)
-        self.callback = callback
-        self.pin.irq(trigger=Pin.IRQ_FALLING, handler=self._button_pressed)
-
-    def _button_pressed(self, pin):
-        if self.callback:
-            self.callback()
 
     def is_pressed(self):
+        # Returns True if the button is pressed (active low)
         return self.pin.value() == 0
 
-    def attach_callback(self, callback):
-        self.callback = callback
-
-    def detach_callback(self):
-        self.callback = None
-
+    def is_not_pressed(self):
+        # Returns True if the button is not pressed
+        return self.pin.value() == 1
