@@ -5,6 +5,7 @@ from potmeter import Potentiometer
 from rgbled import RGBLED
 from sh1106 import SH1106_I2C
 from servo import Servo
+import time
 
 FerroFree = False
 PatientReturnedFromMRI = False
@@ -165,11 +166,12 @@ class FerrometalDetectionState(State):
             self.hardware.ledScanner.set_color(0, 6000, 0)  # Green    
             print("Transitioning to Unlockandopendoor2State")
             FerroFree = True
+            time.sleep(1.5)
             return Unlockandopendoor2State(self.hardware)
         elif 40000 <= pot_value <= 66000:
             self.hardware.ledScanner.set_color(6000, 0, 0)  # Red 
-            print("Transitioning to FerrometalDetectionState")      
-            return FerrometalDetectionState(self.hardware)   
+            print("Transitioning to Unlockandopendoor1State")      
+            return Unlockandopendoor1State(self.hardware)   
 
 
 class Lockandclosedoor1State(State):
