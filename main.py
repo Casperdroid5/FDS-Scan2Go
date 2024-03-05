@@ -6,7 +6,8 @@ from rgbled import RGBLED
 from sh1106 import SH1106_I2C
 from servo import Servo
 
-returnMRI = False
+FerroFree = False
+PatientReturnedFromMRI = False
 
 # Constants
 class States:
@@ -98,6 +99,7 @@ class InitialisationState(State):
         self.hardware.Door1Motor.set_angle(0)
     
     def check_transition(self):
+        print("Transitioning to WaitForUserFieldAState")        
         return WaitForUserFieldAState(self.hardware)
 
 class WaitForUserFieldAState(State):
@@ -110,36 +112,17 @@ class WaitForUserFieldAState(State):
         self.hardware.display.show()
 
     def check_transition(self):
-        if self.hardware.Switch3.is_pressed() and not self.hardware.Switch4.is_pressed(): # Corrected method call
-            self.hardware.ledDoor1Lock.set_color(0, 6000, 0) # Green
-            return Lockandclosedoor1State(self.hardware)
+        global PatientReturnedFromMRI
+        if self.hardware.Switch3.is_pressed() and self.hardware.Switch4.is_not_pressed(): 
+            if PatientReturnedFromMRI == False:
+                print("Transitioning to Lockandclosedoor1State")
+                return Lockandclosedoor1State(self.hardware)  
+            elif PatientReturnedFromMRI == True:
+                print("Transitioning to Lockandclosedoor2State")
+                return Lockandclosedoor2State(self.hardware)
         else:
             return None
         
-class FerrometalDetectionState(State):
-    def __init__(self, hardware):
-        super().__init__(hardware)
-
-    def enter_state(self):
-        self.hardware.display.fill(0)
-        self.hardware.display.text("-State: FerroD-", 0, 0, 1)
-        self.hardware.display.show()
-
-    def check_transition(self):
-        global returnMRI
-        print("Checking transition in FerrometalDetection")
-        pot_value = self.hardware.Pot1.read_value()
-        print("Potentiometer value:", pot_value)
-        if 0 <= pot_value < 40000:
-            self.hardware.ledScanner.set_color(0, 6000, 0)  # Green    
-            print("Transitioning to WaitForUserFieldBState")
-            returnMRI = True
-            return WaitForUserFieldBState(self.hardware)
-        elif 40000 <= pot_value <= 66000:
-            self.hardware.ledScanner.set_color(6000, 0, 0)  # Red       
-            return FerrometalDetectionState(self.hardware)   
-        return Unlockandopendoor2State(self.hardware)
-
 class WaitForUserFieldBState(State):
     def __init__(self, hardware):
         super().__init__(hardware)
@@ -150,12 +133,45 @@ class WaitForUserFieldBState(State):
         self.hardware.display.show()
 
     def check_transition(self):
-        if not self.hardware.Switch3.is_pressed() and self.hardware.Switch4.is_pressed(): # Corrected method call
-            self.hardware.ledDoor2Lock.set_color(0, 6000, 0)
-            return Unlockandopendoor2State(self.hardware)
+        global FerroFree
+        global PatientReturnedFromMRI
+        if self.hardware.Switch3.is_not_pressed() and self.hardware.Switch4.is_pressed(): 
+           if PatientReturnedFromMRI == False and FerroFree == True:
+               print("Transitioning to Unlockandopendoor2State")
+               return Unlockandopendoor2State(self.hardware)
+           if PatientReturnedFromMRI == False and FerroFree == False: 
+                print("Transitioning to FerrometalDetectionState")
+                return FerrometalDetectionState(self.hardware)
+           if PatientReturnedFromMRI == True:    
+                print("Transitioning to WaitForUserFieldAState")   
+                return WaitForUserFieldAState(self.hardware)
         else:
-            return None
-    
+            return None        
+class FerrometalDetectionState(State):
+    def __init__(self, hardware):
+        super().__init__(hardware)
+
+    def enter_state(self):
+        self.hardware.display.fill(0)
+        self.hardware.display.text("-State: FerroD-", 0, 0, 1)
+        self.hardware.display.show()
+
+    def check_transition(self):
+        global FerroFree # Import global variable
+        print("Checking transition in FerrometalDetection")
+        pot_value = self.hardware.Pot1.read_value()
+        print("Potentiometer value:", pot_value)
+        if 0 <= pot_value < 40000:
+            self.hardware.ledScanner.set_color(0, 6000, 0)  # Green    
+            print("Transitioning to Unlockandopendoor2State")
+            FerroFree = True
+            return Unlockandopendoor2State(self.hardware)
+        elif 40000 <= pot_value <= 66000:
+            self.hardware.ledScanner.set_color(6000, 0, 0)  # Red 
+            print("Transitioning to FerrometalDetectionState")      
+            return FerrometalDetectionState(self.hardware)   
+
+
 class Lockandclosedoor1State(State):
     def __init__(self, hardware):
         super().__init__(hardware)
@@ -168,6 +184,7 @@ class Lockandclosedoor1State(State):
         self.hardware.ledDoor1Lock.set_color(6000, 0, 0)  # Red - indicating door closed
     
     def check_transition(self):
+        print("Transitioning to Lockandclosedoor2State")   
         return Lockandclosedoor2State(self.hardware)    
 
 class Unlockandopendoor1State(State):
@@ -178,11 +195,12 @@ class Unlockandopendoor1State(State):
         self.hardware.display.fill(0)
         self.hardware.display.text("-State: Open1-", 0, 0, 1)
         self.hardware.display.show()
-        self.hardware.Door1Motor.set_angle(0)
+        time.sleep(2)
+        self.hardware.Door1Motor.set_angle(0) # door openend
         self.hardware.ledDoor1Lock.set_color(0, 6000, 0)  # Green - indicating door opened
-        self.hardware.ledScanner.off()  #LED OFF
 
     def check_transition(self):
+        print("Transitioning to WaitForUserFieldAState")
         return WaitForUserFieldAState(self.hardware)  
     
 class Lockandclosedoor2State(State):
@@ -190,28 +208,33 @@ class Lockandclosedoor2State(State):
         super().__init__(hardware)
         
     def enter_state(self):
+
         self.hardware.display.fill(0)
         self.hardware.display.text("-State: Lock2-", 0, 0, 1)
-        self.hardware.display.show()
-        self.hardware.Door2Motor.set_angle(90) # Door closed
+        self.hardware.display.show() 
+        self.hardware.Door2Motor.set_angle(90) # open
         self.hardware.ledDoor2Lock.set_color(6000, 0, 0)  # Red - indicating door closed
+        self.hardware.ledScanner.off()  #LED OFF
 
     def check_transition(self):
-        global returnMRI  # Import global variable
-        if returnMRI:
+        global PatientReturnedFromMRI
+        global FerroFree
+        if PatientReturnedFromMRI == True:
             print("Transitioning to Unlockandopendoor1State")
-            returnMRI = False
-            time.sleep(1)  
-            return Unlockandopendoor1State(self.hardware)  
-        elif not returnMRI:
-            print("Transitioning to FerrometalDetectionState")
-            return FerrometalDetectionState(self.hardware)  
+            PatientReturnedFromMRI = False
+            FerroFree = False
+            return Unlockandopendoor1State(self.hardware)       
+        elif PatientReturnedFromMRI == False:
+            print("Transitioning to WaitForUserFieldBState")
+            return WaitForUserFieldBState(self.hardware)
 
 class Unlockandopendoor2State(State):
     def __init__(self, hardware):
         super().__init__(hardware)
 
     def enter_state(self):
+        global PatientReturnedFromMRI 
+        PatientReturnedFromMRI = True
         self.hardware.display.fill(0)
         self.hardware.display.text("-State: Open2-", 0, 0, 1)
         self.hardware.display.show()
@@ -221,7 +244,8 @@ class Unlockandopendoor2State(State):
         time.sleep(2) # wait with closing door for visual effect
         
     def check_transition(self):
-        return Lockandclosedoor2State(self.hardware)
+        print("Transitioning to WaitForUserFieldBState")
+        return WaitForUserFieldBState(self.hardware)
 
 if __name__ == "__main__":
     hardware = Hardware()
@@ -229,4 +253,3 @@ if __name__ == "__main__":
     machine.start()
     while True:
         machine.update()
-
