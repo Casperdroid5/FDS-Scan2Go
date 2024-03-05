@@ -200,7 +200,8 @@ class Unlockandopendoor1State(State):
         time.sleep(2)
         self.hardware.Door1Motor.set_angle(0) # door openend
         self.hardware.ledDoor1Lock.set_color(0, 6000, 0)  # Green - indicating door opened
-
+        self.hardware.ledScanner.off()  #LED OFF
+        time.sleep(2) # wait for visual effect
     def check_transition(self):
         print("Transitioning to WaitForUserFieldAState")
         return WaitForUserFieldAState(self.hardware)  
