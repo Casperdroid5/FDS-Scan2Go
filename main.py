@@ -50,6 +50,7 @@ class Hardware:
         scl_pin, sda_pin = Pin(1), Pin(0)
         OLEDi2c = I2C(0, scl=scl_pin, sda=sda_pin, freq=400000)
         display = SH1106_I2C(128, 64, OLEDi2c, Pin(16), 0x3c, 180)
+        display.contrast(15)
         return display
 
 # State Machine
