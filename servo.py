@@ -16,5 +16,5 @@ class Servo:
         self.pwm.duty_u16(duty_cycle)  # Set duty cycle to control servo position
         self.current_angle = angle  # Update current angle
 
-    def get_current_angle(self):
+    def get_current_angle(self): 
         return self.current_angle

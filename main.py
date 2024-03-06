@@ -6,37 +6,41 @@ from rgbled import RGBLED
 from sh1106 import SH1106_I2C
 from servo import Servo
 import time
+import _thread
+
 
 FerroFree = False
 PatientReturnedFromMRI = False
 
-# Constants
 class States:
-    Initialisation = 0
-    WaitForUserFieldA = 1
-    FerrometalDetection = 2
-    WaitForUserFieldB = 3
-    Unlockandopendoor2 = 4
-    Lockandclosedoor2 = 5
+    InitialisationState = 0
+    WaitForUserFieldAState = 1  
+    WaitForUserFieldBState = 2
+    FerrometalDetectionState = 3    
+    Lockandclosedoor1State = 4  
+    Unlockandopendoor1State = 5     
+    Lockandclosedoor2State = 6  
+    Unlockandopendoor2State = 7
 
 # Hardware Abstraction Layer
 class Hardware:
     def __init__(self):
         # Initialize hardware components
+        self.testled = Pin(22, Pin.OUT)
         self.ledDoor2Lock = RGBLED(10, 11, 12)
         self.ledDoor1Lock = RGBLED(2, 3, 4)
         self.ledScanner = RGBLED(6, 7, 8)
         self.Door1Motor = Servo(14)
         self.Door2Motor = Servo(15)
         self.Piezo = PWM(16)
-        self.Button1 = Button(pin_number=5)
-        self.Button2 = Button(pin_number=9)
-        self.Button3 = Button(pin_number=13)
-        self.Switch1 = Button(pin_number=20)
-        self.Switch2 = Button(pin_number=19)
-        self.Switch3 = Button(pin_number=18)
-        self.Switch4 = Button(pin_number=17)
-        self.Pot1 = Potentiometer(pin_number=27)
+        self.Button1 = Button(5)
+        self.Button2 = Button(9)
+        self.Button3 = Button(13)
+        self.Switch1 = Button(20)
+        self.Switch2 = Button(19)
+        self.Switch3 = Button(18)
+        self.Switch4 = Button(17)
+        self.Pot1 = Potentiometer(27)
 
         # Initialize display
         self.display = self._initialize_display()
@@ -53,6 +57,7 @@ class StateMachine:
     def __init__(self, hardware):
         self.hardware = hardware
         self.current_state = None
+        _thread.start_new_thread(self.CheckEmmergencyButton, ())
 
     def start(self):
         self.current_state = InitialisationState(self.hardware)
@@ -66,7 +71,33 @@ class StateMachine:
                 self.current_state = new_state
                 self.current_state.enter_state()
             self.current_state.execute_action()
-            time.sleep(0.1)
+
+
+    def CheckEmmergencyButton(self):
+           while True:
+               if self.hardware.Button3.is_pressed():
+                   print("Emergency button pressed.")
+                   print("Transitioning to EmergencyState.")
+                   self.current_state = EmergencyState(self.hardware)
+                   self.current_state.enter_state()
+                   time.sleep(0.1)
+#    States
+class StateBase:
+    def __init__(self, hardware):
+        self.hardware = hardware
+
+    def enter_state(self):
+        pass
+
+    def exit_state(self):
+        pass
+
+    def check_transition(self):
+        pass
+
+    def execute_action(self):
+        pass
+
 
 # States
 class State:
@@ -249,6 +280,28 @@ class Unlockandopendoor2State(State):
     def check_transition(self):
         print("Transitioning to WaitForUserFieldBState")
         return WaitForUserFieldBState(self.hardware)
+
+class EmergencyState(State):
+    def __init__(self, hardware):
+        super().__init__(hardware)
+
+    def enter_state(self):
+        self.hardware.display.fill(0)
+        self.hardware.display.text("-State: Emergency-", 0, 0, 1)
+        self.hardware.display.show()
+        self.hardware.Door1Motor.set_angle(0)  # Open door 1
+        self.hardware.Door2Motor.set_angle(0)  # Open door 2
+        self.hardware.ledDoor1Lock.set_color(0, 0, 6000)  # Blue
+        self.hardware.ledDoor2Lock.set_color(0, 0, 6000)  # Blue
+        self.hardware.ledScanner.set_color(0, 0, 6000)  # Blue
+
+    def check_transition(self):
+        if self.hardware.Button2.is_pressed():
+            print("Reset button pressed.")
+            print("Transitioning to InitialisationState")
+            return InitialisationState(self.hardware)
+        else:
+            return None
 
 if __name__ == "__main__":
     hardware = Hardware()
