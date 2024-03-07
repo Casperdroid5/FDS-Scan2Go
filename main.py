@@ -31,7 +31,7 @@ class Hardware:
         self.Door2Motor = Servo(15)
         self.Piezo = PWM(16)
         self.FDSResetButton = Button(5)
-        self.EmergencyButton = Button(11)
+        self.EmergencyButton = Button(9)
         self.FieldA = Button(18)
         self.FieldB = Button(17)
         self.Pot1 = Potentiometer(27)
