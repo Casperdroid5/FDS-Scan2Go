@@ -59,15 +59,15 @@ class StateMachine:
         self.current_state.enter_state()
 
     def update(self):
-        while True:
-            if self.current_state is not None:
-                new_state = self.current_state.check_transition()
-                if new_state:
-                    self.current_state.exit_state()
-                    self.current_state = new_state
-                    self.current_state.enter_state()
-                    self.current_state.execute_action()
-
+       while True:
+           if self.current_state is not None:
+               new_state = self.current_state.check_transition()
+               if new_state:
+                   self.current_state.exit_state()
+                   self.current_state = new_state
+                   self.current_state.enter_state()
+                   self.current_state.execute_action()
+           time.sleep(0.1)  # Add a small delay to prevent freeze-ups
 
     def CheckEmmergencyButton(self):
            while True:
