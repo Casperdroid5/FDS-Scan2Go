@@ -5,7 +5,6 @@ from potmeter import Potentiometer
 from rgbled import RGBLED
 from sh1106 import SH1106_I2C
 from servo import Servo
-import time
 import _thread
 
 FerroFree = False
@@ -25,18 +24,14 @@ class States:
 class Hardware:
     def __init__(self):
         # Initialize hardware components
-        self.testled = Pin(22, Pin.OUT)
         self.ledDoor2Lock = RGBLED(10, 11, 12)
         self.ledDoor1Lock = RGBLED(2, 3, 4)
         self.ledScanner = RGBLED(6, 7, 8)
         self.Door1Motor = Servo(14)
         self.Door2Motor = Servo(15)
         self.Piezo = PWM(16)
-        self.Button1 = Button(5)
-        self.FDSResetButton = Button(9)
-        self.EmergencyButton = Button(13)
-        self.Switch1 = Button(20)
-        self.Switch2 = Button(19)
+        self.FDSResetButton = Button(5)
+        self.EmergencyButton = Button(11)
         self.FieldA = Button(18)
         self.FieldB = Button(17)
         self.Pot1 = Potentiometer(27)
@@ -57,7 +52,7 @@ class StateMachine:
     def __init__(self, hardware):
         self.hardware = hardware
         self.current_state = None
-        _thread.start_new_thread(self.CheckEmmergencyButton, ())
+        _thread.start_new_thread(self.CheckEmmergencyButton, ()) #Start thread to monitor emergency
 
     def start(self):
         self.current_state = InitialisationState(self.hardware)
@@ -65,12 +60,13 @@ class StateMachine:
 
     def update(self):
         while True:
-            new_state = self.current_state.check_transition()
-            if new_state:
-                self.current_state.exit_state()
-                self.current_state = new_state
-                self.current_state.enter_state()
-            self.current_state.execute_action()
+            if self.current_state is not None:
+                new_state = self.current_state.check_transition()
+                if new_state:
+                    self.current_state.exit_state()
+                    self.current_state = new_state
+                    self.current_state.enter_state()
+                    self.current_state.execute_action()
 
 
     def CheckEmmergencyButton(self):
