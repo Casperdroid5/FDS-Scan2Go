@@ -8,7 +8,6 @@ from servo import Servo
 import time
 import _thread
 
-
 FerroFree = False
 PatientReturnedFromMRI = False
 
@@ -34,12 +33,12 @@ class Hardware:
         self.Door2Motor = Servo(15)
         self.Piezo = PWM(16)
         self.Button1 = Button(5)
-        self.Button2 = Button(9)
-        self.Button3 = Button(13)
+        self.FDSResetButton = Button(9)
+        self.EmergencyButton = Button(13)
         self.Switch1 = Button(20)
         self.Switch2 = Button(19)
-        self.Switch3 = Button(18)
-        self.Switch4 = Button(17)
+        self.FieldA = Button(18)
+        self.FieldB = Button(17)
         self.Pot1 = Potentiometer(27)
 
         # Initialize display
@@ -50,10 +49,10 @@ class Hardware:
         scl_pin, sda_pin = Pin(1), Pin(0)
         OLEDi2c = I2C(0, scl=scl_pin, sda=sda_pin, freq=400000)
         display = SH1106_I2C(128, 64, OLEDi2c, Pin(16), 0x3c, 180)
-        display.contrast(15)
+        display.contrast(50)
         return display
 
-# State Machine
+# State Machine 
 class StateMachine:
     def __init__(self, hardware):
         self.hardware = hardware
@@ -76,7 +75,7 @@ class StateMachine:
 
     def CheckEmmergencyButton(self):
            while True:
-               if self.hardware.Button3.is_pressed():
+               if self.hardware.EmergencyButton.is_pressed():
                    print("Emergency button pressed.")
                    print("Transitioning to EmergencyState.")
                    self.current_state = EmergencyState(self.hardware)
@@ -146,7 +145,7 @@ class WaitForUserFieldAState(State):
 
     def check_transition(self):
         global PatientReturnedFromMRI
-        if self.hardware.Switch3.is_pressed() and self.hardware.Switch4.is_not_pressed(): 
+        if self.hardware.FieldA.is_pressed() and self.hardware.FieldB.is_not_pressed(): 
             if PatientReturnedFromMRI == False:
                 print("Transitioning to Lockandclosedoor1State")
                 return Lockandclosedoor1State(self.hardware)  
@@ -168,7 +167,7 @@ class WaitForUserFieldBState(State):
     def check_transition(self):
         global FerroFree
         global PatientReturnedFromMRI
-        if self.hardware.Switch3.is_not_pressed() and self.hardware.Switch4.is_pressed(): 
+        if self.hardware.FieldA.is_not_pressed() and self.hardware.FieldB.is_pressed(): 
            if PatientReturnedFromMRI == False and FerroFree == True:
                print("Transitioning to Unlockandopendoor2State")
                return Unlockandopendoor2State(self.hardware)
@@ -297,7 +296,7 @@ class EmergencyState(State):
         self.hardware.ledScanner.set_color(0, 0, 6000)  # Blue
 
     def check_transition(self):
-        if self.hardware.Button2.is_pressed():
+        if self.hardware.FDSResetButton.is_pressed():
             print("Reset button pressed.")
             print("Transitioning to InitialisationState")
             return InitialisationState(self.hardware)
