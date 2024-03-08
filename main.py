@@ -5,7 +5,7 @@ from potmeter import Potentiometer
 from rgbled import RGBLED
 from sh1106 import SH1106_I2C
 from servo import Servo
-import _thread
+
 
 FerroFree = False
 PatientReturnedFromMRI = False
@@ -20,39 +20,13 @@ class States:
     Lockandclosedoor2State = 6  
     Unlockandopendoor2State = 7
 
-# Hardware Abstraction Layer
-class Hardware:
-    def __init__(self):
-        # Initialize hardware components
-        self.ledDoor2Lock = RGBLED(10, 11, 12)
-        self.ledDoor1Lock = RGBLED(2, 3, 4)
-        self.ledScanner = RGBLED(6, 7, 8)
-        self.Door1Motor = Servo(14)
-        self.Door2Motor = Servo(15)
-        self.Piezo = PWM(16)
-        self.FDSResetButton = Button(5)
-        self.EmergencyButton = Button(9)
-        self.FieldA = Button(18)
-        self.FieldB = Button(17)
-        self.Pot1 = Potentiometer(27)
 
-        # Initialize display
-        self.display = self._initialize_display()
-
-    def _initialize_display(self):
-        # Initialize OLED display
-        scl_pin, sda_pin = Pin(1), Pin(0)
-        OLEDi2c = I2C(0, scl=scl_pin, sda=sda_pin, freq=400000)
-        display = SH1106_I2C(128, 64, OLEDi2c, Pin(16), 0x3c, 180)
-        display.contrast(50)
-        return display
 
 # State Machine 
 class StateMachine:
     def __init__(self, hardware):
         self.hardware = hardware
         self.current_state = None
-        _thread.start_new_thread(self.CheckEmmergencyButton, ()) #Start thread to monitor emergency
 
     def start(self):
         self.current_state = InitialisationState(self.hardware)
@@ -69,14 +43,50 @@ class StateMachine:
                    self.current_state.execute_action()
            time.sleep(0.1)  # Add a small delay to prevent freeze-ups
 
-    def CheckEmmergencyButton(self):
-           while True:
-               if self.hardware.EmergencyButton.is_pressed():
-                   print("Emergency button pressed.")
-                   print("Transitioning to EmergencyState.")
-                   self.current_state = EmergencyState(self.hardware)
-                   self.current_state.enter_state()
-                   time.sleep(0.1)
+    def check_emergency_button(self):
+        while True:
+            if self.hardware.EmergencyButton.is_pressed():
+                print("Emergency button pressed.")
+                print("Transitioning to EmergencyState.")
+                self.current_state = EmergencyState(self.hardware)
+                self.current_state.enter_state()
+                return EmergencyState(self.hardware)
+
+# Hardware Abstraction Layer
+class Hardware:
+    def __init__(self):
+        # Initialize hardware components
+        self.ledDoor2Lock = RGBLED(10, 11, 12)
+        self.ledDoor1Lock = RGBLED(2, 3, 4)
+        self.ledScanner = RGBLED(6, 7, 8)
+        self.Door1Motor = Servo(14)
+        self.Door2Motor = Servo(15)
+        self.Piezo = PWM(16)
+        self.FDSResetButton = Button(5)
+        self.EmergencyButton = Button(9)
+        self.EmergencyButton.set_interrupt(trigger=Pin.IRQ_FALLING, callback=self.handle_emergency_button)
+        self.FieldA = Button(18)
+        self.FieldB = Button(17)
+        self.Pot1 = Potentiometer(27)
+
+        # Initialize display
+        self.display = self._initialize_display()
+
+    def _initialize_display(self):
+        # Initialize OLED display
+        scl_pin, sda_pin = Pin(1), Pin(0)
+        OLEDi2c = I2C(0, scl=scl_pin, sda=sda_pin, freq=400000)
+        display = SH1106_I2C(128, 64, OLEDi2c, Pin(16), 0x3c, 180)
+        display.contrast(50)
+        return display
+    
+    def handle_emergency_button(self, pin):
+        print("Emergency button pressed.")
+        print("Transitioning to EmergencyState.")
+        self.current_state = EmergencyState(self)
+        self.current_state.enter_state()
+        
+        
 #    States
 class StateBase:
     def __init__(self, hardware):
@@ -120,9 +130,9 @@ class InitialisationState(State):
         self.hardware.display.fill(0)
         self.hardware.display.text("-State: Init-", 0, 0, 1)
         self.hardware.display.show()
-        self.hardware.ledDoor2Lock.off() # Corrected method call
-        self.hardware.ledDoor1Lock.off() # Corrected method call
-        self.hardware.ledScanner.off()   # Corrected method call
+        self.hardware.ledDoor2Lock.off() 
+        self.hardware.ledDoor1Lock.off() 
+        self.hardware.ledScanner.off()   
         self.hardware.Door2Motor.set_angle(90)
         self.hardware.Door1Motor.set_angle(0)
     
@@ -299,9 +309,9 @@ class EmergencyState(State):
         else:
             return None
 
+
 if __name__ == "__main__":
     hardware = Hardware()
     machine = StateMachine(hardware)
     machine.start()
-    while True:
-        machine.update()
+    machine.update()
