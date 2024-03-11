@@ -5,7 +5,8 @@
     # geen global variables gebruiken
     # geen while True gebruiken
     # time sleep vermijden
-import time
+
+
 import sh1106
 from machine import Pin, I2C, PWM, ADC
 from servo import Servo
@@ -30,106 +31,75 @@ UNLOCK_AND_OPEN_DOOR2_STATE = 6
 LOCK_AND_CLOSE_DOOR2_STATE = 7
 EMERGENCY_STATE = 8
 
-# Global variables for state tracking
-ferro_free = False
-patient_returned_from_mri = False
-
-# Global variables for hardware components
-led_door2_lock = RGBLED(10, 11, 12)
-led_door1_lock = RGBLED(2, 3, 4)
-led_scanner = RGBLED(6, 7, 8)
-door1_motor = Servo(14)
-door2_motor = Servo(15)
-piezo = PWM(16)
-fds_reset_button = Pin(5, Pin.IN, Pin.PULL_UP)
-emergency_button = Pin(9, Pin.IN, Pin.PULL_UP)
-field_a = Pin(18, Pin.IN, Pin.PULL_UP)
-field_b = Pin(17, Pin.IN, Pin.PULL_UP)
-pot1 = ADC(27)
-
 # Display function
 def display_state_info(state_info):
     display.fill(0)
     display.text(state_info, 0, 0, 1)
     display.show()
 
-# Define the functions corresponding to each state
-def initialisation_state():
+# State functions
+def initialisation_state(led_door2_lock, led_door1_lock, door2_motor, door1_motor):
     display_state_info("-State: Init-")
-    led_door2_lock.off()
-    led_door1_lock.off()
-    led_scanner.off()
     door2_motor.set_angle(90)
     door1_motor.set_angle(0)
     return WAIT_FOR_USER_FIELD_A_STATE
 
-def wait_for_user_field_a_state():
+def wait_for_user_field_a_state(field_a, field_b, patient_returned_from_mri, led_door1_lock, door1_motor):
     display_state_info("-State: WFieldA-")
     if field_a.value() == 0 and field_b.value() == 1:
-        if not patient_returned_from_mri:
-            return lock_and_close_door1_state()
-        else:
-            return WAIT_FOR_USER_FIELD_B_STATE
+        return LOCK_AND_CLOSE_DOOR1_STATE if not patient_returned_from_mri else WAIT_FOR_USER_FIELD_B_STATE
     return WAIT_FOR_USER_FIELD_A_STATE
 
-def wait_for_user_field_b_state():
+def wait_for_user_field_b_state(field_a, field_b, patient_returned_from_mri, ferro_free, led_door2_lock, door2_motor):
     display_state_info("-State: WFieldB-")
     if field_a.value() == 1 and field_b.value() == 0:
         if not patient_returned_from_mri and ferro_free:
-            return unlock_and_open_door2_state()
+            return UNLOCK_AND_OPEN_DOOR2_STATE
         elif not patient_returned_from_mri and not ferro_free:
-            return ferrometal_detection_state()
+            return FERROMETAL_DETECTION_STATE
         elif patient_returned_from_mri:
             return WAIT_FOR_USER_FIELD_A_STATE
 
-def ferrometal_detection_state():
+def ferrometal_detection_state(pot1_value, ferro_free, led_scanner):
     display_state_info("-State: FerroD-")
-    pot_value = pot1.read_u16()
-    print("Potentiometer value:", pot_value)
-    if 0 <= pot_value < 40000:
+    if 0 <= pot1_value < 40000:
         led_scanner.set_color(0, 6000, 0)  # Green    
         ferro_free = True
-        time.sleep(1.5)
         return UNLOCK_AND_OPEN_DOOR2_STATE
-    elif 40000 <= pot_value <= 66000:
+    elif 40000 <= pot1_value <= 66000:
         led_scanner.set_color(6000, 0, 0)  # Red 
         return UNLOCK_AND_OPEN_DOOR1_STATE
 
-def unlock_and_open_door1_state():
+def unlock_and_open_door1_state(led_door1_lock, door1_motor):
     display_state_info("-State: Open1-")
-    time.sleep(2)
     door1_motor.set_angle(0)
     led_door1_lock.set_color(0, 6000, 0)
-    led_scanner.off()
-    time.sleep(2)
     return WAIT_FOR_USER_FIELD_A_STATE
 
-def lock_and_close_door1_state():
+def lock_and_close_door1_state(led_door1_lock, door1_motor):
     display_state_info("-State: Lock1-")
     door1_motor.set_angle(90)
     led_door1_lock.set_color(6000, 0, 0)
     return LOCK_AND_CLOSE_DOOR2_STATE
 
-def unlock_and_open_door2_state():
+def unlock_and_open_door2_state(led_door2_lock, door2_motor):
     display_state_info("-State: Open2-")
     door2_motor.set_angle(0)
     led_door2_lock.set_color(0, 6000, 0)
-    led_scanner.off()
-    time.sleep(2)
     return WAIT_FOR_USER_FIELD_B_STATE
 
-def lock_and_close_door2_state():
+def lock_and_close_door2_state(led_door2_lock, door2_motor, patient_returned_from_mri, ferro_free):
     display_state_info("-State: Lock2-")
     door2_motor.set_angle(90)
     led_door2_lock.set_color(6000, 0, 0)
     if patient_returned_from_mri:
         patient_returned_from_mri = False
         ferro_free = False
-        return unlock_and_open_door1_state()
-    elif not patient_returned_from_mri:
+        return UNLOCK_AND_OPEN_DOOR1_STATE
+    else:
         return WAIT_FOR_USER_FIELD_B_STATE
 
-def emergency_state():
+def emergency_state(led_door1_lock, led_door2_lock, led_scanner, door1_motor, door2_motor):
     display_state_info("-State: Emergency-")
     door1_motor.set_angle(0)
     door2_motor.set_angle(0)
@@ -137,45 +107,56 @@ def emergency_state():
     led_door2_lock.set_color(0, 0, 6000)
     led_scanner.set_color(0, 0, 6000)
 
-# Define the state machine
+# Main function
 def run():
-    state = initialisation_state()
+    # Hardware components initialization
+    led_door2_lock = RGBLED(10, 11, 12)
+    led_door1_lock = RGBLED(2, 3, 4)
+    led_scanner = RGBLED(6, 7, 8)
+    door1_motor = Servo(14)
+    door2_motor = Servo(15)
+    piezo = PWM(16)
+    fds_reset_button = Pin(5, Pin.IN, Pin.PULL_UP)
+    emergency_button = Pin(9, Pin.IN, Pin.PULL_UP)
+    field_a = Pin(18, Pin.IN, Pin.PULL_UP)
+    field_b = Pin(17, Pin.IN, Pin.PULL_UP)
+    pot1 = ADC(27)
+    
+    state = initialisation_state(led_door2_lock, led_door1_lock, door2_motor, door1_motor)
 
     while True:
-        print("Current State:", state)
+        field_a_value = field_a.value()
+        field_b_value = field_b.value()
+        pot1_value = pot1.read_u16()
 
         if state == WAIT_FOR_USER_FIELD_A_STATE:
-            state = wait_for_user_field_a_state()
+            state = wait_for_user_field_a_state(field_a, field_b, patient_returned_from_mri, led_door1_lock, door1_motor)
 
         elif state == WAIT_FOR_USER_FIELD_B_STATE:
-            state = wait_for_user_field_b_state()
+            state = wait_for_user_field_b_state(field_a, field_b, patient_returned_from_mri, ferro_free, led_door2_lock, door2_motor)
 
         elif state == FERROMETAL_DETECTION_STATE:
-            state = ferrometal_detection_state()
+            state = ferrometal_detection_state(pot1_value, ferro_free, led_scanner)
 
         elif state == UNLOCK_AND_OPEN_DOOR1_STATE:
-            state = unlock_and_open_door1_state()
+            state = unlock_and_open_door1_state(led_door1_lock, door1_motor)
 
         elif state == LOCK_AND_CLOSE_DOOR1_STATE:
-            state = lock_and_close_door1_state()
+            state = lock_and_close_door1_state(led_door1_lock, door1_motor)
 
         elif state == UNLOCK_AND_OPEN_DOOR2_STATE:
-            state = unlock_and_open_door2_state()
+            state = unlock_and_open_door2_state(led_door2_lock, door2_motor)
 
         elif state == LOCK_AND_CLOSE_DOOR2_STATE:
-            state = lock_and_close_door2_state()
+            state = lock_and_close_door2_state(led_door2_lock, door2_motor, patient_returned_from_mri, ferro_free)
 
         elif state == EMERGENCY_STATE:
-            emergency_state()
+            emergency_state(led_door1_lock, led_door2_lock, led_scanner, door1_motor, door2_motor)
             break  # Exit the loop
 
         else:
             print("Invalid state")
             state = INITIALISATION_STATE
 
-# Main function
-def main():
-    run()
-
 if __name__ == "__main__":
-    main()
+    run()
