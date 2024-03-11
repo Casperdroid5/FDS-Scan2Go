@@ -5,8 +5,16 @@ import sh1106
 from servo import Servo
 
 
-
-
+class States:
+    InitialisationState = 0
+    WaitForUserFieldAState = 1  
+    WaitForUserFieldBState = 2
+    FerrometalDetectionState = 3    
+    Lockandclosedoor1State = 4  
+    Unlockandopendoor1State = 5     
+    Lockandclosedoor2State = 6  
+    Unlockandopendoor2State = 7
+    EmergencyState = 8
 
     # Global variables for hardware components
     ledDoor2Lock = RGBLED(10, 11, 12)
@@ -47,30 +55,8 @@ from servo import Servo
     display.fill(0)
     display.show()
 
-
-main()
-    door = pin(xxx)
-    
-    while1
-        print(state)  
-        Switch (State):  
-            case: WaitForUserFieldAState:
-                if check_userbfield(door, sensor1, sensor2) == True: 
-                    state=WaitForUserFieldBState
-                    
-            Case: WaitForUserFieldBState:
-                update_FerrometalDetectionState()
-            case: FerrometalDetectionState:
-            # if ferro=0 then open door #do not do
-                ferro_handler() #maar 1 keer
-                state=WaitForUserFieldBState
-            case: errorstate:
-                error_handler()
-
-
-    
-# Initial state
-state = "WaitForUserFieldAState"
+#States
+state = "WaitForUserFieldAState" # Initial state
 
 def initialize_hardware():
     # Your hardware initialization code goes here
@@ -96,7 +82,7 @@ def error_handler():
     # Your implementation of error_handler
     pass
 
-
+#StateMachine
 while True:
     print(state)
     
@@ -125,16 +111,9 @@ while True:
 # End of while loop
 
 
-reset_irq_handler():
-    state=resetstate
-            
-ferro_handler()
-    if ferro=0 then
-        door.open()
-    else: pass
-    return
 
-    def handle_emergency_button(self, _):
+
+    def handle_emergency_button():
 
         global EmergencyButtonFlag
         print (EmergencyButtonFlag)
@@ -142,22 +121,22 @@ ferro_handler()
         print (EmergencyButtonFlag)
         print("Emergency button pressed.")
         print("Transitioning to EmergencyState.")
-        self.current_state = EmergencyState(self)
-        self.current_state.enter_state()
+        .current_state = EmergencyState()
+        .current_state.enter_state()
         while state is not resumefromemerghency():
         
-    def handle_reset_button(self, _):
+    def handle_reset_button():
         print("Reset button pressed.")
         print("Transitioning to InitialisationState.")
-        self.current_state = InitialisationState(self)
-        self.current_state.enter_state()    
+        .current_state = InitialisationState()
+        .current_state.enter_state()    
 
 
 class InitialisationState(State):
-    def __init__(self, hardware):
+    def __init__(, hardware):
         super().__init__(hardware)
         
-    def enter_state(self):
+    def enter_state():
        display.fill(0)
        display.text("-State: Init-", 0, 0, 1)
        display.show()
@@ -167,65 +146,65 @@ class InitialisationState(State):
        Door2Motor.set_angle(90)
        Door1Motor.set_angle(0)
     
-    def check_transition(self):
+    def check_transition():
         print("Transitioning to WaitForUserFieldAState")        
-        return WaitForUserFieldAState(self.hardware)
+        return WaitForUserFieldAState(.hardware)
 
 class WaitForUserFieldAState(State):
-    def __init__(self, hardware):
+    def __init__(, hardware):
         super().__init__(hardware)
         
-    def enter_state(self):
+    def enter_state():
        display.fill(0)
        display.text("-State: WFieldA-", 0, 0, 1)
        display.show()
 
-    def check_transition(self):
+    def check_transition():
         global PatientReturnedFromMRI
         ifFieldA.value() == 0 andFieldB.value() == 1: 
             if not PatientReturnedFromMRI:
                 print("Transitioning to Lockandclosedoor1State")
-                return Lockandclosedoor1State(self.hardware)
+                return Lockandclosedoor1State(.hardware)
             else:
                 print("Transitioning to Lockandclosedoor2State")
-                return Lockandclosedoor2State(self.hardware)
+                return Lockandclosedoor2State(.hardware)
         else:
             return None
 
 class WaitForUserFieldBState(State):
-    def __init__(self, hardware):
+    def __init__(, hardware):
         super().__init__(hardware)
         
-    def enter_state(self):
+    def enter_state():
        display.fill(0)
        display.text("-State: WFieldB-", 0, 0, 1)
        display.show()
 
-    def check_transition(self):
+    def check_transition():
         global FerroFree, PatientReturnedFromMRI
         ifFieldA.value() == 1 andFieldB.value() == 0:
             if not PatientReturnedFromMRI and FerroFree:
                 print("Transitioning to Unlockandopendoor2State")
-                return Unlockandopendoor2State(self.hardware)
+                return Unlockandopendoor2State(.hardware)
             elif not PatientReturnedFromMRI and not FerroFree:
                 print("Transitioning to FerrometalDetectionState")
-                return FerrometalDetectionState(self.hardware)
+                return FerrometalDetectionState(.hardware)
             elif PatientReturnedFromMRI:
                 print("Transitioning to WaitForUserFieldAState")
-                return WaitForUserFieldAState(self.hardware)
+                return WaitForUserFieldAState(.hardware)
         else:
             return None
 
 class FerrometalDetectionState(State):
-    def __init__(self, hardware):
+    def __init__(, hardware):
         super().__init__(hardware)
 
-    def enter_state(self):
+    def enter_state():
        display.fill(0)
        display.text("-State: FerroD-", 0, 0, 1)
        display.show()
 
-    def check_transition(self):
+    def check_transition():
         global FerroFree # Import global variable
         print("Checking transition in FerrometalDetection")
         pot_value =Pot1.read_u16()  # Read potentiometer pin
@@ -235,32 +214,32 @@ class FerrometalDetectionState(State):
             print("Transitioning to Unlockandopendoor2State")
             FerroFree = True
             time.sleep(1.5)
-            return Unlockandopendoor2State(self.hardware)
+            return Unlockandopendoor2State(.hardware)
         elif 40000 <= pot_value <= 66000:
            ledScanner.set_color(6000, 0, 0)  # Red 
             print("Transitioning to Unlockandopendoor1State")      
-            return Unlockandopendoor1State(self.hardware)
+            return Unlockandopendoor1State(.hardware)
 
 class Lockandclosedoor1State(State):
-    def __init__(self, hardware):
+    def __init__(, hardware):
         super().__init__(hardware)
         
-    def enter_state(self):
+    def enter_state():
        display.fill(0)
        display.text("-State: Lock1-", 0, 0, 1)
        display.show()
        Door1Motor.set_angle(90)
        ledDoor1Lock.set_color(6000, 0, 0)  # Red - indicating door closed
     
-    def check_transition(self):
+    def check_transition():
         print("Transitioning to Lockandclosedoor2State")   
-        return Lockandclosedoor2State(self.hardware)    
+        return Lockandclosedoor2State(.hardware)    
 
 class Unlockandopendoor1State(State):
-    def __init__(self, hardware):
+    def __init__(hardware):
         super().__init__(hardware)
 
-    def enter_state(self):
+    def enter_state():
        display.fill(0)
        display.text("-State: Open1-", 0, 0, 1)
        display.show()
@@ -269,15 +248,15 @@ class Unlockandopendoor1State(State):
        ledDoor1Lock.set_color(0, 6000, 0)  # Green - indicating door opened
        ledScanner.off()  #LED OFF
         time.sleep(2) # wait for visual effect
-    def check_transition(self):
+    def check_transition():
         print("Transitioning to WaitForUserFieldAState")
-        return WaitForUserFieldAState(self.hardware)  
+        return WaitForUserFieldAState(hardware)  
     
 class Lockandclosedoor2State(State):
-    def __init__(self, hardware):
+    def __init__(, hardware):
         super().__init__(hardware)
         
-    def enter_state(self):
+    def enter_state():
 
        display.fill(0)
        display.text("-State: Lock2-", 0, 0, 1)
@@ -286,23 +265,23 @@ class Lockandclosedoor2State(State):
        ledDoor2Lock.set_color(6000, 0, 0)  # Red - indicating door closed
        ledScanner.off()  #LED OFF
 
-    def check_transition(self):
+    def check_transition():
         global PatientReturnedFromMRI
         global FerroFree
         if PatientReturnedFromMRI == True:
             print("Transitioning to Unlockandopendoor1State")
             PatientReturnedFromMRI = False
             FerroFree = False
-            return Unlockandopendoor1State(self.hardware)       
+            return Unlockandopendoor1State(.hardware)       
         elif PatientReturnedFromMRI == False:
             print("Transitioning to WaitForUserFieldBState")
-            return WaitForUserFieldBState(self.hardware)
+            return WaitForUserFieldBState(.hardware)
 
 class Unlockandopendoor2State(State):
-    def __init__(self, hardware):
+    def __init__(hardware):
         super().__init__(hardware)
 
-    def enter_state(self):
+    def enter_state():
         global PatientReturnedFromMRI 
         PatientReturnedFromMRI = True
        display.fill(0)
@@ -313,16 +292,16 @@ class Unlockandopendoor2State(State):
        ledScanner.off()  #LED OFF
         time.sleep(2) # wait with closing door for visual effect
         
-    def check_transition(self):
+    def check_transition():
         print("Transitioning to WaitForUserFieldBState")
-        return WaitForUserFieldBState(self.hardware)
+        return WaitForUserFieldBState(hardware)
 
 class EmergencyState(State):
 
-    def __init__(self, hardware):
+    def __init__(hardware):
         super().__init__(hardware)
 
-    def enter_state(self):
+    def enter_state():
        display.fill(0)
        display.text("-State: Emergency-", 0, 0, 1)
        display.show()
@@ -333,7 +312,7 @@ class EmergencyState(State):
        ledScanner.set_color(0, 0, 6000)  # Blue
         
 
-    def check_transition(self): 
+    def check_transition(): 
         return None
 
 main()
