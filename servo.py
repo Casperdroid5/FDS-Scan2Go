@@ -1,6 +1,6 @@
 from machine import PWM
 
-class Servo:
+class ServoMotor:
     def __init__(self, pin_number):
         self.pwm = PWM(pin_number)
         self.pwm.freq(50)  # Set PWM frequency to 50 Hz for servo control

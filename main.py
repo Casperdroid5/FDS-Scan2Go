@@ -5,11 +5,14 @@
     # geen global variables gebruiken
     # geen while True gebruiken
     # time sleep vermijden
+    # klasses gebruiken voor hardware
+    # Alles functioneel, dus geen waardes in de code
+    
 
 
 import sh1106
 from machine import Pin, I2C, PWM, ADC
-from servo import Servo
+from servo import ServoMotor
 from rgbled import RGBLED
 
 # Initialize I2C bus
@@ -101,11 +104,23 @@ def lock_and_close_door2_state(led_door2_lock, door2_motor, patient_returned_fro
 
 def emergency_state(led_door1_lock, led_door2_lock, led_scanner, door1_motor, door2_motor):
     display_state_info("-State: Emergency-")
+    hw.door1.open()
     door1_motor.set_angle(0)
     door2_motor.set_angle(0)
     led_door1_lock.set_color(0, 0, 6000)
     led_door2_lock.set_color(0, 0, 6000)
     led_scanner.set_color(0, 0, 6000)
+
+class Door()
+    set_open()
+        set_color(0, 0, 6000)
+    
+
+class hw:
+    init():
+        self.door1=Door()
+        self.door2=Door()
+        self.door3=Door()
 
 # Main function
 def run():
