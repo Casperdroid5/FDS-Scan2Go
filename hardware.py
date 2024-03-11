@@ -1,10 +1,9 @@
 from machine import *
 from servo import ServoMotor
-from rgbled import RGBLED
+from rgbled import RGBLed
 from sh1106 import SH1106_I2C
 
-class rgb(RGBLED):
-    
+class rgb(RGBLed):
     def __init__(self, pin_blue, pin_green, pin_red):
         self.pin_red = PWM(Pin(pin_red, Pin.OUT))
         self.pin_green = PWM(Pin(pin_green, Pin.OUT))
@@ -47,21 +46,20 @@ class rgb(RGBLED):
 
 
 class Door(ServoMotor):
-    def __init__(self, pin_number):
-        self.pin_number = pin_number
+    def __init__(self, pin_number, angle_closed, angle_open):
+        self.servo = ServoMotor(Pin(pin_number)) 
+        self.pin_number = pin_number 
+        self.angle_open = angle_open # maximum opening angle
+        self.angle_closed = angle_closed # maximum closing angle
 
-    
     def Open(self): # Open the door
-        self.servo = ServoMotor(Pin)
-        self.servo.set_angle(0)   
-        
-    def Close(self):
-        self.servo = ServoMotor(Pin)
-        self.servo.set_angle(90)
+        self.servo.set_angle(self.angle_open)   # 0 is the angle to open the door
+
+    def Close(self): # Close the door
+        self.servo.set_angle(self.angle_closed)  # 90 is the angle to close the door
 
 
 class Display(SH1106_I2C):
-
     def __init__(self, width, height, i2c, reset, addr, contrast):
         self.display = SH1106_I2C(width, height, i2c, reset, addr, contrast)
         self.display_brightness_level = 100
@@ -70,4 +68,6 @@ class Display(SH1106_I2C):
         self.display.fill(0)
         self.display.text(state_info, 0, 0, 1)
         self.display.show()
+
+
 

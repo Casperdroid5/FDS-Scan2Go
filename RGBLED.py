@@ -1,6 +1,6 @@
 from machine import Pin, PWM
 
-class RGBLED:
+class RGBLed:
     def __init__(self, pin_blue, pin_green, pin_red):
         self.pin_red = PWM(Pin(pin_red, Pin.OUT))
         self.pin_green = PWM(Pin(pin_green, Pin.OUT))
