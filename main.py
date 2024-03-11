@@ -2,115 +2,96 @@ import time
 from machine import Pin, I2C, PWM, ADC
 from rgbled import RGBLED
 import sh1106
-from servo import Servo
 
+# Global variables for hardware components
+ledDoor2Lock = RGBLED(10, 11, 12)
+ledDoor1Lock = RGBLED(2, 3, 4)
+ledScanner = RGBLED(6, 7, 8)
+Door1Motor = Servo(14)
+Door2Motor = Servo(15)
+Piezo = PWM(16)
+FDSResetButton = Pin(5, Pin.IN, Pin.PULL_UP)
+EmergencyButton = Pin(9, Pin.IN, Pin.PULL_UP)
+FieldA = Pin(18, Pin.IN, Pin.PULL_UP)
+FieldB = Pin(17, Pin.IN, Pin.PULL_UP)
+Pot1 = ADC(27)
 
-class States:
-    InitialisationState = 0
-    WaitForUserFieldAState = 1  
-    WaitForUserFieldBState = 2
-    FerrometalDetectionState = 3    
-    Lockandclosedoor1State = 4  
-    Unlockandopendoor1State = 5     
-    Lockandclosedoor2State = 6  
-    Unlockandopendoor2State = 7
-    EmergencyState = 8
+# Define the pins for I2C communication
+scl_pin, sda_pin = Pin(1), Pin(0)
+# Initialize I2C bus
+i2c = I2C(0, scl=scl_pin, sda=sda_pin, freq=400000)
+# Create SH1106 display object
+display = sh1106.SH1106_I2C(128, 64, i2c, Pin(16), 0x3c, 180)
+OLEDbrightnesslevel = 100
 
-    # Global variables for hardware components
-    ledDoor2Lock = RGBLED(10, 11, 12)
-    ledDoor1Lock = RGBLED(2, 3, 4)
-    ledScanner = RGBLED(6, 7, 8)
-    Door1Motor = Servo(14)
-    Door2Motor = Servo(15)
-    Piezo = PWM(16)
-    FDSResetButton = Pin(5, Pin.IN, Pin.PULL_UP)
-    EmergencyButton = Pin(9, Pin.IN, Pin.PULL_UP)
-    FieldA = Pin(18, Pin.IN, Pin.PULL_UP)
-    FieldB = Pin(17, Pin.IN, Pin.PULL_UP)
-    Pot1 = ADC(27)
-
-
-    # Define the pins for I2C communication
-    scl_pin, sda_pin = Pin(1), Pin(0)
-
-    # Initialize I2C bus
-    i2c = I2C(0, scl=scl_pin, sda=sda_pin, freq=400000)
-
-    # Create SH1106 display object
-    display = sh1106.SH1106_I2C(128, 64, i2c, Pin(16), 0x3c, 180)
-    OLEDbrightnesslevel = 100
-
-    # Turn off sleep mode, clear the display, and display text
-    display.sleep(False)
-    display.fill(0)
-    display.text('Testing, testing', 0, 0, 1) # (text, x, y, color)
-    display.text('1,2,3', 0,10,1)
-    display.contrast(OLEDbrightnesslevel) #brightness 0-255
-
-    # Update the display and pause for 3 seconds
-    display.show()
-    time.sleep(3)
-
-    # Clear the display and update it
-    display.fill(0)
-    display.show()
-
-#States
-state = "WaitForUserFieldAState" # Initial state
-
-def initialize_hardware():
+# Define the functions corresponding to each state
+def initialisation_state():
     # Your hardware initialization code goes here
     pass
 
-def handle_emergency_button(pin):
+def wait_for_user_field_a_state():
     # Handle the emergency button press
     pass
 
-def check_userbfield(door, sensor1, sensor2):
+def wait_for_user_field_b_state():
     # Your implementation of check_userbfield
     pass
 
-def update_FerrometalDetectionState():
+def ferrometal_detection_state():
     # Your implementation of update_FerrometalDetectionState
     pass
 
-def ferro_handler():
-    # Your implementation of ferro_handler
+def unlock_and_open_door1_state():
+    # Your implementation of unlocking and opening door 1
     pass
 
-def error_handler():
-    # Your implementation of error_handler
+def lock_and_close_door1_state():
+    # Your implementation of locking and closing door 1
     pass
 
-#StateMachine
+def unlock_and_open_door2_state():
+    # Your implementation of unlocking and opening door 2
+    pass
+
+def lock_and_close_door2_state():
+    # Your implementation of locking and closing door 2
+    pass
+
+def emergency_state():
+    # Your implementation of handling emergency state
+    pass
+
+# Define a dictionary mapping each state to its corresponding function
+state_functions = {
+    "InitialisationState": initialisation_state,
+    "WaitForUserFieldAState": wait_for_user_field_a_state,
+    "WaitForUserFieldBState": wait_for_user_field_b_state,
+    "FerrometalDetectionState": ferrometal_detection_state,
+    "Unlockandopendoor1State": unlock_and_open_door1_state,
+    "Lockandclosedoor1State": lock_and_close_door1_state,
+    "Unlockandopendoor2State": unlock_and_open_door2_state,
+    "Lockandclosedoor2State": lock_and_close_door2_state,
+    "EmergencyState": emergency_state
+}
+
+# Initial state
+state = "WaitForUserFieldAState" # Initial state
+
+# State machine loop
 while True:
     print(state)
     
+    # Call the corresponding function for the current state
+    state_functions[state]()
+    
+    # Example of state transition
     if state == "WaitForUserFieldAState":
         if check_userbfield(door, sensor1, sensor2):
             state = "WaitForUserFieldBState"
             
-    elif state == "WaitForUserFieldBState":
-        update_FerrometalDetectionState()
-        state = "FerrometalDetectionState"
-        
-    elif state == "FerrometalDetectionState":
-        ferro_handler()  # Assuming this function handles ferrometal detection
-        state = "WaitForUserFieldBState"  # Transition back to WaitForUserFieldBState
-        
-    elif state == "errorstate":
-        error_handler()
-        # Reset to an empty state machine
-        state = "empty"
-        break  # Exit the loop
-
-    # Add more cases as needed
-
-    # Handle transitions and actions for other states
+    # Add more transitions as needed
 
 # End of while loop
-
-
 
 
     def handle_emergency_button():
@@ -236,7 +217,7 @@ class Lockandclosedoor1State(State):
         return Lockandclosedoor2State(.hardware)    
 
 class Unlockandopendoor1State(State):
-    def __init__(hardware):
+    def __init__(, hardware):
         super().__init__(hardware)
 
     def enter_state():
