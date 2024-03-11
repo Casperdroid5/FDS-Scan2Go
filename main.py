@@ -1,7 +1,11 @@
 import time
-from machine import Pin, I2C, PWM, ADC
-from rgbled import RGBLED
 import sh1106
+from machine import Pin, I2C, PWM, ADC
+from servo import Servo
+from rgbled import RGBLED
+
+FerroFree = False
+PatientReturnedFromMRI = False
 
 # Global variables for hardware components
 ledDoor2Lock = RGBLED(10, 11, 12)
@@ -24,9 +28,20 @@ i2c = I2C(0, scl=scl_pin, sda=sda_pin, freq=400000)
 display = sh1106.SH1106_I2C(128, 64, i2c, Pin(16), 0x3c, 180)
 OLEDbrightnesslevel = 100
 
+# Define integer constants for states
+INITIALISATION_STATE = 0
+WAIT_FOR_USER_FIELD_A_STATE = 1
+WAIT_FOR_USER_FIELD_B_STATE = 2
+FERROMETAL_DETECTION_STATE = 3
+UNLOCK_AND_OPEN_DOOR1_STATE = 4
+LOCK_AND_CLOSE_DOOR1_STATE = 5
+UNLOCK_AND_OPEN_DOOR2_STATE = 6
+LOCK_AND_CLOSE_DOOR2_STATE = 7
+EMERGENCY_STATE = 8
+
 
 # Define the functions corresponding to each state
-def initialisation_state():
+def initialisation_state(): 
     display.fill(0)
     display.text("-State: Init-", 0, 0, 1)
     display.show()
@@ -36,29 +51,32 @@ def initialisation_state():
     Door2Motor.set_angle(90)
     Door1Motor.set_angle(0)    
 
-def wait_for_user_field_a_state():
+
+def WaitForUserFieldAState(): 
     display.fill(0)
     display.text("-State: WFieldA-", 0, 0, 1)
     display.show()
     if FieldA.value() == 0 and FieldB.value() == 1: 
         if not PatientReturnedFromMRI:
-            return lock_and_close_door1_state()
+            return True
         else:
-            return lock_and_close_door2_state()     
+            return False     
 
-def wait_for_user_field_b_state():
+
+def WaitForUserFieldBState():
     display.fill(0)
     display.text("-State: WFieldB-", 0, 0, 1)
     display.show()
     if FieldA.value() == 1 and FieldB.value() == 0:
         if not PatientReturnedFromMRI and FerroFree:
-            return unlock_and_open_door2_state()
+            return UnlockAndOpenDoor2State()
         elif not PatientReturnedFromMRI and not FerroFree:
-            return ferrometal_detection_state()
+            return FerrometalDetectionState()
         elif PatientReturnedFromMRI:
-            return wait_for_user_field_a_state()    
+            return WaitForUserFieldAState()    
 
-def ferrometal_detection_state():
+
+def FerrometalDetectionState():
     display.fill(0)
     display.text("-State: FerroD-", 0, 0, 1)
     display.show()
@@ -68,12 +86,13 @@ def ferrometal_detection_state():
         ledScanner.set_color(0, 6000, 0)  # Green    
         FerroFree = True
         time.sleep(1.5)
-        return unlock_and_open_door2_state()
+        return UnlockAndOpenDoor2State()
     elif 40000 <= pot_value <= 66000:
         ledScanner.set_color(6000, 0, 0)  # Red 
-        return unlock_and_open_door1_state()    
+        return UnlockAndOpenDoor1State()    
 
-def unlock_and_open_door1_state():
+
+def UnlockAndOpenDoor1State():
     display.fill(0)
     display.text("-State: Open1-", 0, 0, 1)
     display.show()
@@ -82,19 +101,19 @@ def unlock_and_open_door1_state():
     ledDoor1Lock.set_color(0, 6000, 0)  # Green - indicating door opened
     ledScanner.off()  #LED OFF
     time.sleep(2) # wait for visual effect
-    return wait_for_user_field_a_state()
+    return WaitForUserFieldAState()
 
 
-def lock_and_close_door1_state():
+def LockAndCloseDoor1State():
     display.fill(0)
     display.text("-State: Lock1-", 0, 0, 1)
     display.show()
     Door1Motor.set_angle(90)
     ledDoor1Lock.set_color(6000, 0, 0)  # Red - indicating door closed
-    return lock_and_close_door2_state()
+    return LockAndCloseDoor2State()
 
 
-def unlock_and_open_door2_state():
+def UnlockAndOpenDoor2State():
     display.fill(0)
     display.text("-State: Open2-", 0, 0, 1)
     display.show()
@@ -102,9 +121,13 @@ def unlock_and_open_door2_state():
     ledDoor2Lock.set_color(0, 6000, 0)  # Green - indicating door opened
     ledScanner.off()  #LED OFF
     time.sleep(2) # wait with closing door for visual effect
-    return wait_for_user_field_b_state()
+    return WaitForUserFieldBState()
 
-def lock_and_close_door2_state():
+
+def LockAndCloseDoor2State():
+    global PatientReturnedFromMRI
+    global FerroFree
+    
     display.fill(0)
     display.text("-State: Lock2-", 0, 0, 1)
     display.show()
@@ -112,14 +135,14 @@ def lock_and_close_door2_state():
     ledDoor2Lock.set_color(6000, 0, 0)  # Red - indicating door closed
     ledScanner.off()  #LED OFF
     if PatientReturnedFromMRI == True:
-        PatientReturnedFromMRI = False
-        FerroFree = False
-        return unlock_and_open_door1_state()
+        PatientReturnedFromMRI = False # set flag to false
+        FerroFree = False # set flag to false   
+        return UnlockAndOpenDoor1State()
     elif PatientReturnedFromMRI == False:
-        return wait_for_user_field_b_state()
-    
+        return WaitForUserFieldBState()
 
-def emergency_state():
+
+def EmergencyState():
     display.fill(0)
     display.text("-State: Emergency-", 0, 0, 1)
     display.show()
@@ -132,38 +155,41 @@ def emergency_state():
 
 # Define the state machine
 def run():
-    state = States.WaitForUserFieldAState
+    state = WaitForUserFieldAState
 
     while True:
-        print("Current State:", state.name)
+        print("Current State:", state)
 
-        match state:
-            case States.WaitForUserFieldAState:
-                if check_userbfield():
-                    state = States.WaitForUserFieldBState
+        if state == WaitForUserFieldAState:
+            WaitForUserFieldAState()
+            state = WaitForUserFieldBState
 
-            case States.WaitForUserFieldBState:
-                update_FerrometalDetectionState()
-                state = States.FerrometalDetectionState
+        elif state == WaitForUserFieldBState:
+            FerrometalDetectionState()
+            state = FerrometalDetectionState
 
-            case States.FerrometalDetectionState:
-                ferro_handler()
-                state = States.WaitForUserFieldBState
+        elif state == FerrometalDetectionState:
+            FerrometalDetectionState()
+            state = WaitForUserFieldBState
 
-            case States.EmergencyState:
-                error_handler()
-                state = States.InitialisationState
-                break  # Exit the loop
+        elif state == EmergencyState:
+            EmergencyState()
+            state = InitialisationState
+            break  # Exit the loop
 
         # Implement transitions and actions for other states
 
         # Handle transitions and actions for other states
 
-main()
-    hardware = Hardware()
-    machine = StateMachine(hardware)
-    machine.start()
-    machine.update()
+
+def main():
+    # Initialize the state machine
+    run()
+
+    # Main loop
+    while True:
+        pass
+
     
 
 if __name__ == "__main__":
