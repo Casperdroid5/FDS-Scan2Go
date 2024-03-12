@@ -1,4 +1,4 @@
-import sh1106
+from sh1106 import SH1106_I2C
 import time 
 from machine import Pin, I2C
 
@@ -8,8 +8,7 @@ scl_pin, sda_pin = Pin(1), Pin(0)
 # Initialize I2C bus
 i2c = I2C(0, scl=scl_pin, sda=sda_pin, freq=400000)
 
-# Create SH1106 display object
-display = sh1106.SH1106_I2C(128, 64, i2c, Pin(16), 0x3c, 180)
+display = SH1106_I2C(128, 64, i2c, Pin(16), 0x3c, 180)
 OLEDbrightnesslevel = 100
 
 # Turn off sleep mode, clear the display, and display text

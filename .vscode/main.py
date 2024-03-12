@@ -6,8 +6,13 @@
     # time sleep vermijden
     # Alles functioneel, dus liever geen waardes in de code
 
-from machine import *
-from hardware_s2g import rgb, Door, Oled
+from machine import Pin, ADC, I2C   
+from hardware_s2g import rgb, Door, OledScreen
+print("a")
+
+print("b")
+print("b")
+import time
 
 # Variables 
 AngleOpen = 90 
@@ -17,12 +22,7 @@ patient_returned_from_mri = False
 
 class StateMachine:
     def __init__(self):
-        # Initialize I2C bus
-        scl_pin, sda_pin = Pin(1), Pin(0)
-        i2c = I2C(0, scl=scl_pin, sda=sda_pin, freq=400000)
-
-        # Create SH1106 display object
-        self.display = Oled(128, 64, i2c, 0x3c)
+        # Initialize the 
 
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
@@ -36,7 +36,7 @@ class StateMachine:
         self.EMERGENCY_STATE = 8
 
         # Initialize hardware components
-        self.Door2State = rgb(10, 11, 12)
+        self.Door2State = rgb(10, 11, 12) 
         self.Door1State = rgb(2, 3, 4)
         self.FerroDetectLED = rgb(6, 7, 8)
         self.Door1 = Door(14, AngleClosed, AngleOpen)
@@ -44,26 +44,32 @@ class StateMachine:
         self.Pot1 = ADC(27)
         self.field_a = Pin(18, Pin.IN, Pin.PULL_UP)
         self.field_b = Pin(17, Pin.IN, Pin.PULL_UP)
-        
-# Functions
-    def display_state_info(self, state_info):
-        self.display.DisplayStateInfo("-State: " + state_info + "-")
 
+        print("1")
+
+        # Initialize Display
+        scl_pin, sda_pin = Pin(1), Pin(0)
+        i2c = I2C(0, scl=scl_pin, sda=sda_pin, freq=400000)
+        print("2")
+        print("10")
+        
 # State Functions
     def initialisation_state(self):
-        self.display_state_info("Init")
+        print("Initialisation")
+        # self.Oled1.DisplayStateInfo("HET WERKT", 10)  # Add a placeholder argument for the "y" parameter
         self.Door2.Open()
         self.Door1.Open()
-        return self.WAIT_FOR_USER_FIELD_A_STATE
+        time.sleep(3)
+        return 0
 
     def wait_for_user_field_a_state(self):
-        self.display_state_info("WFieldA")
+        # self.Oled1.DisplayStateInfo("WFieldA", 10)
         if self.field_a.value() == 0 and self.field_b.value() == 1:
             return self.LOCK_AND_CLOSE_DOOR1_STATE if not self.patient_returned_from_mri else self.WAIT_FOR_USER_FIELD_B_STATE
         return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def wait_for_user_field_b_state(self):
-        self.display_state_info("WFieldB")
+        # self.Oled1.DisplayStateInfo("WFieldB", 10)
         if self.field_a.value() == 1 and self.field_b.value() == 0:
             if not self.patient_returned_from_mri and self.ferro_free:
                 return self.UNLOCK_AND_OPEN_DOOR2_STATE
@@ -73,7 +79,7 @@ class StateMachine:
                 return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def ferrometal_detection_state(self):
-        self.display_state_info("FerroD")
+        # self.Oled1.DisplayStateInfo("FerroD", 10)
         pot_value = self.Pot1.read_u16()
         if 0 <= pot_value < 40000:
             self.FerroDetectLED.Setcolor("green")  # Green
@@ -84,25 +90,25 @@ class StateMachine:
             return self.UNLOCK_AND_OPEN_DOOR1_STATE
 
     def unlock_and_open_door1_state(self):
-        self.display_state_info("Open1")
+        # self.Oled1.DisplayStateInfo("Open1", 10)
         self.Door1.Open()
         self.Door1State.Setcolor("green")
         return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def lock_and_close_door1_state(self):
-        self.display_state_info("Lock1")
+        # self.Oled1.DisplayStateInfo("Lock1", 10)
         self.Door1.Open()
         self.Door1State.Setcolor("red")  # Set the color to red
         return self.LOCK_AND_CLOSE_DOOR2_STATE
 
     def unlock_and_open_door2_state(self):
-        self.display_state_info("Open2")
+        # self.Oled1.DisplayStateInfo("Open2", 10)
         self.Door2.Open()
         self.Door2State.Setcolor("green")
         return self.WAIT_FOR_USER_FIELD_B_STATE
 
     def lock_and_close_door2_state(self):
-        self.display_state_info("Lock2")
+        # self.Oled1.DisplayStateInfo("Lock2", 10)
         self.Door2.Open()
         self.Door2State.Setcolor("red")
         if self.patient_returned_from_mri:
@@ -113,7 +119,7 @@ class StateMachine:
             return self.WAIT_FOR_USER_FIELD_B_STATE
 
     def emergency_state(self):
-        self.display_state_info("Emergency")
+        # self.Oled1.DisplayStateInfo("Emergency", 10)
         self.Door1.Open()
         self.Door2.Open()
         self.Door1State.Setcolor("blue")
@@ -153,6 +159,9 @@ class StateMachine:
                 print("Invalid state")
                 state = self.INITIALISATION_STATE
 
+
 if __name__ == "__main__":
+    
     FDS = StateMachine()
     FDS.run()
+    

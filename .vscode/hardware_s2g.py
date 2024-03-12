@@ -1,7 +1,8 @@
-from machine import *
+from machine import Pin, PWM
 from servo import ServoMotor
 from rgbled import RGBLed
 from sh1106 import SH1106_I2C
+
 
 class rgb(RGBLed):
     def __init__(self, pin_blue, pin_green, pin_red):
@@ -35,7 +36,7 @@ class rgb(RGBLed):
             "white": (65535, 65535, 65535),
             "off": (0, 0, 0)
         }
-        
+
         if color.lower() in colors:
             red, green, blue = colors[color.lower()]
             self.pin_red.duty_u16(red)
@@ -59,15 +60,18 @@ class Door(ServoMotor):
         self.servo.set_angle(self.angle_closed)  # 90 is the angle to close the door
 
 
-class Display(SH1106_I2C):
-    def __init__(self, width, height, i2c, reset, addr, contrast):
-        self.display = SH1106_I2C(width, height, i2c, reset, addr, contrast)
-        self.display_brightness_level = 100
+class OledScreen():
+    def __init__(self, width, height, i2c, res=None, addr=60, rotate=0, external_vcc=False, delay=0):
+        print("3")
+        super().__init__(self, width, height, i2c, res=res, addr=addr, rotate=rotate, external_vcc=external_vcc, delay=delay)
 
-    def DisplayStateInfo(self, state_info):
-        self.display.fill(0)
-        self.display.text(state_info, 0, 0, 1)
-        self.display.show()
+    # Functions
+    def DisplayStateInfo(self, state_info, y):
+        self.fill(0)
+        self.text("-State: " + state_info + "-", 0, y)
+        self.show()
 
-
+    def ClearDisplay(self):
+        self.fill(0)
+        self.show()
 
