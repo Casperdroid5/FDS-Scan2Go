@@ -1,7 +1,6 @@
 from machine import Pin, PWM
 from servo import ServoMotor
 from rgbled import RGBLed
-from sh1106 import SH1106_I2C
 
 class rgb(RGBLed):
     def __init__(self, pin_blue, pin_green, pin_red):

@@ -6,7 +6,7 @@
     # time sleep vermijden
     # Alles functioneel, dus liever geen waardes in de code
 
-from machine import *
+from machine import Pin, ADC
 from hardware_s2g import rgb, Door
 import time
 
@@ -14,8 +14,8 @@ class StateMachine:
     def __init__(self):
 
         # Variables 
-        self.AngleOpen = 90 
-        self.AngleClosed = 0
+        self.AngleOpened = 0 
+        self.AngleClosed = 90
         self.ferro_free = False
         self.patient_returned_from_mri = False
         
@@ -34,20 +34,20 @@ class StateMachine:
         self.Door2State = rgb(10, 11, 12)
         self.Door1State = rgb(2, 3, 4)
         self.FerroDetectLED = rgb(6, 7, 8)
-        self.Door1 = Door(14, self.AngleClosed, self.AngleOpen)
-        self.Door2 = Door(15, self.AngleClosed, self.AngleOpen)
+        self.Door1 = Door(14, self.AngleClosed, self.AngleOpened)
+        self.Door2 = Door(15, self.AngleClosed, self.AngleOpened)
         self.Pot1 = ADC(27)
         self.field_a = Pin(18, Pin.IN, Pin.PULL_UP)
         self.field_b = Pin(17, Pin.IN, Pin.PULL_UP)
-    
+
     def delayed_print(self, message, delay):
         print(message)
         time.sleep(delay)
-            
+
 # State Functions
     def initialisation_state(self):
         self.delayed_print("Initialisation state", 1)
-        self.Door2.Open()
+        self.Door2.Close()
         self.Door1.Open()
         return self.WAIT_FOR_USER_FIELD_A_STATE
 
@@ -93,7 +93,7 @@ class StateMachine:
 
     def lock_and_close_door1_state(self):
         self.delayed_print("Lock and close door 1 state",1)
-        self.Door1.Open()
+        self.Door1.Close()
         self.Door1State.Setcolor("red")  # Set the color to red
         return self.LOCK_AND_CLOSE_DOOR2_STATE
 
@@ -106,7 +106,7 @@ class StateMachine:
 
     def lock_and_close_door2_state(self):
         self.delayed_print("Lock and close door 2 state",1)
-        self.Door2.Open()
+        self.Door2.Close()
         self.Door2State.Setcolor("red")
         if self.patient_returned_from_mri:
             self.patient_returned_from_mri = False

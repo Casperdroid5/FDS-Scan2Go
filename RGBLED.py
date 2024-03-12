@@ -12,7 +12,7 @@ class RGBLed:
         self.pin_blue.freq(1000)
 
     def on(self):
-        self.pin_red.duty_u16(65535)
+        self.pin_red.duty_u16(65535) 
         self.pin_green.duty_u16(65535)
         self.pin_blue.duty_u16(65535)
 
