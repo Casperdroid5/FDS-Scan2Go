@@ -1,4 +1,4 @@
-from machine import *
+from machine import Pin, PWM
 from servo import ServoMotor
 from rgbled import RGBLed
 from sh1106 import SH1106_I2C
@@ -57,16 +57,4 @@ class Door(ServoMotor):
 
     def Close(self): # Close the door
         self.servo.set_angle(self.angle_closed)  # 90 is the angle to close the door
-
-
-class Oled(SH1106_I2C):
-    def __init__(self, width, height, i2c,addr):
-        self.display = SH1106_I2C(width, height, i2c, addr)
-        self.display_brightness_level = 100
-
-    def DisplayStateInfo(self, state_info):
-        self.display.fill(0)
-        self.display.text(state_info, 0, 0, 1)
-        self.display.show()
-
 

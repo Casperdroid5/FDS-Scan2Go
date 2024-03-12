@@ -7,7 +7,7 @@
     # Alles functioneel, dus liever geen waardes in de code
 
 from machine import *
-from hardware_s2g import rgb, Door, Oled
+from hardware_s2g import rgb, Door
 
 # Variables 
 AngleOpen = 90 
@@ -17,12 +17,6 @@ patient_returned_from_mri = False
 
 class StateMachine:
     def __init__(self):
-        # Initialize I2C bus
-        scl_pin, sda_pin = Pin(1), Pin(0)
-        i2c = I2C(0, scl=scl_pin, sda=sda_pin, freq=400000)
-
-        # Create SH1106 display object
-        self.display = Oled(128, 64, i2c, 0x3c)
 
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
@@ -44,26 +38,20 @@ class StateMachine:
         self.Pot1 = ADC(27)
         self.field_a = Pin(18, Pin.IN, Pin.PULL_UP)
         self.field_b = Pin(17, Pin.IN, Pin.PULL_UP)
-        
-# Functions
-    def display_state_info(self, state_info):
-        self.display.DisplayStateInfo("-State: " + state_info + "-")
 
 # State Functions
     def initialisation_state(self):
-        self.display_state_info("Init")
+ 
         self.Door2.Open()
         self.Door1.Open()
         return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def wait_for_user_field_a_state(self):
-        self.display_state_info("WFieldA")
         if self.field_a.value() == 0 and self.field_b.value() == 1:
             return self.LOCK_AND_CLOSE_DOOR1_STATE if not self.patient_returned_from_mri else self.WAIT_FOR_USER_FIELD_B_STATE
         return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def wait_for_user_field_b_state(self):
-        self.display_state_info("WFieldB")
         if self.field_a.value() == 1 and self.field_b.value() == 0:
             if not self.patient_returned_from_mri and self.ferro_free:
                 return self.UNLOCK_AND_OPEN_DOOR2_STATE
@@ -73,7 +61,6 @@ class StateMachine:
                 return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def ferrometal_detection_state(self):
-        self.display_state_info("FerroD")
         pot_value = self.Pot1.read_u16()
         if 0 <= pot_value < 40000:
             self.FerroDetectLED.Setcolor("green")  # Green
@@ -84,25 +71,21 @@ class StateMachine:
             return self.UNLOCK_AND_OPEN_DOOR1_STATE
 
     def unlock_and_open_door1_state(self):
-        self.display_state_info("Open1")
         self.Door1.Open()
         self.Door1State.Setcolor("green")
         return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def lock_and_close_door1_state(self):
-        self.display_state_info("Lock1")
         self.Door1.Open()
         self.Door1State.Setcolor("red")  # Set the color to red
         return self.LOCK_AND_CLOSE_DOOR2_STATE
 
     def unlock_and_open_door2_state(self):
-        self.display_state_info("Open2")
         self.Door2.Open()
         self.Door2State.Setcolor("green")
         return self.WAIT_FOR_USER_FIELD_B_STATE
 
     def lock_and_close_door2_state(self):
-        self.display_state_info("Lock2")
         self.Door2.Open()
         self.Door2State.Setcolor("red")
         if self.patient_returned_from_mri:
@@ -113,7 +96,6 @@ class StateMachine:
             return self.WAIT_FOR_USER_FIELD_B_STATE
 
     def emergency_state(self):
-        self.display_state_info("Emergency")
         self.Door1.Open()
         self.Door2.Open()
         self.Door1State.Setcolor("blue")
