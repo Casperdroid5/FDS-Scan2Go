@@ -53,9 +53,13 @@ class StateMachine:
 
     def wait_for_user_field_a_state(self):
         self.delayed_print("Waiting for user field A state",1)
-        if self.field_a.value() == 0 and self.field_b.value() == 1:
-            return self.LOCK_AND_CLOSE_DOOR1_STATE if not self.patient_returned_from_mri else self.WAIT_FOR_USER_FIELD_B_STATE
-        return self.WAIT_FOR_USER_FIELD_A_STATE
+        if self.field_a.value() == 0 and self.field_b.value() == 1: 
+            if not self.patient_returned_from_mri:
+                return self.LOCK_AND_CLOSE_DOOR1_STATE 
+            elif self.patient_returned_from_mri: 
+                return self.UNLOCK_AND_OPEN_DOOR1_STATE
+        else: 
+            return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def wait_for_user_field_b_state(self):
         self.delayed_print("Waiting for user field B state",1)
@@ -84,6 +88,7 @@ class StateMachine:
         self.delayed_print("Unlock and open door 1 state",1)
         self.Door1.Open()
         self.Door1State.Setcolor("green")
+        self.patient_returned_from_mri = False
         return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def lock_and_close_door1_state(self):
@@ -96,6 +101,7 @@ class StateMachine:
         self.delayed_print("Unlock and open door 2 state",1)
         self.Door2.Open()
         self.Door2State.Setcolor("green")
+        self.patient_returned_from_mri = True
         return self.WAIT_FOR_USER_FIELD_B_STATE
 
     def lock_and_close_door2_state(self):
