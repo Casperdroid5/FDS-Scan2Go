@@ -32,7 +32,6 @@ class rgb(RGBLed):
             "cyan": (0, 65535, 65535),
             "magenta": (65535, 0, 65535),
             "white": (65535, 65535, 65535),
-            "off": (0, 0, 0)
         }
         
         if color.lower() in colors:
