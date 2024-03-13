@@ -54,7 +54,7 @@ class PersonDetector:
             if data == b"Person detected\n":
                 self._on_person_detected()
 
-class ButtonController:
+class ButtonHandler:
     def __init__(self, on_request_doorunlock: Callable) -> None:
         self._button = Pin(14, Pin.IN, Pin.PULL_UP)
         self._button.irq(trigger=Pin.IRQ_FALLING, handler=self._on_button_pressed)
@@ -65,30 +65,30 @@ class ButtonController:
 
 class LedController:
     def __init__(self) -> None:
-        self._rgb = hardware_s2g.rgb(25, 26, 33)
-        self._rgb.On()  # Turn on the LED initially
+        self._rgb = hardware_s2g.rgb(2, 3, 4)
 
     async def _SetColor(self, color) -> None:
         # Set the color of the LED
         self._rgb.Setcolor(color)
 
-
 class DoorMotorController:
     def __init__(self) -> None:
-        self._door = hardware_s2g.Door(32, 0, 90)  # Assuming pin 32 is used for controlling the door
-        self._door.Close()  # Ensure that the door is closed initially
+        self._door = hardware_s2g.Door(26, 0, 90)  
         self._task_close = None
 
     async def OpenDoor(self) -> None:
         self._door.Open()  # Open the door
-        await uasyncio.sleep_ms(2000)  # Assuming it takes 2 seconds to open the door
-        self._door.Close()  # Close the door after 2 seconds
+        await uasyncio.sleep_ms(1000)  # Assuming it takes 1 seconds to open the door
+
+    async def CloseDoor(self) -> None:
+        self._door.Close()
+        await uasyncio.sleep_ms(1000)  # Assuming it takes 1 seconds to close the door
 
 class SystemController:
     def __init__(self) -> None:
         self._metal_detector_controller = MetalDetectorController(self._on_metal_detected)
         self._person_detector = PersonDetector(self._on_person_detected)
-        self._button_controller = ButtonController(self._on_request_doorunlock)
+        self._button_handler = ButtonHandler(self._on_request_doorunlock)
         self._led_controller = LedController()
         self._door_motor_controller = DoorMotorController()
 
