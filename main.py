@@ -16,8 +16,8 @@ class StateMachine:
         # Variables 
         self.AngleOpen = 0 
         self.AngleClosed = 90
-        self.ferro_free = False
-        self.patient_returned_from_mri = False
+        self.ferrometal_detected = False
+        self.user_returned_from_mri = False
         
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
@@ -39,11 +39,13 @@ class StateMachine:
         self.Pot1 = ADC(27)
         self.field_a = Pin(18, Pin.IN, Pin.PULL_UP)
         self.field_b = Pin(17, Pin.IN, Pin.PULL_UP)
-    
+        self.emergencybutton = Pin(5, Pin.IN, Pin.PULL_UP)
+        self.emergencybutton.irq(trigger=Pin.IRQ_FALLING, handler=self.emergency_state)
+
     def delayed_print(self, message, delay):
         print(message)
         time.sleep(delay)
-            
+
 # State Functions
     def initialisation_state(self):
         self.Door1LockState.Off() # Turn indicator off
@@ -56,29 +58,32 @@ class StateMachine:
         self.Door1LockState.Setcolor("green")  # Door Unlocked
         return self.WAIT_FOR_USER_FIELD_A_STATE
 
-    def wait_for_user_field_a_state(self):
+    def user_field_a_response_state(self):
         self.delayed_print("Waiting for user field A state",1)
         if self.field_a.value() == 0 and self.field_b.value() == 1: 
-            if self.patient_returned_from_mri == False and self.ferro_free == False:
+            if self.user_returned_from_mri == False and self.ferrometal_detected == False:
                 return self.LOCK_AND_CLOSE_DOOR1_STATE 
-            elif self.patient_returned_from_mri: 
+            elif self.user_returned_from_mri: 
                 return self.UNLOCK_AND_OPEN_DOOR1_STATE
         else: 
             return self.WAIT_FOR_USER_FIELD_A_STATE
 
-    def wait_for_user_field_b_state(self):
+    def user_field_b_response_state(self):
         self.delayed_print("Waiting for user field B state",1)
         if self.field_a.value() == 1 and self.field_b.value() == 0:
-            if self.patient_returned_from_mri == False and self.ferro_free == False:
+            if self.user_returned_from_mri == False and self.ferrometal_detected == False:
                 print("1")
-                return self.UNLOCK_AND_OPEN_DOOR2_STATE
-            elif self.patient_returned_from_mri == True:
+                return self.FERROMETAL_DETECTION_STATE
+            elif self.user_returned_from_mri == True and self.ferrometal_detected == True:
                 print("2")
+                return self.UNLOCK_AND_OPEN_DOOR2_STATE
+            elif self.user_returned_from_mri == True:
+                print("3")
                 self.Door2.Close()
                 self.Door2LockState.Setcolor("red")
                 return self.WAIT_FOR_USER_FIELD_A_STATE
         else:
-            print("3")
+            print("4")
             return self.WAIT_FOR_USER_FIELD_B_STATE
 
     def ferrometal_detection_state(self):
@@ -86,10 +91,10 @@ class StateMachine:
         pot_value = self.Pot1.read_u16()
         if 0 <= pot_value < 40000:
             self.FerroDetectLED.Setcolor("green")  # Green
-            self.ferro_free = True
+            self.ferrometal_detected = True
             return self.UNLOCK_AND_OPEN_DOOR2_STATE
         elif 40000 <= pot_value <= 66000:
-            self.ferro_free = False
+            self.ferrometal_detected = False
             self.FerroDetectLED.Setcolor("red")  # Red
             return self.UNLOCK_AND_OPEN_DOOR1_STATE
 
@@ -97,7 +102,7 @@ class StateMachine:
         self.delayed_print("Unlock and open door 1 state",1)
         self.Door1.Open()
         self.Door1LockState.Setcolor("green") 
-        self.patient_returned_from_mri = False
+        self.user_returned_from_mri = False
         return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def lock_and_close_door1_state(self):
@@ -110,37 +115,42 @@ class StateMachine:
         self.delayed_print("Unlock and open door 2 state",1)
         self.Door2.Open() # Open Door 2
         self.Door2LockState.Setcolor("green") # Set the color to green
-        self.patient_returned_from_mri = True
+        self.user_returned_from_mri = True
         return self.WAIT_FOR_USER_FIELD_B_STATE
 
     def lock_and_close_door2_state(self):
         self.delayed_print("Lock and close door 2 state",1)
         self.Door2.Close() # Close Door 2 
-        self.Door2LockState.Setcolor("red")
-        if self.patient_returned_from_mri:
-            self.patient_returned_from_mri = False
-            self.ferro_free = False
-            return self.UNLOCK_AND_OPEN_DOOR1_STATE
-        else:
-            return self.WAIT_FOR_USER_FIELD_B_STATE
+        self.Door2LockState.Setcolor("red") # Set the color to red
+        return self.WAIT_FOR_USER_FIELD_B_STATE
 
-    def emergency_state(self):
+    def on_press_emergency_button(self):
         self.delayed_print("Emergency state",1)
         self.Door1.Open() # Open Door 1
         self.Door2.Open() # Open Door 2
         self.Door1LockState.Setcolor("blue")
         self.Door2LockState.Setcolor("blue")
         self.FerroDetectLED.Setcolor("blue")
+        return self.EMERGENCY_STATE
 
+    def user_returned_from_mri_state(self):
+        self.user_returned_from_mri = True
+        return 0
+    
+    def ferrometal_detected_state(self):
+        self.ferrometal_detected = True
+        return 0            
+
+# state machine
     def run(self):
         state = self.initialisation_state()
 
         while True:
             if state == self.WAIT_FOR_USER_FIELD_A_STATE:
-                state = self.wait_for_user_field_a_state()
+                state = self.user_field_a_response_state()
 
             elif state == self.WAIT_FOR_USER_FIELD_B_STATE:
-                state = self.wait_for_user_field_b_state()
+                state = self.user_field_b_response_state()
 
             elif state == self.FERROMETAL_DETECTION_STATE:
                 state = self.ferrometal_detection_state()
@@ -158,7 +168,7 @@ class StateMachine:
                 state = self.lock_and_close_door2_state()
 
             elif state == self.EMERGENCY_STATE:
-                self.emergency_state()
+                print("Emergency state triggerd")
                 break  # Exit the loop
 
             else:
