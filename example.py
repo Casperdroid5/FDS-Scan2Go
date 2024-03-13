@@ -58,12 +58,10 @@ class PersonDetector:
     async def _receiver(self):
         sreader = uasyncio.StreamReader(self._uart)
         while True:
-            print("await sreader.readline()")
             data = await sreader.readline() # wacht tot heel bericht binnen is gekomen zonder blokken
             print(data)
-            print("recieved some data from uart stream:")	
             if data == b"1\r\n": # als er een persoon is gedetecteerd volgens de sensor uart stream data
-                print("Person detected")
+                print("data recieved")
                 self._on_person_detected()
 
 
