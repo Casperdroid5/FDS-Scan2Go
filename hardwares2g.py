@@ -16,7 +16,7 @@ class RGB:
             "white": (65535, 65535, 65535),
         }
 
-    def set_color(self, color):
+    def _set_color(self, color):
         if color.lower() in self.colors:
             red, green, blue = self.colors[color.lower()]
             self.pin_red.duty_u16(red)
@@ -25,23 +25,25 @@ class RGB:
         else:
             raise ValueError("Invalid color")
 
-    def on(self):
-        self.set_color("white")
+    def _on(self):
+        self._set_color("white")
 
-    def off(self):
+    def _off(self):
         self.pin_red.duty_u16(0)
         self.pin_green.duty_u16(0)
         self.pin_blue.duty_u16(0)
 
 
-class Door:
+
+class DOOR:
     def __init__(self, pin_number, angle_closed, angle_open):
-        self.servo = ServoMotor(Pin(pin_number))
-        self.angle_open = angle_open
-        self.angle_closed = angle_closed
+        self.servo = ServoMotor(Pin(pin_number)) 
+        self.pin_number = pin_number 
+        self.angle_open = angle_open # maximum opening angle
+        self.angle_closed = angle_closed # maximum closing angle
 
-    def open(self):
-        self.servo.set_angle(self.angle_open)
+    def _open_door(self): # Open the door
+        self.servo.set_angle(self.angle_open)   # 0 is the angle to open the door
 
-    def close(self):
-        self.servo.set_angle(self.angle_closed)
+    def _close_door(self): # Close the door
+        self.servo.set_angle(self.angle_closed)  # 90 is the angle to close the door

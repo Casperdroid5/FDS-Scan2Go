@@ -1,7 +1,8 @@
 from machine import ADC, UART, Pin
 # from typing import Callable
 import uasyncio
-import hardwares2g
+from hardwares2g import RGB, DOOR
+
 
 async def _PERIODIC(millisecond_interval: int, func, *args, **kwargs):
     """Run func every interval seconds.
@@ -64,25 +65,25 @@ class ButtonHandler:
     def _on_button_pressed(self, pin) -> None:
         self._on_request_doorunlock()    
 
-class LedController:
+class LedController(RGB):
     def __init__(self) -> None:
-        self._rgb = hardwares2g.rgb(2, 3, 4)
+        self._RGB = RGB(2, 3, 4)
 
-    async def _SetColor(self, color) -> None:
+    def _setColor(self, color) -> None:
         # Set the color of the LED
-        self._rgb.Setcolor(color)
+        self._RGB._set_color(color)
 
-class DoorMotorController:
+class DoorMotorController(DOOR):
     def __init__(self) -> None:
-        self._door = hardwares2g.Door(26, 0, 90)  
+        self._door = DOOR(26, 0, 90)  
         self._task_close = None
 
     async def _open_door(self) -> None:
-        self._door.Open()  # Open the door
+        self._door._open_door()  # Open the door
         await uasyncio.sleep_ms(1000)  # Assuming it takes 1 seconds to open the door
 
     async def _close_door(self) -> None:
-        self._door.Close()
+        self._door._close_door()
         await uasyncio.sleep_ms(1000)  # Assuming it takes 1 seconds to close the door
 
 class SystemController:
