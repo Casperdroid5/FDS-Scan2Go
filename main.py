@@ -1,7 +1,7 @@
 from machine import ADC, UART, Pin
-from typing import Callable
+# from typing import Callable
 import uasyncio
-import hardware_s2g
+import hardwares2g
 
 async def _PERIODIC(millisecond_interval: int, func, *args, **kwargs):
     """Run func every interval seconds.
@@ -10,11 +10,12 @@ async def _PERIODIC(millisecond_interval: int, func, *args, **kwargs):
     *args and **kwargs are passed as the arguments to func.
     """
     while True:
-        await uasyncio.gather(
-            func(*args, **kwargs),
-            uasyncio.sleep_ms(millisecond_interval)
+        uasyncio.create_task(
+            func(*args, **kwargs)
         )
-
+        
+        await uasyncio.sleep_ms(millisecond_interval)
+        
 class MetalDetectorController:
     def __init__(self, on_metal_detected: Callable) -> None:
         _POTENTIOMETER_PIN: int = 27
@@ -40,14 +41,14 @@ class MetalDetectorController:
 
 class PersonDetector:
     def __init__(self, on_person_detected: Callable) -> None:
-        self._uart = UART(1, baudrate=115200, tx=Pin(4), rx=Pin(5))
+        self._uart = UART(0, baudrate=115200, tx=Pin(0), rx=Pin(1))
         self._on_person_detected = on_person_detected
         self._task_receiver = uasyncio.create_task(
             self._receiver()
         )
 
     async def _receiver(self):
-        sreader = uasyncio.Stream(self._uart)
+        sreader = uasyncio.StreamReader(self._uart)
         while True:
             data = await sreader.readline()
             print(data)
@@ -65,7 +66,7 @@ class ButtonHandler:
 
 class LedController:
     def __init__(self) -> None:
-        self._rgb = hardware_s2g.rgb(2, 3, 4)
+        self._rgb = hardwares2g.rgb(2, 3, 4)
 
     async def _SetColor(self, color) -> None:
         # Set the color of the LED
@@ -73,14 +74,14 @@ class LedController:
 
 class DoorMotorController:
     def __init__(self) -> None:
-        self._door = hardware_s2g.Door(26, 0, 90)  
+        self._door = hardwares2g.Door(26, 0, 90)  
         self._task_close = None
 
-    async def OpenDoor(self) -> None:
+    async def _open_door(self) -> None:
         self._door.Open()  # Open the door
         await uasyncio.sleep_ms(1000)  # Assuming it takes 1 seconds to open the door
 
-    async def CloseDoor(self) -> None:
+    async def _close_door(self) -> None:
         self._door.Close()
         await uasyncio.sleep_ms(1000)  # Assuming it takes 1 seconds to close the door
 
