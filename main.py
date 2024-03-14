@@ -30,7 +30,7 @@ class MetalDetectorController:
 
     def __del__(self) -> None:
         self._task_check_pot.cancel()
-    
+
     async def _check_pot(self) -> None:
         pot_value = self._pot.read_u16()
         if pot_value < 40000:
@@ -41,20 +41,31 @@ class MetalDetectorController:
             self._on_metal_detected()
 
 class PersonDetector:
-    def __init__(self, on_person_detected: Callable) -> None:
+    def __init__(self, on_person_detected):
         self._uart = UART(0, baudrate=115200, tx=Pin(0), rx=Pin(1))
         self._on_person_detected = on_person_detected
-        self._task_receiver = uasyncio.create_task(
-            self._receiver()
-        )
+        self._task_receiver = uasyncio.create_task(self._receiver())
 
     async def _receiver(self):
         sreader = uasyncio.StreamReader(self._uart)
         while True:
             data = await sreader.readline()
-            print(data)
-            if data == b"Person detected\n":
-                self._on_person_detected()
+            if data:
+                # Check if somebody moved
+                if b'\x02' in data:
+                    self._on_person_detected("Somebody moved")
+                # Check if somebody stopped moving
+                elif b'\x01' in data:
+                    self._on_person_detected("Somebody stopped moving")
+                # Check if somebody is close
+                elif b'\x01' in data:
+                    self._on_person_detected("Somebody is close")
+                # Check if somebody is away
+                elif b'\x02' in data:
+                    self._on_person_detected("Somebody is away")
+                else:
+                    self._on_person_detected("No human activity detected")
+
 
 class ButtonHandler:
     def __init__(self, on_request_doorunlock: Callable) -> None:
@@ -88,17 +99,18 @@ class DoorMotorController(DOOR):
 
 class SystemController:
     def __init__(self) -> None:
-        self._metal_detector_controller = MetalDetectorController(self._on_metal_detected)
+        # self._metal_detector_controller = MetalDetectorController(self._on_metal_detected)
         self._person_detector = PersonDetector(self._on_person_detected)
-        self._button_handler = ButtonHandler(self._on_request_doorunlock)
-        self._led_controller = LedController()
-        self._door_motor_controller = DoorMotorController()
+        # self._button_handler = ButtonHandler(self._on_request_doorunlock)
+        # self._led_controller = LedController()
+        # self._door_motor_controller = DoorMotorController()
 
     def _on_metal_detected(self) -> None:
         print("Metal detected right now.")
         
-    def _on_person_detected(self) -> None:
-        print("Person detected right now.")
+    def _on_person_detected(self, message: str) -> None:
+        print("PersonDetector:", message)
+
 
     def _on_request_doorunlock(self) -> None:
         print("Door unlock request received.")
