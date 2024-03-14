@@ -16,7 +16,7 @@ async def _PERIODIC(millisecond_interval: int, func, *args, **kwargs):
         )
         
         await uasyncio.sleep_ms(millisecond_interval)
-        
+
 class MetalDetectorController:
     def __init__(self, on_metal_detected: Callable) -> None:
         _POTENTIOMETER_PIN: int = 27
