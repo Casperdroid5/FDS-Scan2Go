@@ -3,7 +3,7 @@ import uasyncio
 from hardwares2g import RGB, DOOR
 
 
-        
+
 async def _PERIODIC(millisecond_interval: int, func, *args, **kwargs):
     """Run func every interval seconds.
     If func has not finished before *interval*, will run again
@@ -30,7 +30,6 @@ class MetalDetectorController:
         self._task_check_pot = uasyncio.create_task(
             _PERIODIC(_POTENTIOMETER_POLLING_INTERVAL_MS, self._check_pot)
         )
-        
 
     def __del__(self) -> None:
         self._task_check_pot.cancel()
@@ -85,10 +84,7 @@ class LedController:
         self._RGB = RGB(2, 3, 4)
 
     def set_color(self, color) -> None:
-        # Set the color of the LED
-        print(color)
         self._RGB.set_color(color)
-        
 
 class DoorMotorController:
     def __init__(self) -> None:
@@ -109,6 +105,8 @@ class SystemController:
         self._person_detector = PersonDetector(self._on_person_detected, self._on_person_not_detected)
         self._button_handler = ButtonHandler(self._on_request_doorunlock)
         self._FerroDetectLED = RGB(6, 7, 8)
+        self._Door2LockStateLED = RGB(10, 11, 12)
+        self._Door1LockStateLED = RGB(2, 3, 4)
         self._door1_motor_controller = DOOR(14, 90, 0)
         self._door2_motor_controller = DOOR(15, 90, 0)
 
@@ -116,24 +114,33 @@ class SystemController:
     def _on_metal_detected(self)  -> None:
         print("Metal detected right now.")
         self._FerroDetectLED.set_color("red")
-        self._door2_motor_controller._close_door()
+        self._on_request_doorlock(DoorNumber=2)
 
     def _on_metal_not_detected(self)  -> None:
         print("Metal NOT detected right now.")
         self._FerroDetectLED.set_color("green")
-        self._door2_motor_controller._open_door()
-        
-        
+        self._on_request_doorunlock(DoorNumber=2)
+
     def _on_person_detected(self, message: str) -> None:
         print("PersonDetector:", message)
 
     def _on_person_not_detected(self, message: str) -> None:
         print("PersonDetector:", message)
 
-    def _on_request_doorunlock(self) -> None:
-        print("Door unlock request received.")
+    def _on_request_doorunlock(self, DoorNumber) -> None:
+        print("Door unlock request received for door", DoorNumber)
+        if DoorNumber == 1:
+            self._door1_motor_controller._open_door()
+        elif DoorNumber == 2:
+            self._door2_motor_controller._open_door()
+            
+    def _on_request_doorlock(self, DoorNumber) -> None:
+        print("Door lock request received for door", DoorNumber)
+        if DoorNumber == 1:
+            self._door1_motor_controller._close_door()
+        elif DoorNumber == 2:
+            self._door2_motor_controller._close_door()
 
-        
 
 if __name__ == "__main__":
     systemController = SystemController()
