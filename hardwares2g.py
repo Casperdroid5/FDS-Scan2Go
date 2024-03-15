@@ -3,10 +3,10 @@ from servo import ServoMotor
 
 class RGB:
     def __init__(self, pin_blue, pin_green, pin_red):
-        self.pin_red = PWM(Pin(pin_red, Pin.OUT))
-        self.pin_green = PWM(Pin(pin_green, Pin.OUT))
-        self.pin_blue = PWM(Pin(pin_blue, Pin.OUT))
-        self.colors = {
+        self._pin_red = PWM(Pin(pin_red, Pin.OUT), freq=1000)
+        self._pin_green = PWM(Pin(pin_green, Pin.OUT), freq=1000)
+        self._pin_blue = PWM(Pin(pin_blue, Pin.OUT), freq=1000)
+        self._COLORS = {
             "red": (65535, 0, 0),
             "green": (0, 65535, 0),
             "blue": (0, 0, 65535),
@@ -16,23 +16,20 @@ class RGB:
             "white": (65535, 65535, 65535),
         }
 
-    def _set_color(self, color):
-        if color.lower() in self.colors:
-            red, green, blue = self.colors[color.lower()]
-            self.pin_red.duty_u16(red)
-            self.pin_green.duty_u16(green)
-            self.pin_blue.duty_u16(blue)
-        else:
-            raise ValueError("Invalid color")
+    def set_color(self, color):
+        red, green, blue = self._COLORS[color.lower()]
+        #print(f"{red}, {green}, {blue}")
+        self._pin_red.duty_u16(red)
+        self._pin_green.duty_u16(green)
+        self._pin_blue.duty_u16(blue)
 
-    def _on(self):
-        self._set_color("white")
+    def on(self):
+        self.set_color("white")
 
-    def _off(self):
-        self.pin_red.duty_u16(0)
-        self.pin_green.duty_u16(0)
-        self.pin_blue.duty_u16(0)
-
+    def off(self):
+        self._pin_red.duty_u16(0)
+        self._pin_green.duty_u16(0)
+        self._pin_blue.duty_u16(0)
 
 
 class DOOR:
