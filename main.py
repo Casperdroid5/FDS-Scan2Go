@@ -24,13 +24,13 @@ class SystemInitCheck:
         print("System is starting up, running system check")
         failing_components = self.systemcheck()
         if failing_components:
-            print("System check failed")
+            print("failed system check, reporting error(s):")
             ErrorHandler().report_error(failing_components)
         else:
-            print("System check passed")
+            print("System check passed, continuing with startup.")
 
     def systemcheck(self):
-        failing_components = []
+        failing_components = [] # List to store failing components
         # Check sensors
         if not check_sensors():
             failing_components.append("Sensors")
@@ -47,7 +47,7 @@ class SystemInitCheck:
 
 def check_sensors():
     # Check if sensors are connected and working
-    check_sensors = True  # for testing purposes this is set to true
+    check_sensors = False  # for testing purposes this is set to true
     return check_sensors
 
 def check_motors():
@@ -64,10 +64,10 @@ class ErrorHandler:
     def report_error(self, components):
         for component in components:
             self.display_error(component)
+            # log error potentioal to a file or send it to a server
 
     def display_error(self, component):
-        print(f"Error in component {component}")
-
+        print(f"Error in component: {component}")
 
 class StartUp():
     def __init__(self):
@@ -75,9 +75,6 @@ class StartUp():
         self._system_controller = SystemController()  # Initialize the system controller
         # Now, you can call the method to unlock the door
         # close door 1 etcetera, starting state?
-
-
-
 
 class MetalDetectorController:
     def __init__(self, on_metal_detected: Callable, on_metal_not_detected: Callable) -> None:
