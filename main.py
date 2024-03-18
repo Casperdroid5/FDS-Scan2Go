@@ -1,7 +1,7 @@
-from machine import ADC, UART, Pin, PWM
+from machine import ADC, UART, Pin 
 import uasyncio
 from hardwares2g import RGB, DOOR
-
+import time
 
 
 async def _PERIODIC(millisecond_interval: int, func, *args, **kwargs):
@@ -22,7 +22,7 @@ async def _PERIODIC(millisecond_interval: int, func, *args, **kwargs):
 class MetalDetectorController:
     def __init__(self, on_metal_detected: Callable, on_metal_not_detected: Callable) -> None:
         _POTENTIOMETER_PIN: int = 27
-        _POTENTIOMETER_POLLING_INTERVAL_MS: int = 1000
+        _POTENTIOMETER_POLLING_INTERVAL_MS: int = 1000 # interfal to check the scanner value
         
         self._pot = ADC(_POTENTIOMETER_PIN)
         self._on_metal_detected = on_metal_detected
@@ -36,11 +36,9 @@ class MetalDetectorController:
 
     async def _check_pot(self) -> None:
         pot_value = self._pot.read_u16()
-        if pot_value < 40000:
-            # geen metaal
+        if pot_value < 40000: # geen metaal
             self._on_metal_not_detected()
-        else:
-            # wel metaal
+        else: # wel metaal
             self._on_metal_detected()
 
 class MultiPersonDetector:
@@ -53,7 +51,7 @@ class MultiPersonDetector:
             uart = UART(uart_number, baudrate=baudrate, tx=tx_pin, rx=rx_pin)
             self._uart_sensors.append(uart)
             task = uasyncio.create_task(self._receiver(uart))
-    
+
     async def _receiver(self, uart):
         sreader = uasyncio.StreamReader(uart)
         while True:
@@ -70,6 +68,51 @@ class MultiPersonDetector:
                     self._on_person_detected(f"Sensor {self._uart_sensors.index(uart) + 1}: Somebody is away")
                 else:
                     self._on_person_not_detected(f"Sensor {self._uart_sensors.index(uart) + 1}: No human activity detected")
+
+class SystemInitCheck:
+    def __init__(self):
+        print("System is starting up, running system check")
+        self.systemcheck()
+        if self.systemcheck() == True:
+            print("System check passed, starting the system.")
+            return None
+        elif self.systemcheck() == False:
+            print("System check failed")
+            raise SystemError("System check NOT passed, system cannot start.")
+        else:
+            while True:
+                print("System check is in progress")
+                time.sleep(1) # sleep till system check is complete
+
+
+    def systemcheck(self):
+        # Check if all the hardware is connected and working
+        # Check if the sensors are connected and working
+        # Check if the motors are connected and working
+        # Check if the LEDs are connected and working
+        # Check if the buttons are connected and working
+        # Check if the UARTs are connected and working
+        # Check if the ADCs are connected and working
+        # Check if the PWMs are connected and working
+        # Check if the Servos are connected and working
+        # Check if the system is ready to start
+        systemcheck = True # everything is working
+        
+        if systemcheck == True:
+            return True # everything is working
+        else: 
+            return False # something is not working
+
+class ErrorHandler:
+    def __init__(self):
+        self._error = None
+
+class StartUp(SystemInitCheck, ErrorHandler):
+    def __init__(self):
+        super().__init__()
+        self._system_controller = SystemController()  # Initialize the system controller
+        # Now, you can call the method to unlock the door
+        self._system_controller._on_request_doorunlock(DoorNumber=1)
 
 class ButtonHandler:
     def __init__(self, on_request_doorunlock: Callable) -> None:
@@ -111,7 +154,6 @@ class SystemController:
         self._door1_motor_controller = DOOR(14, 90, 0)
         self._door2_motor_controller = DOOR(15, 90, 0)
 
-
     def _on_metal_detected(self)  -> None:
         print("Metal detected right now.")
         self._FerroDetectLED.set_color("red")
@@ -134,7 +176,7 @@ class SystemController:
             self._door1_motor_controller._open_door()
         elif DoorNumber == 2:
             self._door2_motor_controller._open_door()
-            
+
     def _on_request_doorlock(self, DoorNumber) -> None:
         print("Door lock request received for door", DoorNumber)
         if DoorNumber == 1:
@@ -144,6 +186,7 @@ class SystemController:
 
 
 if __name__ == "__main__":
+    SystemInitCheck()
     systemController = SystemController()
     # init complete now run the loop of uasyncio from now on
     uasyncio.get_event_loop().run_forever()
