@@ -19,6 +19,66 @@ async def _PERIODIC(millisecond_interval: int, func, *args, **kwargs):
     except uasyncio.CancelledError:
         print("_PERIODIC cancellled.")
 
+class SystemInitCheck:
+    def __init__(self):
+        print("System is starting up, running system check")
+        failing_components = self.systemcheck()
+        if failing_components:
+            print("System check failed")
+            ErrorHandler().report_error(failing_components)
+        else:
+            print("System check passed")
+
+    def systemcheck(self):
+        failing_components = []
+        # Check sensors
+        if not check_sensors():
+            failing_components.append("Sensors")
+        
+        # Check motors
+        if not check_motors():
+            failing_components.append("Motors")
+
+        # Check LEDs
+        if not check_leds():
+            failing_components.append("LEDs")
+
+        return failing_components
+
+def check_sensors():
+    # Check if sensors are connected and working
+    check_sensors = True  # for testing purposes this is set to true
+    return check_sensors
+
+def check_motors():
+    # Check if motors are connected and working
+    check_motors = True  # for testing purposes this is set to true
+    return check_motors
+
+def check_leds():
+    # Check if LEDs are connected and working
+    check_leds = False  # for testing purposes this is set to False
+    return check_leds
+
+class ErrorHandler:
+    def report_error(self, components):
+        for component in components:
+            self.display_error(component)
+
+    def display_error(self, component):
+        print(f"Error in component {component}")
+
+
+class StartUp():
+    def __init__(self):
+        super().__init__()
+        self._system_controller = SystemController()  # Initialize the system controller
+        # Now, you can call the method to unlock the door
+        # close door 1 etcetera, starting state?
+
+
+
+
 class MetalDetectorController:
     def __init__(self, on_metal_detected: Callable, on_metal_not_detected: Callable) -> None:
         _POTENTIOMETER_PIN: int = 27
@@ -68,51 +128,6 @@ class MultiPersonDetector:
                     self._on_person_detected(f"Sensor {self._uart_sensors.index(uart) + 1}: Somebody is away")
                 else:
                     self._on_person_not_detected(f"Sensor {self._uart_sensors.index(uart) + 1}: No human activity detected")
-
-class SystemInitCheck:
-    def __init__(self):
-        print("System is starting up, running system check")
-        self.systemcheck()
-        if self.systemcheck() == True:
-            print("System check passed, starting the system.")
-            return None
-        elif self.systemcheck() == False:
-            print("System check failed")
-            raise SystemError("System check NOT passed, system cannot start.")
-        else:
-            while True:
-                print("System check is in progress")
-                time.sleep(1) # sleep till system check is complete
-
-
-    def systemcheck(self):
-        # Check if all the hardware is connected and working
-        # Check if the sensors are connected and working
-        # Check if the motors are connected and working
-        # Check if the LEDs are connected and working
-        # Check if the buttons are connected and working
-        # Check if the UARTs are connected and working
-        # Check if the ADCs are connected and working
-        # Check if the PWMs are connected and working
-        # Check if the Servos are connected and working
-        # Check if the system is ready to start
-        systemcheck = True # everything is working
-        
-        if systemcheck == True:
-            return True # everything is working
-        else: 
-            return False # something is not working
-
-class ErrorHandler:
-    def __init__(self):
-        self._error = None
-
-class StartUp(SystemInitCheck, ErrorHandler):
-    def __init__(self):
-        super().__init__()
-        self._system_controller = SystemController()  # Initialize the system controller
-        # Now, you can call the method to unlock the door
-        self._system_controller._on_request_doorunlock(DoorNumber=1)
 
 class ButtonHandler:
     def __init__(self, on_request_doorunlock: Callable) -> None:
@@ -187,6 +202,7 @@ class SystemController:
 
 if __name__ == "__main__":
     SystemInitCheck()
+    StartUp()
     systemController = SystemController()
     # init complete now run the loop of uasyncio from now on
     uasyncio.get_event_loop().run_forever()
