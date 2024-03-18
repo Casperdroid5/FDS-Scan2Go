@@ -43,32 +43,33 @@ class MetalDetectorController:
             # wel metaal
             self._on_metal_detected()
 
-class PersonDetector:
-    def __init__(self, on_person_detected, on_person_not_detected):
-        self._uart = UART(0, baudrate=115200, tx=Pin(0), rx=Pin(1))
+class MultiPersonDetector:
+    def __init__(self, uart_configs, on_person_detected, on_person_not_detected):
+        self._uart_sensors = []
         self._on_person_detected = on_person_detected
         self._on_person_not_detected = on_person_not_detected
-        self._task_receiver = uasyncio.create_task(self._receiver())
-
-    async def _receiver(self):
-        sreader = uasyncio.StreamReader(self._uart)
+        for uart_config in uart_configs:
+            uart_number, baudrate, (tx_pin, rx_pin) = uart_config
+            uart = UART(uart_number, baudrate=baudrate, tx=tx_pin, rx=rx_pin)
+            self._uart_sensors.append(uart)
+            task = uasyncio.create_task(self._receiver(uart))
+    
+    async def _receiver(self, uart):
+        sreader = uasyncio.StreamReader(uart)
         while True:
             data = await sreader.readline()
             if data:
-                # Check if somebody moved
+                # Check data from UART and call appropriate callbacks
                 if b'\x02' in data:
-                    self._on_person_detected("Somebody moved")
-                # Check if somebody stopped moving
+                    self._on_person_detected(f"Sensor {self._uart_sensors.index(uart) + 1}: Somebody moved")
                 elif b'\x01' in data:
-                    self._on_person_detected("Somebody stopped moving")
-                # Check if somebody is close
+                    self._on_person_detected(f"Sensor {self._uart_sensors.index(uart) + 1}: Somebody stopped moving")
                 elif b'\x01' in data:
-                    self._on_person_detected("Somebody is close")
-                # Check if somebody is away
+                    self._on_person_detected(f"Sensor {self._uart_sensors.index(uart) + 1}: Somebody is close")
                 elif b'\x02' in data:
-                    self._on_person_detected("Somebody is away")
+                    self._on_person_detected(f"Sensor {self._uart_sensors.index(uart) + 1}: Somebody is away")
                 else:
-                    self._on_person_not_detected("No human activity detected")
+                    self._on_person_not_detected(f"Sensor {self._uart_sensors.index(uart) + 1}: No human activity detected")
 
 class ButtonHandler:
     def __init__(self, on_request_doorunlock: Callable) -> None:
@@ -76,7 +77,7 @@ class ButtonHandler:
         self._button.irq(trigger=Pin.IRQ_FALLING, handler=self._on_button_pressed)
         self._on_request_doorunlock = on_request_doorunlock
 
-    def _on_button_pressed(self, pin) -> None:
+    def _on_button_pressed(self) -> None:
         self._on_request_doorunlock()  
 
 class LedController:
@@ -102,11 +103,11 @@ class DoorMotorController:
 class SystemController:
     def __init__(self) -> None:
         self._metal_detector_controller = MetalDetectorController(self._on_metal_detected, self._on_metal_not_detected)
-        self._person_detector = PersonDetector(self._on_person_detected, self._on_person_not_detected)
+        self._person_detector = MultiPersonDetector([(0, 115200, (0, 1)), (1, 115200, (4, 5))], self._on_person_detected, self._on_person_not_detected)
         self._button_handler = ButtonHandler(self._on_request_doorunlock)
         self._FerroDetectLED = RGB(6, 7, 8)
         self._Door2LockStateLED = RGB(10, 11, 12)
-        self._Door1LockStateLED = RGB(2, 3, 4)
+        self._Door1LockStateLED = RGB(2, 3, 6)
         self._door1_motor_controller = DOOR(14, 90, 0)
         self._door2_motor_controller = DOOR(15, 90, 0)
 
@@ -146,8 +147,3 @@ if __name__ == "__main__":
     systemController = SystemController()
     # init complete now run the loop of uasyncio from now on
     uasyncio.get_event_loop().run_forever()
-
-
-#vragen: hoe en waar declareer ik mijn componenten pinnen enzo? 
-# wat doet self nou eigenlijk en hoe zie ik waar wat wordt meegegeven makkelijk? ik ben dat overzicht kwijt
-# Hoe maak ik dit systeem deterministisch? Zouden er niet een soort states moeten zijn? hoe laat ik anders het systeem verlopen volgens protocol?

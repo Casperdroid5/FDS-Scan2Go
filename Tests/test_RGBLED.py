@@ -1,4 +1,4 @@
-from rgbled import RGBLED  # Importing the RGBLED class from your code
+from hardwares2g import RGB  # Importing the RGB class from your code
 import time 
 
 
@@ -6,33 +6,20 @@ import time
 if __name__ == "__main__":
 
     print("LEDtest")
-    ledDoor2 = RGBLED(10, 11, 12)  # Example pins for RGB LED 1
-    ledScanner = RGBLED(6, 7, 8)    # Example pins for RGB LED 2
-    ledDoor1 = RGBLED(2, 3, 4)       # Example pins for RGB LED 3
+    ledDoor2 = RGB(10, 11, 12)  # Example pins for RGB LED 1
+    ledScanner = RGB(6, 7, 8)    # Example pins for RGB LED 2
+    ledDoor1 = RGB(2, 3, 4)       # Example pins for RGB LED 3
         
 #   st individual LEDs
-    ledDoor1.set_color(6000, 0, 0)   # Red
-    time.sleep(0.5)
-    ledDoor1.set_color(0, 6000, 0)   # Green
-    time.sleep(0.5)
-    ledDoor1.set_color(0, 0, 6000)   # Blue
-    time.sleep(0.5)
+    ledDoor1.set_color("white")   # Red
 
     # For LED Scanner
-    ledScanner.set_color(6000, 0, 0)   # Red
-    time.sleep(0.5)
-    ledScanner.set_color(0, 6000, 0)   # Green
-    time.sleep(0.5)
-    ledScanner.set_color(0, 0, 6000)   # Blue
-    time.sleep(0.5)
+    ledScanner.set_color("white")   # Red
 
     # For LED Door 2
-    ledDoor2.set_color(6000, 0, 0)   # Red
-    time.sleep(0.5)
-    ledDoor2.set_color(0, 6000, 0)   # Green
-    time.sleep(0.5)
-    ledDoor2.set_color(0, 0, 6000)   # Blue
-    time.sleep(0.5)
+    ledDoor2.set_color("white")   # Red
+
+    time.sleep (2) # Wait for 2 seconds
 
     ledDoor1.off()
     ledScanner.off()
