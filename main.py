@@ -10,16 +10,6 @@ from machine import Pin, ADC
 from hardwares2g import RGB, DOOR
 import time
 
-button_pins = [9, 16, 17, 18] # Pins for the interruptbuttons
-
-def _on_button_pressed(pin):
-    button_number = pin
-    print("Button", button_number, "was pressed")
-
-for pin in button_pins:
-    button = Pin(pin, Pin.IN, Pin.PULL_UP)
-    button.irq(trigger=Pin.IRQ_FALLING, handler=_on_button_pressed)
-
 class StateMachine:
     def __init__(self):
 
@@ -28,6 +18,7 @@ class StateMachine:
         self.AngleClosed = 90
         self.ferrometal_detected = False
         self.user_returned_from_mri = False
+        self.EmergencyState = False
         
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
@@ -49,9 +40,13 @@ class StateMachine:
         self.Pot1 = ADC(27)
         self.field_a = Pin(18, Pin.IN, Pin.PULL_UP)
         self.field_b = Pin(17, Pin.IN, Pin.PULL_UP)
-        self.emergencybutton = Pin(5, Pin.IN, Pin.PULL_UP)
+        
+        self.emergencybutton = Pin(9, Pin.IN, Pin.PULL_UP)
         self.emergencybutton.irq(trigger=Pin.IRQ_FALLING, handler=self.on_press_emergency_button)
 
+
+
+# Helper Functions
     def delayed_print(self, message, delay):
         print(message)
         time.sleep(delay)
@@ -134,14 +129,15 @@ class StateMachine:
         self.Door2LockState.set_color("red") # Set the color to red
         return self.WAIT_FOR_USER_FIELD_B_STATE
 
-    def on_press_emergency_button(self):
-        self.delayed_print("Emergency state",1)
+    def on_press_emergency_button(self, pin):
+        self.delayed_print("Emergency state", 1)
         self.Door1._open_door() # _open_door DOOR 1
         self.Door2._open_door() # _open_door DOOR 2
         self.Door1LockState.set_color("blue")
         self.Door2LockState.set_color("blue")
         self.FerroDetectLED.set_color("blue")
-        return self.EMERGENCY_STATE
+        self.EmergencyState = True
+        return self.EmergencyState
 
     def user_returned_from_mri_state(self):
         self.user_returned_from_mri = True
@@ -156,6 +152,10 @@ class StateMachine:
         state = self.initialisation_state()
 
         while True:
+            if self.EmergencyState == True:  # Controleer of de noodtoestand is geactiveerd
+                print("Emergency state triggered, stopping state machine")
+                break
+
             if state == self.WAIT_FOR_USER_FIELD_A_STATE:
                 state = self.user_field_a_response_state()
 
@@ -177,13 +177,11 @@ class StateMachine:
             elif state == self.LOCK_AND_CLOSE_DOOR2_STATE:
                 state = self.lock_and_close_door2_state()
 
-            elif state == self.EMERGENCY_STATE:
-                print("Emergency state triggerd")
-                break  # Exit the loop
-
             else:
                 print("Invalid state")
                 break
+
+
 
 if __name__ == "__main__":
     FDS = StateMachine()
