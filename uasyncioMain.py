@@ -4,6 +4,17 @@ from hardwares2g import RGB, DOOR
 import time
 
 
+button_pins = [9, 16, 17, 18] # Pins for the interruptbuttons
+
+def _on_button_pressed(pin):
+    button_number = pin
+    print("Button", button_number, "was pressed")
+    SystemController()._on_button_pressed(button_number)
+
+for pin in button_pins:
+    button = Pin(pin, Pin.IN, Pin.PULL_UP)
+    button.irq(trigger=Pin.IRQ_FALLING, handler=_on_button_pressed)
+
 async def _PERIODIC(millisecond_interval: int, func, *args, **kwargs):
     """Run func every interval seconds.
     If func has not finished before *interval*, will run again
@@ -29,7 +40,7 @@ class SystemInitCheck:
             print("System check failed, exiting.")
             raise SystemExit
         else:
-            print("System check passed, continuing.")
+            print("System check passed, continuing with startup.")
 
     def systemcheck(self):
         failing_components = [] # List to store failing components
@@ -80,15 +91,24 @@ class ErrorHandler:
     def display_error(self, component):
         print(f"Error in component: {component}")
 
+class StartUp:
+    def __init__(self):
+        self._system_controller = SystemController()  # Initialize the system controller
+        self._system_controller._door2_motor_controller._close_door()  # Close door 2
+        self._system_controller._door1_motor_controller._open_door()  # Open door 1
+        # close door 1 etcetera, starting state?
+
 class MetalDetectorController:
-    def __init__(self, on_metal_detected, on_metal_not_detected) -> None:
+    def __init__(self, on_metal_detected: Callable, on_metal_not_detected: Callable) -> None:
         _POTENTIOMETER_PIN: int = 27
         _POTENTIOMETER_POLLING_INTERVAL_MS: int = 1000 # interfal to check the scanner value
         
         self._pot = ADC(_POTENTIOMETER_PIN)
         self._on_metal_detected = on_metal_detected
         self._on_metal_not_detected = on_metal_not_detected
-        self._task_check_pot = uasyncio.create_task(_PERIODIC(_POTENTIOMETER_POLLING_INTERVAL_MS, self._check_pot)) # Start the task to check the potentiometer value
+        self._task_check_pot = uasyncio.create_task(
+            _PERIODIC(_POTENTIOMETER_POLLING_INTERVAL_MS, self._check_pot)
+        )
 
     def __del__(self) -> None:
         self._task_check_pot.cancel()
@@ -99,7 +119,6 @@ class MetalDetectorController:
             self._on_metal_not_detected()
         else: # wel metaal
             self._on_metal_detected()
-        await uasyncio.sleep_ms(0) # 0 seconds pause to allow other tasks to run
 
 class MultiPersonDetector:
     def __init__(self, uart_configs, on_person_detected, on_person_not_detected):
@@ -110,10 +129,10 @@ class MultiPersonDetector:
             uart_number, baudrate, (tx_pin, rx_pin) = uart_config
             uart = UART(uart_number, baudrate=baudrate, tx=tx_pin, rx=rx_pin)
             self._uart_sensors.append(uart)
-            uasyncio.create_task(self._receiver(uart))
+            task = uasyncio.create_task(self._receiver(uart))
 
     async def _receiver(self, uart):
-        sreader = uasyncio.StreamReader(uart) 
+        sreader = uasyncio.StreamReader(uart)
         while True:
             data = await sreader.readline()
             if data:
@@ -128,16 +147,6 @@ class MultiPersonDetector:
                     self._on_person_detected(f"Sensor {self._uart_sensors.index(uart) + 1}: Somebody is away")
                 else:
                     self._on_person_not_detected(f"Sensor {self._uart_sensors.index(uart) + 1}: No human activity detected")
-            await uasyncio.sleep_ms(0) # 0 seconds pause to allow other tasks to run
-            
-class ButtonHandler:
-    def __init__(self, on_request_doorunlock) -> None:
-        self._button = Pin(14, Pin.IN, Pin.PULL_UP)
-        self._button.irq(trigger=Pin.IRQ_FALLING, handler=self._on_button_pressed)
-        self._on_request_doorunlock = on_request_doorunlock
-
-    def _on_button_pressed(self) -> None:
-        self._on_request_doorunlock()  
 
 class LedController:
     def __init__(self, ) -> None:
@@ -164,6 +173,7 @@ class SystemController:
     def __init__(self) -> None:
         self._metal_detector_controller = MetalDetectorController(self._on_metal_detected, self._on_metal_not_detected)
         self._person_detector = MultiPersonDetector([(0, 115200, (0, 1)), (1, 115200, (4, 5))], self._on_person_detected, self._on_person_not_detected)
+        self._button_number = Pin(9, Pin.IN, Pin.PULL_UP)
         self._FerroDetectLED = RGB(6, 7, 8)
         self._Door2LockStateLED = RGB(10, 11, 12)
         self._Door1LockStateLED = RGB(2, 3, 6)
@@ -202,9 +212,13 @@ class SystemController:
             self._door1_motor_controller._close_door()
         elif DoorNumber == 2:
             self._door2_motor_controller._close_door()
+    
+    def _on_button_pressed(self, _button_number):
+        print("Button", _button_number, "was pressed")
 
 
 if __name__ == "__main__":
     SystemInitCheck()
-    SystemController()
+    StartUp()
+    # startup complete now run the loop of uasyncio from now on
     uasyncio.get_event_loop().run_forever()

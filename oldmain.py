@@ -10,6 +10,16 @@ from machine import Pin, ADC
 from hardwares2g import RGB, DOOR
 import time
 
+button_pins = [9, 16, 17, 18] # Pins for the interruptbuttons
+
+def _on_button_pressed(pin):
+    button_number = pin
+    print("Button", button_number, "was pressed")
+
+for pin in button_pins:
+    button = Pin(pin, Pin.IN, Pin.PULL_UP)
+    button.irq(trigger=Pin.IRQ_FALLING, handler=_on_button_pressed)
+
 class StateMachine:
     def __init__(self):
 
@@ -60,7 +70,7 @@ class StateMachine:
 
     def user_field_a_response_state(self):
         self.delayed_print("Waiting for user field A state",1)
-        if self.field_a.value() == 0 and self.field_b.value() == 1: 
+        if self.field_a.value() == True and self.field_b.value() == False: 
             if self.user_returned_from_mri == False and self.ferrometal_detected == False:
                 return self.LOCK_AND_CLOSE_DOOR1_STATE 
             elif self.user_returned_from_mri: 
@@ -70,7 +80,7 @@ class StateMachine:
 
     def user_field_b_response_state(self):
         self.delayed_print("Waiting for user field B state",1)
-        if self.field_a.value() == 1 and self.field_b.value() == 0:
+        if self.field_a.value() == False and self.field_b.value() == True:
             if self.user_returned_from_mri == False and self.ferrometal_detected == False:
                 print("1")
                 return self.FERROMETAL_DETECTION_STATE
