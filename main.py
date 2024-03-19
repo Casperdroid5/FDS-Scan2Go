@@ -80,13 +80,13 @@ class ErrorHandler:
     def display_error(self, component):
         print(f"Error in component: {component}")
 
-class StartUp():
+class StartUp:
     def __init__(self):
-        super().__init__()
         self._system_controller = SystemController()  # Initialize the system controller
-        self._system_controller._door2_motor_controller._close_door()  # Close door 2
-        self._system_controller._door1_motor_controller._open_door()  # Open door 1
+        # self._system_controller._door2_motor_controller._close_door()  # Close door 2
+        # self._system_controller._door1_motor_controller._open_door()  # Open door 1
         # close door 1 etcetera, starting state?
+        
 
 class MetalDetectorController:
     def __init__(self, on_metal_detected: Callable, on_metal_not_detected: Callable) -> None:
@@ -160,6 +160,7 @@ class DoorMotorController:
         self._task_close = None
 
     async def _open_door(self) -> None:
+        
         self._door._open_door()  # Open the door
         await uasyncio.sleep_ms(1000)  # Assuming it takes 1 seconds to open the door
 
@@ -171,7 +172,6 @@ class SystemController:
     def __init__(self) -> None:
         self._metal_detector_controller = MetalDetectorController(self._on_metal_detected, self._on_metal_not_detected)
         self._person_detector = MultiPersonDetector([(0, 115200, (0, 1)), (1, 115200, (4, 5))], self._on_person_detected, self._on_person_not_detected)
-        self._button_handler = ButtonHandler(self._on_request_doorunlock)
         self._FerroDetectLED = RGB(6, 7, 8)
         self._Door2LockStateLED = RGB(10, 11, 12)
         self._Door1LockStateLED = RGB(2, 3, 6)
@@ -194,14 +194,17 @@ class SystemController:
     def _on_person_not_detected(self, message: str) -> None:
         print("PersonDetector:", message)
 
-    def _on_request_doorunlock(self, DoorNumber) -> None:
-        print("Door unlock request received for door", DoorNumber)
+    def _on_request_doorunlock(self, DoorNumber):  
+        self.DoorNumber = DoorNumber
+        print("Door unlock request received for door")
         if DoorNumber == 1:
             self._door1_motor_controller._open_door()
+            print("Door 1 is unlocked")
         elif DoorNumber == 2:
-            self._door2_motor_controller._open_door()
+            self._door2_motor_controller._open_door()   
+            print("Door 2 is unlocked")
 
-    def _on_request_doorlock(self, DoorNumber) -> None:
+    def _on_request_doorlock(self, DoorNumber):
         print("Door lock request received for door", DoorNumber)
         if DoorNumber == 1:
             self._door1_motor_controller._close_door()
