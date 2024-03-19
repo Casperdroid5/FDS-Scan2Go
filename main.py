@@ -83,10 +83,9 @@ class ErrorHandler:
 class StartUp:
     def __init__(self):
         self._system_controller = SystemController()  # Initialize the system controller
-        # self._system_controller._door2_motor_controller._close_door()  # Close door 2
-        # self._system_controller._door1_motor_controller._open_door()  # Open door 1
+        self._system_controller._door2_motor_controller._close_door()  # Close door 2
+        self._system_controller._door1_motor_controller._open_door()  # Open door 1
         # close door 1 etcetera, starting state?
-        
 
 class MetalDetectorController:
     def __init__(self, on_metal_detected: Callable, on_metal_not_detected: Callable) -> None:
@@ -138,14 +137,6 @@ class MultiPersonDetector:
                 else:
                     self._on_person_not_detected(f"Sensor {self._uart_sensors.index(uart) + 1}: No human activity detected")
 
-class ButtonHandler:
-    def __init__(self, on_request_doorunlock: Callable) -> None:
-        self._button = Pin(14, Pin.IN, Pin.PULL_UP)
-        self._button.irq(trigger=Pin.IRQ_FALLING, handler=self._on_button_pressed)
-        self._on_request_doorunlock = on_request_doorunlock
-
-    def _on_button_pressed(self) -> None:
-        self._on_request_doorunlock()  
 
 class LedController:
     def __init__(self, ) -> None:
@@ -172,6 +163,7 @@ class SystemController:
     def __init__(self) -> None:
         self._metal_detector_controller = MetalDetectorController(self._on_metal_detected, self._on_metal_not_detected)
         self._person_detector = MultiPersonDetector([(0, 115200, (0, 1)), (1, 115200, (4, 5))], self._on_person_detected, self._on_person_not_detected)
+        self._button_number = Pin(9, Pin.IN, Pin.PULL_UP)
         self._FerroDetectLED = RGB(6, 7, 8)
         self._Door2LockStateLED = RGB(10, 11, 12)
         self._Door1LockStateLED = RGB(2, 3, 6)
@@ -210,6 +202,9 @@ class SystemController:
             self._door1_motor_controller._close_door()
         elif DoorNumber == 2:
             self._door2_motor_controller._close_door()
+    
+    def _on_button_pressed(self, _button_number):
+        print("Button", _button_number, "was pressed")
 
 
 if __name__ == "__main__":
