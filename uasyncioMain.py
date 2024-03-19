@@ -99,7 +99,7 @@ class StartUp:
         # close door 1 etcetera, starting state?
 
 class MetalDetectorController:
-    def __init__(self, on_metal_detected: Callable, on_metal_not_detected: Callable) -> None:
+    def __init__(self, on_metal_detected, on_metal_not_detected) -> None:
         _POTENTIOMETER_PIN: int = 27
         _POTENTIOMETER_POLLING_INTERVAL_MS: int = 1000 # interfal to check the scanner value
         

@@ -1,14 +1,7 @@
-#Todo:
-    # altijd iets returnen bij een functie
-    # functies zo klein mogelijk houden 1 functie = 1 taak
-    # geen print statements in de functies
-    # geen while True gebruiken
-    # time sleep vermijden
-    # Alles functioneel, dus liever geen waardes in de code
 
 from machine import Pin, ADC
 from hardwares2g import RGB, DOOR
-import time
+
 
 class StateMachine:
     def __init__(self):
@@ -44,19 +37,14 @@ class StateMachine:
         self.emergencybutton = Pin(9, Pin.IN, Pin.PULL_UP)
         self.emergencybutton.irq(trigger=Pin.IRQ_FALLING, handler=self.on_press_emergency_button)
 
-
-
-# Helper Functions
-    def delayed_print(self, message, delay):
-        print(message)
-        time.sleep(delay)
-
 # State Functions
     def initialisation_state(self):
+        self.user_returned_from_mri = False
+        self.ferrometal_detected = False
         self.Door1LockState.off() # Turn indicator off
         self.Door2LockState.off() # Turn indicator off
         self.FerroDetectLED.off() # Turn indicator off
-        self.delayed_print("Initialisation state", 1)
+        print("Initialisation state")
         self.Door2._close_door() # _close_door DOOR 2
         self.Door2LockState.set_color("red") # DOOR Locked
         self.Door1._open_door() # _open_door DOOR 1
@@ -64,7 +52,7 @@ class StateMachine:
         return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def user_field_a_response_state(self):
-        self.delayed_print("Waiting for user field A state",1)
+        print("Waiting for user field A state")
         if self.field_a.value() == True and self.field_b.value() == False: 
             if self.user_returned_from_mri == False and self.ferrometal_detected == False:
                 return self.LOCK_AND_CLOSE_DOOR1_STATE 
@@ -74,7 +62,8 @@ class StateMachine:
             return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def user_field_b_response_state(self):
-        self.delayed_print("Waiting for user field B state",1)
+        print(self.user_returned_from_mri)
+        print("Waiting for user field B state")
         if self.field_a.value() == False and self.field_b.value() == True:
             if self.user_returned_from_mri == False and self.ferrometal_detected == False:
                 print("1")
@@ -88,54 +77,52 @@ class StateMachine:
                 self.Door2LockState.set_color("red")
                 return self.WAIT_FOR_USER_FIELD_A_STATE
         else:
-            print("4")
             return self.WAIT_FOR_USER_FIELD_B_STATE
 
     def ferrometal_detection_state(self):
-        self.delayed_print("Ferrometal detection state",1)
+        print("Ferrometal detection state")
         pot_value = self.Pot1.read_u16()
         if 0 <= pot_value < 40000:
             self.FerroDetectLED.set_color("green")  # Green
-            self.ferrometal_detected = True
+            self.ferrometal_detected = False
             return self.UNLOCK_AND_OPEN_DOOR2_STATE
         elif 40000 <= pot_value <= 66000:
-            self.ferrometal_detected = False
+            self.ferrometal_detected = True
             self.FerroDetectLED.set_color("red")  # Red
             return self.UNLOCK_AND_OPEN_DOOR1_STATE
 
     def unlock_and_open_door1_state(self):
-        self.delayed_print("Unlock and _open_door DOOR 1 state",1)
+        print("Unlock and _open_door DOOR 1 state")
         self.Door1._open_door()
         self.Door1LockState.set_color("green") 
-        self.user_returned_from_mri = False
-        return self.WAIT_FOR_USER_FIELD_A_STATE
+        return self.INITIALISATION_STATE
 
     def lock_and_close_door1_state(self):
-        self.delayed_print("Lock and _close_door DOOR 1 state",1)
+        print("Lock and _close_door DOOR 1 state")
         self.Door1._close_door() # _close_door DOOR 1
         self.Door1LockState.set_color("red")  # Set the color to red
         return self.LOCK_AND_CLOSE_DOOR2_STATE
 
     def unlock_and_open_door2_state(self):
-        self.delayed_print("Unlock and _open_door DOOR 2 state",1)
+        print("Unlock and _open_door DOOR 2 state")
         self.Door2._open_door() # _open_door DOOR 2
         self.Door2LockState.set_color("green") # Set the color to green
         self.user_returned_from_mri = True
         return self.WAIT_FOR_USER_FIELD_B_STATE
 
     def lock_and_close_door2_state(self):
-        self.delayed_print("Lock and _close_door DOOR 2 state",1)
+        print("Lock and _close_door DOOR 2 state")
         self.Door2._close_door() # _close_door DOOR 2 
         self.Door2LockState.set_color("red") # Set the color to red
         return self.WAIT_FOR_USER_FIELD_B_STATE
 
     def on_press_emergency_button(self, pin):
-        self.delayed_print("Emergency state", 1)
-        self.Door1._open_door() # _open_door DOOR 1
-        self.Door2._open_door() # _open_door DOOR 2
+        print("Emergency state")
         self.Door1LockState.set_color("blue")
         self.Door2LockState.set_color("blue")
         self.FerroDetectLED.set_color("blue")
+        self.Door1._open_door() # _open_door DOOR 1
+        self.Door2._open_door() # _open_door DOOR 2
         self.EmergencyState = True
         return self.EmergencyState
 
@@ -156,6 +143,9 @@ class StateMachine:
                 print("Emergency state triggered, stopping state machine")
                 break
 
+            if state == self.INITIALISATION_STATE:
+                state = self.initialisation_state()
+                
             if state == self.WAIT_FOR_USER_FIELD_A_STATE:
                 state = self.user_field_a_response_state()
 
