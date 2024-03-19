@@ -26,6 +26,8 @@ class SystemInitCheck:
         if failing_components:
             print("failed system check, reporting error(s):")
             ErrorHandler().report_error(failing_components)
+            print("System check failed, exiting.")
+            raise SystemExit
         else:
             print("System check passed, continuing with startup.")
 
@@ -34,7 +36,7 @@ class SystemInitCheck:
         # Check sensors
         if not check_sensors():
             failing_components.append("Sensors")
-        
+
         # Check motors
         if not check_motors():
             failing_components.append("Motors")
@@ -43,22 +45,31 @@ class SystemInitCheck:
         if not check_leds():
             failing_components.append("LEDs")
 
-        return failing_components
+        # Check buttons
+        if not check_buttons():
+            failing_components.append("Buttons")
+
+        return failing_components # Return the list of failing components
 
 def check_sensors():
     # Check if sensors are connected and working
-    check_sensors = False  # for testing purposes this is set to true
-    return check_sensors
+    _SensorFunctional = True  # for testing purposes this is set to...
+    return _SensorFunctional
 
 def check_motors():
     # Check if motors are connected and working
-    check_motors = True  # for testing purposes this is set to true
-    return check_motors
+    _MotorFunctional = True  # for testing purposes this is set to...
+    return _MotorFunctional
 
 def check_leds():
     # Check if LEDs are connected and working
-    check_leds = False  # for testing purposes this is set to False
-    return check_leds
+    _LedsFunctional = True  # for testing purposes this is set to...
+    return _LedsFunctional
+
+def check_buttons():
+    # Check if buttons are connected and working
+    _ButtonsFunctional = True  # for testing purposes this is set to...
+    return _ButtonsFunctional
 
 class ErrorHandler:
     def report_error(self, components):
@@ -73,7 +84,8 @@ class StartUp():
     def __init__(self):
         super().__init__()
         self._system_controller = SystemController()  # Initialize the system controller
-        # Now, you can call the method to unlock the door
+        self._system_controller._door2_motor_controller._close_door()  # Close door 2
+        self._system_controller._door1_motor_controller._open_door()  # Open door 1
         # close door 1 etcetera, starting state?
 
 class MetalDetectorController:
@@ -200,6 +212,5 @@ class SystemController:
 if __name__ == "__main__":
     SystemInitCheck()
     StartUp()
-    systemController = SystemController()
-    # init complete now run the loop of uasyncio from now on
+    # startup complete now run the loop of uasyncio from now on
     uasyncio.get_event_loop().run_forever()
