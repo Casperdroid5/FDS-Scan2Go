@@ -20,11 +20,14 @@ class StateMachine:
         self.USER_FIELD_A_RESPONSE_STATE = 1
         self.USER_FIELD_B_RESPONSE_STATE = 2
         self.FERROMETAL_DETECTION_STATE = 3
-        self.UNLOCK_AND_OPEN_DOOR1_STATE = 4
-        self.CLOSE_AND_LOCK_DOOR1_STATE = 5
-        self.UNLOCK_AND_OPEN_DOOR2_STATE = 6
-        self.CLOSE_AND_LOCK_DOOR2_STATE = 7
-        self.EMERGENCY_STATE = 8
+        self.METAL_DETECTED_STATE = 4
+        self.METAL_NOT_DETECTED_STATE = 5
+        self.UNLOCK_AND_OPEN_DOOR1_STATE = 6
+        self.CLOSE_AND_LOCK_DOOR1_STATE = 7
+        self.UNLOCK_AND_OPEN_DOOR2_STATE = 8
+        self.CLOSE_AND_LOCK_DOOR2_STATE = 9
+        self.EMERGENCY_STATE = 10
+        
 
         # Initialize indicator lights
         self.lock_door2 = RGB(10, 11, 12)
@@ -84,6 +87,16 @@ class StateMachine:
             self.ferro_led.set_color("red")  # Red
             return self.ferrometal_detected
 
+    def metal_detected_state(self):
+        print("metal_detected_state")
+        self.ferro_led.set_color("red")
+        return 0 # State Ran succsessfully
+
+    def metal_not_detected_state(self):
+        print("metal_not_detected_state")
+        self.ferro_led.set_color("green")
+        return 0 # State Ran succsessfully
+
     def unlock_and_open_door1_state(self):
         print("unlock_and_open_door1_state")
         self.door1._open_door()
@@ -140,7 +153,7 @@ class StateMachine:
                 print("Emergency state triggered, stopping state machine after")
                 break
 
-            if self.state == self.INITIALISATION_STATE:
+            elif self.state == self.INITIALISATION_STATE:
                 self.state = self.initialization_state()
                 if self.initialization_state() == 0:
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
@@ -158,10 +171,20 @@ class StateMachine:
             elif self.state == self.FERROMETAL_DETECTION_STATE:
                 self.state = self.ferrometal_detection_state()
                 if self.ferrometal_detected == False:
-                    self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
+                    self.state = self.METAL_NOT_DETECTED_STATE
                 elif self.ferrometal_detected == True:
-                    self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE # this makes the servo flipper
-                    
+                    self.state = self.METAL_DETECTED_STATE # this makes the servo flipper
+            
+            elif self.state == self.METAL_DETECTED_STATE:
+                self.state = self.metal_detected_state()
+                if self.metal_detected_state() == 0:
+                    self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE
+            
+            elif self.state == self.METAL_NOT_DETECTED_STATE:
+                self.state = self.metal_not_detected_state()
+                if self.metal_not_detected_state() == 0:
+                    self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
+            
             elif self.state == self.UNLOCK_AND_OPEN_DOOR1_STATE:
                 self.state = self.unlock_and_open_door1_state()
                 if self.unlock_and_open_door1_state == 0:
@@ -169,11 +192,9 @@ class StateMachine:
                 
             elif self.state == self.CLOSE_AND_LOCK_DOOR1_STATE:
                 self.state = self.close_and_lock_door1_state
-                if self.ferrometal_detected == False:
+                if self.close_and_lock_door1_state() == 0: 
                     self.state = self.FERROMETAL_DETECTION_STATE   # Transition back to ferrometal detection
-                else:
-                    self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE  # Transition back to initialization
-                
+
             elif self.state == self.UNLOCK_AND_OPEN_DOOR2_STATE:
                 self.state = self.unlock_and_open_door2_state()
                 if self.unlock_and_open_door2_state() == 0:
@@ -184,7 +205,7 @@ class StateMachine:
             else:
                 print("Invalid state")
                 break
-
+            time.sleep(0.3) # Sleep for 100ms
 
                     
         #     # user_field_a_response_state
