@@ -11,9 +11,12 @@ class StateMachine:
         self.ferrometal_detected = False
         self.user_returned_from_mri = False
         self.emergency_state = False
-        self.person_detector_field_a = True
+        self.initialized = False  # Flag to track initialization
+        # doorbuttons variables
+        self.person_detector_field_a = False
         self.person_detector_field_b = False
-        self.doorbuttonpressed = False
+        self.button_door1_pressed = False
+        self.button_door2_pressed = False
         
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
@@ -45,9 +48,9 @@ class StateMachine:
         self.button_emergency_scanner = Pin(16, Pin.IN, Pin.PULL_UP)
         self.button_emergency_scanner.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_emergency_button_press)
         self.button_door1 = Pin(17, Pin.IN, Pin.PULL_UP)
-        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.unlock_and_open_door1_state)
+        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.toggle_person_detector_field_a)
         self.button_door2 = Pin(18, Pin.IN, Pin.PULL_UP)
-        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.unlock_and_open_door2_state)
+        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.toggle_person_detector_field_b)
         
 
 
@@ -141,31 +144,49 @@ class StateMachine:
             self.ferro_led.set_color("blue") 
             self.emergency_state = True
             return self.emergency_state
+        
+    def toggle_person_detector_field_a(self, pin):
+        print("Toggle person_detector_field_a")
+        self.person_detector_field_a = not self.person_detector_field_a
+        self.button_door1_pressed = True
+
+    def toggle_person_detector_field_b(self, pin):
+        print("Toggle person_detector_field_b")
+        self.person_detector_field_b = not self.person_detector_field_b
+        self.button_door2_pressed = True
 
 
     # State machine
     def run(self):
-        
+    
         self.state = self.INITIALISATION_STATE
         while True:
-            
-            if self.emergency_state == True:
+            if self.emergency_state:
                 print("Emergency state triggered, stopping state machine after")
                 break
 
-            elif self.state == self.INITIALISATION_STATE:
-                self.state = self.initialization_state()
-                if self.initialization_state() == 0:
-                    self.state = self.USER_FIELD_A_RESPONSE_STATE
+            if self.state == self.INITIALISATION_STATE:
+                if not self.initialized:  # Check if initialization has been done
+                    self.initialization_state()
+                    self.initialized = True  # Set the flag to True after initialization
+                self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
-                self.state = self.user_field_a_response_state()
-                if self.user_field_a_response_state() == 0:
-                    self.state = self.CLOSE_AND_LOCK_DOOR1_STATE	
+                if self.button_door1_pressed:
+                    self.toggle_person_detector_field_a  # Toggle person_detector_field_a with the pin argument
+                    self.button_door1_pressed = False
+                if self.person_detector_field_a:
+                    self.state = self.CLOSE_AND_LOCK_DOOR1_STATE
+                else:
+                    self.state = self.USER_FIELD_B_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
-                self.state = self.user_field_b_response_state()
-                if self.user_field_b_response_state() == 0:
+                if self.button_door2_pressed:
+                    self.toggle_person_detector_field_b  # Toggle person_detector_field_b
+                    self.button_door2_pressed = False
+                if self.person_detector_field_b:
+                    self.state = self.CLOSE_AND_LOCK_DOOR2_STATE
+                else:
                     self.state = self.FERROMETAL_DETECTION_STATE
 
             elif self.state == self.FERROMETAL_DETECTION_STATE:
@@ -174,22 +195,22 @@ class StateMachine:
                     self.state = self.METAL_NOT_DETECTED_STATE
                 elif self.ferrometal_detected == True:
                     self.state = self.METAL_DETECTED_STATE # this makes the servo flipper
-            
+
             elif self.state == self.METAL_DETECTED_STATE:
                 self.state = self.metal_detected_state()
                 if self.metal_detected_state() == 0:
                     self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE
-            
+
             elif self.state == self.METAL_NOT_DETECTED_STATE:
                 self.state = self.metal_not_detected_state()
                 if self.metal_not_detected_state() == 0:
                     self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
-            
+
             elif self.state == self.UNLOCK_AND_OPEN_DOOR1_STATE:
                 self.state = self.unlock_and_open_door1_state()
                 if self.unlock_and_open_door1_state == 0:
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
-                
+
             elif self.state == self.CLOSE_AND_LOCK_DOOR1_STATE:
                 self.state = self.close_and_lock_door1_state
                 if self.close_and_lock_door1_state() == 0: 
@@ -199,7 +220,7 @@ class StateMachine:
                 self.state = self.unlock_and_open_door2_state()
                 if self.unlock_and_open_door2_state() == 0:
                     self.state = self.USER_FIELD_B_RESPONSE_STATE
-                
+
             elif self.state == self.CLOSE_AND_LOCK_DOOR2_STATE:
                 self.state = self.close_and_lock_door2_state()
             else:
