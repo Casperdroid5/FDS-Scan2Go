@@ -149,11 +149,13 @@ class StateMachine:
         print("Toggle person_detector_field_a")
         self.person_detector_field_a = not self.person_detector_field_a
         self.button_door1_pressed = True
+        return 0 # State Ran succsessfully
 
     def toggle_person_detector_field_b(self, pin):
         print("Toggle person_detector_field_b")
         self.person_detector_field_b = not self.person_detector_field_b
         self.button_door2_pressed = True
+        return 0 # State Ran succsessfully
 
 
     # State machine
@@ -194,7 +196,7 @@ class StateMachine:
                 if self.ferrometal_detected == False:
                     self.state = self.METAL_NOT_DETECTED_STATE
                 elif self.ferrometal_detected == True:
-                    self.state = self.METAL_DETECTED_STATE # this makes the servo flipper
+                    self.state = self.METAL_DETECTED_STATE 
 
             elif self.state == self.METAL_DETECTED_STATE:
                 self.state = self.metal_detected_state()
@@ -214,7 +216,7 @@ class StateMachine:
             elif self.state == self.CLOSE_AND_LOCK_DOOR1_STATE:
                 self.state = self.close_and_lock_door1_state
                 if self.close_and_lock_door1_state() == 0: 
-                    self.state = self.FERROMETAL_DETECTION_STATE   # Transition back to ferrometal detection
+                    self.state = self.FERROMETAL_DETECTION_STATE 
 
             elif self.state == self.UNLOCK_AND_OPEN_DOOR2_STATE:
                 self.state = self.unlock_and_open_door2_state()
