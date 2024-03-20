@@ -226,69 +226,7 @@ class StateMachine:
             else:
                 print("Invalid state")
                 break
-            time.sleep(0.3) # Sleep for 100ms
-
-                    
-        #     # user_field_a_response_state
-        #            if not self.user_returned_from_mri and not self.ferrometal_detected:
-        #               return self.close_and_lock_door1_state 
-        #           elif self.user_returned_from_mri: 
-        #               return self.unlock_and_open_door1_state
-        #       else: 
-        #           return self.USER_FIELD_A_RESPONSE_STATE
-        
-        #     # user_field_b_response_state
-        #                 if not self.user_returned_from_mri and not self.ferrometal_detected:
-        #         print("1")
-        #         return self.FERROMETAL_DETECTION_STATE
-        #     elif self.user_returned_from_mri and self.ferrometal_detected:
-        #         print("2")
-        #         return self.UNLOCK_AND_OPEN_DOOR2_STATE
-        #     elif self.user_returned_from_mri:
-        #         print("3")
-        #         self.door2._close_door()
-        #         self.lock_door2.set_color("red")
-        #         return self.USER_FIELD_A_RESPONSE_STATE
-        # else:
-        #     return self.USER_FIELD_B_RESPONSE_STATE
-        
-        # # ferrometeral_detection_state
-        # if self.ferrometal_detected: = True
-        #     state1
-        # else:
-        #     state2
-            
-        
-        
-
-        #     if state == self.INITIALISATION_STATE:
-        #         state = self.initialization_state()
-                
-        #     if state == self.USER_FIELD_A_RESPONSE_STATE:
-        #         state = self.user_field_a_response_state()
-
-        #     elif state == self.USER_FIELD_B_RESPONSE_STATE:
-        #         state = self.user_field_b_response_state()
-
-        #     elif state == self.FERROMETAL_DETECTION_STATE:
-        #         state = self.ferrometal_detection_state()
-
-        #     elif state == self.unlock_and_open_door1_state:
-        #         state = self.unlock_and_open_door1_state()
-
-        #     elif state == self.close_and_lock_door1_state:
-        #         state = self.close_and_lock_door1_state()
-
-        #     elif state == self.UNLOCK_AND_OPEN_DOOR2_STATE:
-        #         state = self.unlock_and_open_door2_state()
-
-        #     elif state == self.close_and_lock_door2_state:
-        #         state = self.close_and_lock_door2_state()
-
-        #     else:
-        #         print("Invalid state")
-        #         break
-
+            time.sleep(0.3) # Sleep for 300ms to avoid a very fast loop
 
 if __name__ == "__main__":
     FDS = StateMachine()
