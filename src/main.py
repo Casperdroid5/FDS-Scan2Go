@@ -1,5 +1,5 @@
 from hardware_s2g import RGB, DOOR
-from system_utils import SystemInitCheck
+from system_utils import SystemUtilsCheck
 from machine import Pin, ADC
 import time
 
@@ -33,7 +33,6 @@ class StateMachine:
         self.UNLOCK_AND_OPEN_DOOR2_STATE = 8
         self.CLOSE_AND_LOCK_DOOR2_STATE = 9
         self.EMERGENCY_STATE = 10
-        
 
         # Initialize indicator lights
         self.lock_door2 = RGB(10, 11, 12)
@@ -54,13 +53,10 @@ class StateMachine:
         self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.toggle_person_detector_field_a)
         self.button_door2 = Pin(18, Pin.IN, Pin.PULL_UP)
         self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.toggle_person_detector_field_b)
-        
 
 
     # State Functions
     def initialization_state(self):
-        # self.user_returned_from_mri = False
-        # self.ferrometal_detected = False
         self.lock_door1.off()  # Turn indicator off
         self.lock_door2.off()  # Turn indicator off
         self.ferro_led.off()  # Turn indicator off
@@ -78,7 +74,7 @@ class StateMachine:
 
     def user_field_b_response_state(self):
         print("user_field_b_response_state")
-        if self.person_detector_field_a == True and self.person_detector_field_b == False: # TEMPORARY CONDITION FOR TESTING
+        if self.person_detector_field_a == False and self.person_detector_field_b == True:
             return 0 # State Ran succsessfully
 
     def ferrometal_detection_state(self):
@@ -177,22 +173,12 @@ class StateMachine:
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
-                if self.button_door1_pressed:
-                    self.toggle_person_detector_field_a  # Toggle person_detector_field_a with the pin argument
-                    self.button_door1_pressed = False
                 if self.person_detector_field_a:
                     self.state = self.CLOSE_AND_LOCK_DOOR1_STATE
-                else:
-                    self.state = self.USER_FIELD_B_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
-                if self.button_door2_pressed:
-                    self.toggle_person_detector_field_b  # Toggle person_detector_field_b
-                    self.button_door2_pressed = False
                 if self.person_detector_field_b:
                     self.state = self.CLOSE_AND_LOCK_DOOR2_STATE
-                else:
-                    self.state = self.FERROMETAL_DETECTION_STATE
 
             elif self.state == self.FERROMETAL_DETECTION_STATE:
                 self.state = self.ferrometal_detection_state()
@@ -235,7 +221,7 @@ class StateMachine:
 
 if __name__ == "__main__":
     try:
-        system_check = SystemInitCheck()  # Perform system check
+        system_check = SystemUtilsCheck()  # Perform system check
         FDS = StateMachine()
         FDS.run()
     except SystemExit:

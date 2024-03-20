@@ -27,7 +27,7 @@ def check_buttons():
     _ButtonsFunctional = True  # for testing purposes this is set to...
     return _ButtonsFunctional
 
-class SystemInitCheck:
+class SystemUtilsCheck:
     def __init__(self):
         print("System is starting up, running system check")
         failing_components = self.systemcheck()
