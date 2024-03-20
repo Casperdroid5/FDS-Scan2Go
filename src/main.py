@@ -10,6 +10,8 @@ class StateMachine:
         self.ferrometal_detected = False
         self.user_returned_from_mri = False
         self.EmergencyState = False
+        self.PersonDetectorFieldA = False
+        self.PersonDetectorFieldB = False
 
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
@@ -29,11 +31,17 @@ class StateMachine:
         self.Door1 = DOOR(14, self.AngleClosed, self.AngleOpen)
         self.Door2 = DOOR(15, self.AngleClosed, self.AngleOpen)
         self.Pot1 = ADC(27)
-        self.field_a = Pin(18, Pin.IN, Pin.PULL_UP)
-        self.field_b = Pin(17, Pin.IN, Pin.PULL_UP)
-        
-        self.emergencybutton = Pin(9, Pin.IN, Pin.PULL_UP)
-        self.emergencybutton.irq(trigger=Pin.IRQ_FALLING, handler=self.on_press_emergency_button)
+
+        # Initialize buttons
+        self.EmergencyButtonMRIRoom = Pin(9, Pin.IN, Pin.PULL_UP)
+        self.EmergencyButtonMRIRoom.irq(trigger=Pin.IRQ_FALLING, handler=self.on_press_emergency_button)
+        self.EmergencyButtonScannerRoom = Pin(16, Pin.IN, Pin.PULL_UP)
+        self.EmergencyButtonScannerRoom.irq(trigger=Pin.IRQ_FALLING, handler=self.on_press_emergency_button)
+        self.Door1Button = Pin(17, Pin.IN, Pin.PULL_UP)
+        self.Door1Button.irq(trigger=Pin.IRQ_FALLING, handler=self.unlock_and_open_door1_state)
+        self.Door2Button = Pin(18, Pin.IN, Pin.PULL_UP)
+        self.Door2Button.irq(trigger=Pin.IRQ_FALLING, handler=self.unlock_and_open_door2_state)
+
 
 # State Functions
     def initialisation_state(self):
@@ -51,7 +59,7 @@ class StateMachine:
 
     def user_field_a_response_state(self):
         print("Waiting for user field A state")
-        if self.field_a.value() == True and self.field_b.value() == False: 
+        if self.PersonDetectorFieldA == True and self.PersonDetectorFieldB == False: 
             if self.user_returned_from_mri == False and self.ferrometal_detected == False:
                 return self.LOCK_AND_CLOSE_DOOR1_STATE 
             elif self.user_returned_from_mri: 
@@ -60,9 +68,8 @@ class StateMachine:
             return self.WAIT_FOR_USER_FIELD_A_STATE
 
     def user_field_b_response_state(self):
-        print(self.user_returned_from_mri)
         print("Waiting for user field B state")
-        if self.field_a.value() == False and self.field_b.value() == True:
+        if self.PersonDetectorFieldA == False and self.PersonDetectorFieldB == True:
             if self.user_returned_from_mri == False and self.ferrometal_detected == False:
                 print("1")
                 return self.FERROMETAL_DETECTION_STATE
@@ -116,13 +123,24 @@ class StateMachine:
 
     def on_press_emergency_button(self, pin):
         print("Emergency state")
-        self.Door1LockState.set_color("blue")
-        self.Door2LockState.set_color("blue")
-        self.FerroDetectLED.set_color("blue")
-        self.Door1._open_door() # _open_door DOOR 1
-        self.Door2._open_door() # _open_door DOOR 2
-        self.EmergencyState = True
-        return self.EmergencyState
+        if pin == self.EmergencyButtonMRIRoom:
+            print("Emergency button MRIRoom pressed")
+            self.Door2._open_door()
+            self.Door1._close_door()
+            self.Door1LockState.set_color("blue") # Set the color to blue
+            self.Door2LockState.set_color("blue") # Set the color to blue
+            self.FerroDetectLED.set_color("blue") # Set the color to blue
+            self.EmergencyState = True
+            return self.EmergencyState
+        elif pin == self.EmergencyButtonScannerRoom:
+            print("Emergency button ScannerRoom pressed")
+            self.Door1._open_door()
+            self.Door2._close_door()
+            self.Door1LockState.set_color("blue") # Set the color to blue
+            self.Door2LockState.set_color("blue") # Set the color to blue
+            self.FerroDetectLED.set_color("blue") # Set the color to blue
+            self.EmergencyState = True
+            return self.EmergencyState
 
     def user_returned_from_mri_state(self):
         self.user_returned_from_mri = True
