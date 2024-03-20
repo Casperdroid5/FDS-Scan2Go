@@ -166,6 +166,14 @@ class StateMachine:
                 print("Emergency state triggered, stopping state machine after")
                 break
 
+            if self.button_door1_pressed == True:
+                self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE
+                self.button_door1_pressed = False
+
+            if self.button_door2_pressed == True:
+                self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
+                self.button_door2_pressed = False
+
             if self.state == self.INITIALISATION_STATE:
                 if not self.initialized:  # Check if initialization has been done
                     self.initialization_state()
