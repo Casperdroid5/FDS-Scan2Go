@@ -1,3 +1,0 @@
-[console_scripts]
-list_serial_ports = utilities.list_serial_ports:lsp
-
