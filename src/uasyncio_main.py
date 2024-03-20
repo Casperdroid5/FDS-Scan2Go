@@ -1,6 +1,6 @@
 from machine import ADC, UART, Pin 
 import uasyncio
-from hardwares2g import RGB, DOOR
+from hardware_s2g import RGB, DOOR
 import time
 
 

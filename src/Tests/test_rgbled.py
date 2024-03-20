@@ -1,4 +1,4 @@
-from hardwares2g import RGB  # Importing the RGB class from your code
+from hardware_s2g import RGB  # Importing the RGB class from your code
 import time 
 
 

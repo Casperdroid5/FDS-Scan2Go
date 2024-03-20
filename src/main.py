@@ -1,7 +1,9 @@
+from hardware_s2g import RGB, DOOR
+from system_utils import SystemInitCheck
 from machine import Pin, ADC
-from hardwares2g import RGB, DOOR
 import time
 
+# State Machine
 class StateMachine:
     def __init__(self):
 
@@ -12,6 +14,7 @@ class StateMachine:
         self.user_returned_from_mri = False
         self.emergency_state = False
         self.initialized = False  # Flag to track initialization
+
         # doorbuttons variables
         self.person_detector_field_a = False
         self.person_detector_field_b = False
@@ -163,7 +166,7 @@ class StateMachine:
     
         self.state = self.INITIALISATION_STATE
         while True:
-            if self.emergency_state:
+            if self.emergency_state == True:
                 print("Emergency state triggered, stopping state machine after")
                 break
 
@@ -231,5 +234,11 @@ class StateMachine:
             time.sleep(0.3) # Sleep for 300ms to avoid a very fast loop
 
 if __name__ == "__main__":
-    FDS = StateMachine()
-    FDS.run()
+    try:
+        system_check = SystemInitCheck()  # Perform system check
+        FDS = StateMachine()
+        FDS.run()
+    except SystemExit:
+        print("System initialization failed. Exiting...")
+    except Exception as e:
+        print("An unexpected error occurred during initialization:", e)
