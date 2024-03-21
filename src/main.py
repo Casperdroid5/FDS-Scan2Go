@@ -40,7 +40,7 @@ class StateMachine:
         self.lock_door2 = RGB(10, 11, 12)
         self.lock_door1 = RGB(2, 3, 4)
         self.ferro_led = RGB(6, 7, 8)
-        
+
         # Initialize doors
         self.door1 = DOOR(14, self.angle_closed, self.angle_open)
         self.door2 = DOOR(15, self.angle_closed, self.angle_open)
@@ -55,11 +55,8 @@ class StateMachine:
         self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.unlock_and_open_door1_state)
         self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)
         self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.unlock_and_open_door2_state)
-        self.button_person_detector_field_a = Pin(19, Pin.IN, Pin.PULL_UP)
-        self.button_person_detector_field_a.irq(trigger=Pin.IRQ_FALLING, handler=self.person_detected_in_field_a)
-        self.button_person_detector_field_b = Pin(20, Pin.IN, Pin.PULL_UP)
-        self.button_person_detector_field_b.irq(trigger=Pin.IRQ_FALLING, handler=self.person_detected_in_field_b)
-
+        self.switch_person_detector_field_a = Pin(19, Pin.IN, Pin.PULL_UP)
+        self.switch_person_detector_field_b = Pin(20, Pin.IN, Pin.PULL_UP)
 
     # State Functions
     def initialization_state(self):
@@ -88,15 +85,15 @@ class StateMachine:
         pot_value = self.pot1.read_u16()
         scaled_value = (pot_value / 65535) * 100 # Convert potentiometer value to a range between 0 and 100
         print("Potentiometer value:", scaled_value)
-        if 0 <= pot_value < 50:
+        if 0 <= scaled_value < 30:
             self.ferro_led.set_color("green")  # Green
             self.scanner_result = "NoMetalDetected"
             return self.scanner_result
-        elif 50 <= pot_value <= 80:
+        elif 30 <= scaled_value <= 80:
             self.scanner_result = "ScanInProgress"
             self.ferro_led.set_color("blue")
             return self.scanner_result
-        elif 80 < pot_value <= 100:
+        elif 90 < scaled_value <= 100:
             self.scanner_result = "MetalDetected"
             self.ferro_led.set_color("red")  # Red
 
@@ -161,24 +158,14 @@ class StateMachine:
             self.emergency_state = True
             return self.emergency_state
 
-    def person_detected_in_field_a(self, pin):
-        print("person_detected_in_field_a")
-        self.person_present_in_field_a = True
+    def check_person_in_field_a(self):
+        print("check_person_in_field_a")
+        self.person_present_in_field_a = not self.switch_person_detector_field_a.value()  # Check if the switch is closed
         return self.person_present_in_field_a
 
-    def person_not_detected_in_field_a(self, pin):
-        print("person_not_detected_in_field_a")
-        self.person_present_in_field_a = False
-        return self.person_present_in_field_a
-
-    def person_detected_in_field_b(self, pin):
-        print("person_detected_in_field_b")
-        self.person_present_in_field_b = True
-        return self.person_present_in_field_b
-
-    def person_not_detected_in_field_b(self, pin):
-        print("person_not_detected_in_field_b")
-        self.person_present_in_field_b = False
+    def check_person_in_field_b(self):
+        print("check_person_in_field_b")
+        self.person_present_in_field_b = not self.switch_person_detector_field_b.value()  # Check if the switch is closed
         return self.person_present_in_field_b
 
 
@@ -209,19 +196,19 @@ class StateMachine:
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
-                if self.person_present_in_field_a == True:
+                if self.check_person_in_field_a():  # Check if person is present in field A
                     self.state = self.CLOSE_AND_LOCK_DOOR1_STATE
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
-                if self.person_present_in_field_b == True:
+                if self.check_person_in_field_b():  # Check if person is present in field B
                     self.state = self.CLOSE_AND_LOCK_DOOR2_STATE
 
             elif self.state == self.SCAN_FOR_FERROMETALS:
                 self.state = self.scan_for_ferrometals() 
-                if self.scanner_result == "NoMetalDetected":
-                    self.state = self.METAL_NOT_DETECTED_STATE
+                if self.scanner_result == "MetalDetected":
+                    self.state = self.METAL_DETECTED_STATE
                 elif self.scanner_result == "NoMetalDetected":
-                    self.state = self.METAL_DETECTED_STATE 
+                    self.state = self.METAL_NOT_DETECTED_STATE 
                 elif self.scanner_result == "ScanInProgress":
                     self.state = self.SCAN_FOR_FERROMETALS  # Corrected state name
 
@@ -241,8 +228,8 @@ class StateMachine:
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.CLOSE_AND_LOCK_DOOR1_STATE:
-                self.state = self.close_and_lock_door1_state()  # Corrected method call
-                if self.close_and_lock_door1_state() == 0:  # Corrected transition condition
+                self.state = self.close_and_lock_door1_state()
+                if self.close_and_lock_door1_state() == 0: 
                     self.state = self.SCAN_FOR_FERROMETALS
 
             elif self.state == self.UNLOCK_AND_OPEN_DOOR2_STATE:
