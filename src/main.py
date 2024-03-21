@@ -213,18 +213,18 @@ class StateMachine:
                     self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
 
             elif self.state == self.UNLOCK_AND_OPEN_DOOR1_STATE:
-                self.state = self.unlock_and_open_door1_state()
-                if self.unlock_and_open_door1_state == 0:
+                self.state = self.unlock_and_open_door1_state(None)
+                if self.unlock_and_open_door1_state(None) == 0:
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.CLOSE_AND_LOCK_DOOR1_STATE:
-                self.state = self.close_and_lock_door1_state
+                self.state = self.close_and_lock_door1_state()
                 if self.close_and_lock_door1_state() == 0: 
                     self.state = self.FERROMETAL_DETECTION_STATE 
 
             elif self.state == self.UNLOCK_AND_OPEN_DOOR2_STATE:
-                self.state = self.unlock_and_open_door2_state()
-                if self.unlock_and_open_door2_state() == 0:
+                self.state = self.unlock_and_open_door2_state(None)
+                if self.unlock_and_open_door2_state(None) == 0:
                     self.state = self.USER_FIELD_B_RESPONSE_STATE
 
             elif self.state == self.CLOSE_AND_LOCK_DOOR2_STATE:
