@@ -6,7 +6,7 @@ import time
 # State Machine
 class StateMachine:
     def __init__(self):
-
+        self.last_button_press_time = time.ticks_ms()
         # StatemachineVariables
         self.angle_open = 0
         self.angle_closed = 90
@@ -144,16 +144,26 @@ class StateMachine:
             return self.emergency_state
 
     def toggle_person_detector_field_a(self, pin):
+        current_time = time.ticks_ms()
+        if current_time - self.last_button_press_time < 500:  # Debounce-tijd van 200 ms
+            return
+        self.last_button_press_time = current_time
+        
         print("Toggle person_detector_field_a")
         self.person_detector_field_a = not self.person_detector_field_a
         self.button_door1_pressed = True
-        return 0 # State Ran succsessfully
+        return 0 # State Ran succesvol
 
     def toggle_person_detector_field_b(self, pin):
+        current_time = time.ticks_ms()
+        if current_time - self.last_button_press_time < 500:  # Debounce-tijd van 200 ms
+            return
+        self.last_button_press_time = current_time
+
         print("Toggle person_detector_field_b")
         self.person_detector_field_b = not self.person_detector_field_b
         self.button_door2_pressed = True
-        return 0 # State Ran succsessfully
+        return 0 # State Ran succesvol
 
 
     # State machine
@@ -173,7 +183,7 @@ class StateMachine:
             if self.button_door2_pressed == True:
                 if self.state == self.USER_FIELD_B_RESPONSE_STATE or self.state == self.METAL_NOT_DETECTED_STATE:
                     self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
-                    self.button_door2_pressed = False
+                    self.button_door2_pressed = False 
 
             if self.state == self.INITIALISATION_STATE:
                 if not self.initialized:  # Check if initialization has been done
