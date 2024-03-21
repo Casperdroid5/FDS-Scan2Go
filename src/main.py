@@ -6,7 +6,7 @@ import time
 # State Machine
 class StateMachine:
     def __init__(self):
-        self.last_button_press_time = time.ticks_ms()
+
         # StatemachineVariables
         self.angle_open = 0
         self.angle_closed = 90
@@ -14,6 +14,8 @@ class StateMachine:
         self.user_returned_from_mri = False
         self.emergency_state = False
         self.initialized = False  # Flag to track initialization
+        self.person_present_in_field_a = False
+        self.person_present_in_field_b = False
 
         # doorbuttons variables
         self.person_detector_field_a = False
@@ -49,10 +51,15 @@ class StateMachine:
         self.button_emergency_mri.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_emergency_button_press)
         self.button_emergency_scanner = Pin(16, Pin.IN, Pin.PULL_UP)
         self.button_emergency_scanner.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_emergency_button_press)
-        self.button_door1 = Pin(17, Pin.IN, Pin.PULL_UP)
-        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.toggle_person_detector_field_a)
-        self.button_door2 = Pin(18, Pin.IN, Pin.PULL_UP)
-        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.toggle_person_detector_field_b)
+        self.button_door1 = Pin(21, Pin.IN, Pin.PULL_UP)
+        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.unlock_and_open_door1_state)
+        self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)
+        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.unlock_and_open_door2_state)
+        self.button_person_detector_field_a = Pin(19, Pin.IN, Pin.PULL_UP)
+        self.button_person_detector_field_a.irq(trigger=Pin.IRQ_FALLING, handler=self.person_detected_in_field_a)
+        self.button_person_detector_field_b = Pin(20, Pin.IN, Pin.PULL_UP)
+        self.button_person_detector_field_b.irq(trigger=Pin.IRQ_FALLING, handler=self.person_detected_in_field_b)
+
 
     # State Functions
     def initialization_state(self):
@@ -98,7 +105,7 @@ class StateMachine:
         self.ferro_led.set_color("green")
         return 0 # State Ran succsessfully
 
-    def unlock_and_open_door1_state(self):
+    def unlock_and_open_door1_state(self, pin):
         print("unlock_and_open_door1_state")
         self.door1._open_door()
         self.lock_door1.set_color("green") 
@@ -110,7 +117,7 @@ class StateMachine:
         self.lock_door1.set_color("red")  
         return 0 # State Ran succsessfully
 
-    def unlock_and_open_door2_state(self):
+    def unlock_and_open_door2_state(self, pin):
         print("unlock_and_open_door2_state")
         self.door2._open_door() 
         self.lock_door2.set_color("green") 
@@ -143,27 +150,16 @@ class StateMachine:
             self.emergency_state = True
             return self.emergency_state
 
-    def toggle_person_detector_field_a(self, pin):
-        current_time = time.ticks_ms()
-        if current_time - self.last_button_press_time < 500:  # Debounce-tijd van 200 ms
-            return
-        self.last_button_press_time = current_time
-        
-        print("Toggle person_detector_field_a")
-        self.person_detector_field_a = not self.person_detector_field_a
-        self.button_door1_pressed = True
-        return 0 # State Ran succesvol
+    def person_detected_in_field_a(self, pin):
+        print("person_detected_in_field_a")
+        self.person_present_in_field_a = True
+        return self.person_present_in_field_a
 
-    def toggle_person_detector_field_b(self, pin):
-        current_time = time.ticks_ms()
-        if current_time - self.last_button_press_time < 500:  # Debounce-tijd van 200 ms
-            return
-        self.last_button_press_time = current_time
+    def person_detected_in_field_b(self, pin):
+        print("person_detected_in_field_b")
+        self.person_present_in_field_b = True
+        return self.person_present_in_field_b
 
-        print("Toggle person_detector_field_b")
-        self.person_detector_field_b = not self.person_detector_field_b
-        self.button_door2_pressed = True
-        return 0 # State Ran succesvol
 
 
     # State machine
@@ -183,7 +179,7 @@ class StateMachine:
             if self.button_door2_pressed == True:
                 if self.state == self.USER_FIELD_B_RESPONSE_STATE or self.state == self.METAL_NOT_DETECTED_STATE:
                     self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
-                    self.button_door2_pressed = False 
+                    self.button_door2_pressed = False
 
             if self.state == self.INITIALISATION_STATE:
                 if not self.initialized:  # Check if initialization has been done
@@ -192,11 +188,11 @@ class StateMachine:
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
-                if self.person_detector_field_a:
+                if self.person_present_in_field_a == True:
                     self.state = self.CLOSE_AND_LOCK_DOOR1_STATE
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
-                if self.person_detector_field_b:
+                if self.person_present_in_field_b == True:
                     self.state = self.CLOSE_AND_LOCK_DOOR2_STATE
 
             elif self.state == self.FERROMETAL_DETECTION_STATE:
