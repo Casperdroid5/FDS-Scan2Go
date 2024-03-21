@@ -159,12 +159,12 @@ class StateMachine:
             return self.emergency_state
 
     def check_person_in_field_a(self):
-        print("check_person_in_field_a")
+        print("check_person_in_field_A")
         self.person_present_in_field_a = not self.switch_person_detector_field_a.value()  # Check if the switch is closed
         return self.person_present_in_field_a
 
     def check_person_in_field_b(self):
-        print("check_person_in_field_b")
+        print("check_person_in_field_B")
         self.person_present_in_field_b = not self.switch_person_detector_field_b.value()  # Check if the switch is closed
         return self.person_present_in_field_b
 
@@ -190,19 +190,27 @@ class StateMachine:
                     self.button_door2_pressed = False
 
             if self.state == self.INITIALISATION_STATE:
-                if not self.initialized:  # Check if initialization has been done
+                if not self.initialized:
                     self.initialization_state()
-                    self.initialized = True  # Set the flag to True after initialization
+                    self.initialized = True 
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
-                if self.check_person_in_field_a():  # Check if person is present in field A
+                self.check_person_in_field_a()
+                if self.person_present_in_field_a == True and self.user_returned_from_mri == False:
                     self.state = self.CLOSE_AND_LOCK_DOOR1_STATE
+                if  self.person_present_in_field_a == True and self.user_returned_from_mri == True:
+                    self.user_returned_from_mri = False
+                    self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
-                if self.check_person_in_field_b():  # Check if person is present in field B
-                    self.state = self.CLOSE_AND_LOCK_DOOR2_STATE
-
+                self.check_person_in_field_b()
+                if self.scanner_result == "NoMetalDetected":
+                    self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
+                if self.user_returned_from_mri == True and self.person_present_in_field_b == True:
+                    self.state = self.USER_FIELD_A_RESPONSE_STATE
+                self.state = self.CLOSE_AND_LOCK_DOOR2_STATE
+            
             elif self.state == self.SCAN_FOR_FERROMETALS:
                 self.state = self.scan_for_ferrometals() 
                 if self.scanner_result == "MetalDetected":
@@ -210,7 +218,7 @@ class StateMachine:
                 elif self.scanner_result == "NoMetalDetected":
                     self.state = self.METAL_NOT_DETECTED_STATE 
                 elif self.scanner_result == "ScanInProgress":
-                    self.state = self.SCAN_FOR_FERROMETALS  # Corrected state name
+                    self.state = self.SCAN_FOR_FERROMETALS 
 
             elif self.state == self.METAL_DETECTED_STATE:
                 self.state = self.metal_detected_state()
@@ -220,7 +228,7 @@ class StateMachine:
             elif self.state == self.METAL_NOT_DETECTED_STATE:
                 self.state = self.metal_not_detected_state()
                 if self.metal_not_detected_state() == 0:
-                    self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
+                    self.state = self.USER_FIELD_B_RESPONSE_STATE
 
             elif self.state == self.UNLOCK_AND_OPEN_DOOR1_STATE:
                 self.state = self.unlock_and_open_door1_state(None)
@@ -233,9 +241,10 @@ class StateMachine:
                     self.state = self.SCAN_FOR_FERROMETALS
 
             elif self.state == self.UNLOCK_AND_OPEN_DOOR2_STATE:
-                self.state = self.unlock_and_open_door2_state(None)
                 if self.unlock_and_open_door2_state(None) == 0:
+                    self.user_returned_from_mri = True
                     self.state = self.USER_FIELD_B_RESPONSE_STATE
+                self.state = self.unlock_and_open_door2_state(None)
 
             elif self.state == self.CLOSE_AND_LOCK_DOOR2_STATE:
                 self.state = self.close_and_lock_door2_state()
@@ -243,11 +252,11 @@ class StateMachine:
             else:
                 print("Invalid state")
                 break
-            time.sleep(0.5) # Sleep for 300ms to avoid a very fast loop
+            time.sleep(0.5)
 
 if __name__ == "__main__":
     try:
-        system_check = SystemUtilsCheck()  # Perform system check
+        system_check = SystemUtilsCheck()
         FDS = StateMachine()
         FDS.run()
     except SystemExit:
