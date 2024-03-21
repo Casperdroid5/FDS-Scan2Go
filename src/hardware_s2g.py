@@ -31,7 +31,6 @@ class RGB:
         self._pin_green.duty_u16(0)
         self._pin_blue.duty_u16(0)
 
-
 class DOOR:
     def __init__(self, pin_number, angle_closed, angle_open):
         self.servo = ServoMotor(Pin(pin_number)) 

@@ -20,7 +20,7 @@ class StateMachine:
         self.person_detector_field_b = False
         self.button_door1_pressed = False
         self.button_door2_pressed = False
-        
+
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
         self.USER_FIELD_A_RESPONSE_STATE = 1
@@ -53,7 +53,6 @@ class StateMachine:
         self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.toggle_person_detector_field_a)
         self.button_door2 = Pin(18, Pin.IN, Pin.PULL_UP)
         self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.toggle_person_detector_field_b)
-
 
     # State Functions
     def initialization_state(self):
@@ -143,7 +142,7 @@ class StateMachine:
             self.ferro_led.set_color("blue") 
             self.emergency_state = True
             return self.emergency_state
-        
+
     def toggle_person_detector_field_a(self, pin):
         print("Toggle person_detector_field_a")
         self.person_detector_field_a = not self.person_detector_field_a
@@ -159,7 +158,7 @@ class StateMachine:
 
     # State machine
     def run(self):
-    
+
         self.state = self.INITIALISATION_STATE
         while True:
             if self.emergency_state == True:
@@ -167,12 +166,14 @@ class StateMachine:
                 break
 
             if self.button_door1_pressed == True:
-                self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE
-                self.button_door1_pressed = False
+                if self.state == self.USER_FIELD_A_RESPONSE_STATE:
+                    self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE
+                    self.button_door1_pressed = False
 
             if self.button_door2_pressed == True:
-                self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
-                self.button_door2_pressed = False
+                if self.state == self.USER_FIELD_B_RESPONSE_STATE or self.state == self.METAL_NOT_DETECTED_STATE:
+                    self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
+                    self.button_door2_pressed = False
 
             if self.state == self.INITIALISATION_STATE:
                 if not self.initialized:  # Check if initialization has been done
