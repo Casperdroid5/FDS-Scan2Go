@@ -10,7 +10,7 @@ class StateMachine:
         # StatemachineVariables
         self.angle_open = 0
         self.angle_closed = 90
-        self.scanner_result = False
+        self.scanner_result = "NoMetalDetected"
         self.user_returned_from_mri = False
         self.emergency_state = False
         self.initialized = False
@@ -27,7 +27,7 @@ class StateMachine:
         self.INITIALISATION_STATE = 0
         self.USER_FIELD_A_RESPONSE_STATE = 1
         self.USER_FIELD_B_RESPONSE_STATE = 2
-        self.scan_for_ferrometals = 3
+        self.SCAN_FOR_FERROMETALS = 3
         self.METAL_DETECTED_STATE = 4
         self.METAL_NOT_DETECTED_STATE = 5
         self.UNLOCK_AND_OPEN_DOOR1_STATE = 6
@@ -90,14 +90,14 @@ class StateMachine:
         print("Potentiometer value:", scaled_value)
         if 0 <= pot_value < 50:
             self.ferro_led.set_color("green")  # Green
-            self.scanner_result = False
+            self.scanner_result = "NoMetalDetected"
             return self.scanner_result
         elif 50 <= pot_value <= 80:
-            self.scanner_result = None
+            self.scanner_result = "ScanInProgress"
             self.ferro_led.set_color("blue")
             return self.scanner_result
         elif 80 < pot_value <= 100:
-            self.scanner_result = True
+            self.scanner_result = "MetalDetected"
             self.ferro_led.set_color("red")  # Red
 
     def metal_detected_state(self):
@@ -216,14 +216,14 @@ class StateMachine:
                 if self.person_present_in_field_b == True:
                     self.state = self.CLOSE_AND_LOCK_DOOR2_STATE
 
-            elif self.state == self.scan_for_ferrometals:
-                self.state = self.scan_for_ferrometals()
-                if self.scanner_result == False:
+            elif self.state == self.SCAN_FOR_FERROMETALS:
+                self.state = self.scan_for_ferrometals() 
+                if self.scanner_result == "NoMetalDetected":
                     self.state = self.METAL_NOT_DETECTED_STATE
-                elif self.scanner_result == True:
+                elif self.scanner_result == "NoMetalDetected":
                     self.state = self.METAL_DETECTED_STATE 
-                elif self.scanner_result == None:
-                    self.state = self.scan_for_ferrometals
+                elif self.scanner_result == "ScanInProgress":
+                    self.state = self.SCAN_FOR_FERROMETALS  # Corrected state name
 
             elif self.state == self.METAL_DETECTED_STATE:
                 self.state = self.metal_detected_state()
@@ -241,9 +241,9 @@ class StateMachine:
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.CLOSE_AND_LOCK_DOOR1_STATE:
-                self.state = self.close_and_lock_door1_state()
-                if self.close_and_lock_door1_state() == 0: 
-                    self.state = self.scan_for_ferrometals 
+                self.state = self.close_and_lock_door1_state()  # Corrected method call
+                if self.close_and_lock_door1_state() == 0:  # Corrected transition condition
+                    self.state = self.SCAN_FOR_FERROMETALS
 
             elif self.state == self.UNLOCK_AND_OPEN_DOOR2_STATE:
                 self.state = self.unlock_and_open_door2_state(None)
@@ -252,10 +252,11 @@ class StateMachine:
 
             elif self.state == self.CLOSE_AND_LOCK_DOOR2_STATE:
                 self.state = self.close_and_lock_door2_state()
+
             else:
                 print("Invalid state")
                 break
-            time.sleep(0.3) # Sleep for 300ms to avoid a very fast loop
+            time.sleep(0.5) # Sleep for 300ms to avoid a very fast loop
 
 if __name__ == "__main__":
     try:
