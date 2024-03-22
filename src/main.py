@@ -254,6 +254,8 @@ class StateMachine:
 
             elif self.state == self.CLOSE_AND_LOCK_DOOR2_STATE:
                 self.state = self.close_and_lock_door2_state()
+                if self.user_returned_from_mri == True:
+                    self.state = self.USER_FIELD_A_RESPONSE_STATE
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             else:
