@@ -72,15 +72,11 @@ class StateMachine:
         self.lock_door1.set_color("red")  # DOOR Locked
         return 0 # State Ran succsessfully
 
-    def check_for_person_field_A(self):
-        print("check_for_person_field_A")
-        if self.person_detector_field_a == True and self.person_detector_field_b == False: 
-            return 0 # State Ran succsessfully
-
-    def check_for_person_field_B(self):
-        print("check_for_person_field_B")
-        if self.person_detector_field_a == False and self.person_detector_field_b == True:
-            return 0 # State Ran succsessfully
+    def check_for_persons(self):
+        print("check_for_persons")
+        self.person_present_in_field_a = not self.switch_person_detector_field_a.value()  # Check if the switch is closed for field A
+        self.person_present_in_field_b = not self.switch_person_detector_field_b.value()  # Check if the switch is closed for field B
+        return 0 # State Ran succsessfully
 
     def scan_for_ferrometals(self):
         print("scan_for_ferrometals")
@@ -150,16 +146,6 @@ class StateMachine:
             self.emergency_state = True
             return self.emergency_state
 
-    def check_person_in_field_a(self):
-        print("check_person_in_field_A")
-        self.person_present_in_field_a = not self.switch_person_detector_field_a.value()  # Check if the switch is closed
-        return self.person_present_in_field_a
-
-    def check_person_in_field_b(self):
-        print("check_person_in_field_B")
-        self.person_present_in_field_b = not self.switch_person_detector_field_b.value()  # Check if the switch is closed
-        return self.person_present_in_field_b
-
     # State machine
     def run(self):
 
@@ -186,7 +172,7 @@ class StateMachine:
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
-                self.check_person_in_field_a()
+                self.check_for_persons()
                 if self.person_present_in_field_a == True and self.user_returned_from_mri == False:
                     self.state = self.CLOSE_AND_LOCK_DOOR1_STATE
                 if  self.person_present_in_field_a == True and self.user_returned_from_mri == True:
@@ -194,13 +180,13 @@ class StateMachine:
                     self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE
 
             elif self.state == self.NO_USER_FIELD_A_RESPONSE_STATE:
-                self.check_person_in_field_a()
+                self.check_for_persons()
                 if self.person_present_in_field_a == False:
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
                     self.user_returned_from_mri = False
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
-                self.check_person_in_field_b()
+                self.check_for_persons()
                 if self.scanner_result == "MetalDetected" and self.person_present_in_field_b == True:
                     self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE
                 if self.scanner_result == "NoMetalDetected" and self.person_present_in_field_b == True:
@@ -209,7 +195,7 @@ class StateMachine:
                     self.state = self.CLOSE_AND_LOCK_DOOR2_STATE
 
             elif self.state == self.NO_USER_FIELD_B_RESPONSE_STATE:
-                self.check_person_in_field_b()
+                self.check_for_persons()
                 if self.person_present_in_field_b == False:
                     self.state = self.USER_FIELD_B_RESPONSE_STATE
                     self.user_returned_from_mri = True
@@ -269,3 +255,4 @@ if __name__ == "__main__":
         print("System initialization failed. Exiting...")
     except Exception as e:
         print("An unexpected error occurred during initialization:", e)
+
