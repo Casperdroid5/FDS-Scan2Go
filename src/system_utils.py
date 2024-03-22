@@ -19,7 +19,7 @@ def check_motors():
 
 def check_leds():
     # Check if LEDs are connected and working
-    _LedsFunctional = True  # for testing purposes this is set to...
+    _LedsFunctional = False  # for testing purposes this is set to...
     return _LedsFunctional
 
 def check_buttons():
@@ -27,7 +27,7 @@ def check_buttons():
     _ButtonsFunctional = True  # for testing purposes this is set to...
     return _ButtonsFunctional
 
-class SystemUtilsCheck:
+class SystemInitCheck:
     def __init__(self):
         print("System is starting up, running system check")
         failing_components = self.systemcheck()
