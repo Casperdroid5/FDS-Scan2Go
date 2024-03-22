@@ -169,7 +169,6 @@ class StateMachine:
         return self.person_present_in_field_b
 
 
-
     # State machine
     def run(self):
 
@@ -205,12 +204,11 @@ class StateMachine:
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
                 self.check_person_in_field_b()
-                if self.scanner_result == "NoMetalDetected":
+                if self.scanner_result == "NoMetalDetected" and self.person_present_in_field_b == True:
                     self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
                 if self.user_returned_from_mri == True and self.person_present_in_field_b == True:
-                    self.state = self.USER_FIELD_A_RESPONSE_STATE
-                self.state = self.CLOSE_AND_LOCK_DOOR2_STATE
-            
+                    self.state = self.CLOSE_AND_LOCK_DOOR2_STATE
+
             elif self.state == self.SCAN_FOR_FERROMETALS:
                 self.state = self.scan_for_ferrometals() 
                 if self.scanner_result == "MetalDetected":
@@ -241,13 +239,15 @@ class StateMachine:
                     self.state = self.SCAN_FOR_FERROMETALS
 
             elif self.state == self.UNLOCK_AND_OPEN_DOOR2_STATE:
-                if self.unlock_and_open_door2_state(None) == 0:
-                    self.user_returned_from_mri = True
+                if self.user_returned_from_mri == False:
+                    self.user_returned_from_mri = True	
+                    self.state = self.unlock_and_open_door2_state(None)
                     self.state = self.USER_FIELD_B_RESPONSE_STATE
-                self.state = self.unlock_and_open_door2_state(None)
+                    print("State reached")
 
             elif self.state == self.CLOSE_AND_LOCK_DOOR2_STATE:
                 self.state = self.close_and_lock_door2_state()
+                self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             else:
                 print("Invalid state")
