@@ -36,6 +36,7 @@ class StateMachine:
         self.CLOSE_AND_LOCK_DOOR2_STATE = 9
         self.EMERGENCY_STATE = 10
         self.NO_USER_FIELD_B_RESPONSE_STATE = 11
+        self.NO_USER_FIELD_A_RESPONSE_STATE = 12
 
         # Initialize indicator lights
         self.lock_door2 = RGB(10, 11, 12)
@@ -169,7 +170,6 @@ class StateMachine:
         self.person_present_in_field_b = not self.switch_person_detector_field_b.value()  # Check if the switch is closed
         return self.person_present_in_field_b
 
-
     # State machine
     def run(self):
 
@@ -202,6 +202,12 @@ class StateMachine:
                 if  self.person_present_in_field_a == True and self.user_returned_from_mri == True:
                     self.user_returned_from_mri = False
                     self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE
+
+            elif self.state == self.NO_USER_FIELD_A_RESPONSE_STATE:
+                self.check_person_in_field_a()
+                if self.person_present_in_field_a == False:
+                    self.state = self.USER_FIELD_A_RESPONSE_STATE
+                    self.user_returned_from_mri = False
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
                 self.check_person_in_field_b()
@@ -261,7 +267,7 @@ class StateMachine:
             else:
                 print("Invalid state")
                 break
-            time.sleep(0.5)
+            time.sleep(0.5) # to prevent the state machine from running too fast
 
 if __name__ == "__main__":
 
