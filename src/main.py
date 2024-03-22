@@ -204,6 +204,8 @@ class StateMachine:
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
                 self.check_person_in_field_b()
+                if self.scanner_result == "MetalDetected" and self.person_present_in_field_b == True:
+                    self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE
                 if self.scanner_result == "NoMetalDetected" and self.person_present_in_field_b == True:
                     self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
                 if self.user_returned_from_mri == True and self.person_present_in_field_b == True:
@@ -221,7 +223,7 @@ class StateMachine:
             elif self.state == self.METAL_DETECTED_STATE:
                 self.state = self.metal_detected_state()
                 if self.metal_detected_state() == 0:
-                    self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE
+                    self.state = self.USER_FIELD_B_RESPONSE_STATE
 
             elif self.state == self.METAL_NOT_DETECTED_STATE:
                 self.state = self.metal_not_detected_state()
