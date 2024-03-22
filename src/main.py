@@ -72,13 +72,13 @@ class StateMachine:
         self.lock_door1.set_color("red")  # DOOR Locked
         return 0 # State Ran succsessfully
 
-    def user_field_a_response(self):
-        print("user_field_a_response")
+    def check_for_person_field_A(self):
+        print("check_for_person_field_A")
         if self.person_detector_field_a == True and self.person_detector_field_b == False: 
             return 0 # State Ran succsessfully
 
-    def user_field_b_response(self):
-        print("user_field_b_response")
+    def check_for_person_field_B(self):
+        print("check_for_person_field_B")
         if self.person_detector_field_a == False and self.person_detector_field_b == True:
             return 0 # State Ran succsessfully
 
