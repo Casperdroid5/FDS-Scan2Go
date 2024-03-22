@@ -35,6 +35,7 @@ class StateMachine:
         self.UNLOCK_AND_OPEN_DOOR2_STATE = 8
         self.CLOSE_AND_LOCK_DOOR2_STATE = 9
         self.EMERGENCY_STATE = 10
+        self.NO_USER_FIELD_B_RESPONSE_STATE = 11
 
         # Initialize indicator lights
         self.lock_door2 = RGB(10, 11, 12)
@@ -64,10 +65,10 @@ class StateMachine:
         self.lock_door2.off()  # Turn indicator off
         self.ferro_led.off()  # Turn indicator off
         print("initialization_state")
-        self.door2._close_door()  # _close_door DOOR 2
+        self.door2._close_door()  
         self.lock_door2.set_color("red")  # DOOR Locked
-        self.door1._open_door()  # _open_door DOOR 1
-        self.lock_door1.set_color("green")  # DOOR Unlocked
+        self.door1._close_door()  
+        self.lock_door1.set_color("red")  # DOOR Locked
         return 0 # State Ran succsessfully
 
     def user_field_a_response_state(self):
@@ -179,7 +180,7 @@ class StateMachine:
                 break
 
             if self.button_door1_pressed == True:
-                if self.state == self.USER_FIELD_A_RESPONSE_STATE:
+                if self.state == self.USER_FIELD_A_RESPONSE_STATE or self.state == self.SCAN_FOR_FERROMETALS:
                     self.state = self.UNLOCK_AND_OPEN_DOOR1_STATE
                     self.button_door1_pressed = False
 
@@ -210,6 +211,12 @@ class StateMachine:
                     self.state = self.UNLOCK_AND_OPEN_DOOR2_STATE
                 if self.user_returned_from_mri == True and self.person_present_in_field_b == True:
                     self.state = self.CLOSE_AND_LOCK_DOOR2_STATE
+
+            elif self.state == self.NO_USER_FIELD_B_RESPONSE_STATE:
+                self.check_person_in_field_b()
+                if self.person_present_in_field_b == False:
+                    self.state = self.USER_FIELD_B_RESPONSE_STATE
+                    self.user_returned_from_mri = True
 
             elif self.state == self.SCAN_FOR_FERROMETALS:
                 self.state = self.scan_for_ferrometals() 
@@ -242,10 +249,8 @@ class StateMachine:
 
             elif self.state == self.UNLOCK_AND_OPEN_DOOR2_STATE:
                 if self.user_returned_from_mri == False:
-                    self.user_returned_from_mri = True	
                     self.state = self.unlock_and_open_door2_state(None)
-                    self.state = self.USER_FIELD_B_RESPONSE_STATE
-                    print("State reached")
+                    self.state = self.NO_USER_FIELD_B_RESPONSE_STATE
 
             elif self.state == self.CLOSE_AND_LOCK_DOOR2_STATE:
                 self.state = self.close_and_lock_door2_state()
@@ -257,6 +262,7 @@ class StateMachine:
             time.sleep(0.5)
 
 if __name__ == "__main__":
+
     try:
         system_check = SystemInitCheck()  # Perform system check
         FDS = StateMachine()

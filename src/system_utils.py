@@ -14,17 +14,17 @@ def check_sensors():
 
 def check_motors():
     # Check if motors are connected and working
-    _MotorFunctional = True  # for testing purposes this is set to...
+    _MotorFunctional = False  # for testing purposes this is set to...
     return _MotorFunctional
 
 def check_leds():
     # Check if LEDs are connected and working
-    _LedsFunctional = False  # for testing purposes this is set to...
+    _LedsFunctional = True  # for testing purposes this is set to...
     return _LedsFunctional
 
 def check_buttons():
     # Check if buttons are connected and working
-    _ButtonsFunctional = True  # for testing purposes this is set to...
+    _ButtonsFunctional = False  # for testing purposes this is set to...
     return _ButtonsFunctional
 
 class SystemInitCheck:
