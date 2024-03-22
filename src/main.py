@@ -54,31 +54,31 @@ class StateMachine:
         self.button_emergency_scanner = Pin(16, Pin.IN, Pin.PULL_UP)
         self.button_emergency_scanner.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_emergency_button_press)
         self.button_door1 = Pin(21, Pin.IN, Pin.PULL_UP)
-        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.unlock_and_open_door1_state)
+        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.unlock_and_open_door1)
         self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)
-        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.unlock_and_open_door2_state)
+        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.unlock_and_open_door2)
         self.switch_person_detector_field_a = Pin(19, Pin.IN, Pin.PULL_UP)
         self.switch_person_detector_field_b = Pin(20, Pin.IN, Pin.PULL_UP)
 
     # State Functions
-    def initialization_state(self):
+    def initialization(self):
         self.lock_door1.off()  # Turn indicator off
         self.lock_door2.off()  # Turn indicator off
         self.ferro_led.off()  # Turn indicator off
-        print("initialization_state")
+        print("initialization")
         self.door2._close_door()  
         self.lock_door2.set_color("red")  # DOOR Locked
         self.door1._close_door()  
         self.lock_door1.set_color("red")  # DOOR Locked
         return 0 # State Ran succsessfully
 
-    def user_field_a_response_state(self):
-        print("user_field_a_response_state")
+    def user_field_a_response(self):
+        print("user_field_a_response")
         if self.person_detector_field_a == True and self.person_detector_field_b == False: 
             return 0 # State Ran succsessfully
 
-    def user_field_b_response_state(self):
-        print("user_field_b_response_state")
+    def user_field_b_response(self):
+        print("user_field_b_response")
         if self.person_detector_field_a == False and self.person_detector_field_b == True:
             return 0 # State Ran succsessfully
 
@@ -99,42 +99,32 @@ class StateMachine:
             self.scanner_result = "MetalDetected"
             self.ferro_led.set_color("red")  # Red
 
-    def metal_detected_state(self):
-        print("metal_detected_state")
-        self.ferro_led.set_color("red")
-        return 0 # State Ran succsessfully
-
-    def metal_not_detected_state(self):
-        print("metal_not_detected_state")
-        self.ferro_led.set_color("green")
-        return 0 # State Ran succsessfully
-
-    def unlock_and_open_door1_state(self, pin):
+    def unlock_and_open_door1(self, pin):
         if pin == self.button_door1:
             self.button_door1_pressed = True
             return self.button_door1_pressed
-        print("unlock_and_open_door1_state")
+        print("unlock_and_open_door1")
         self.door1._open_door()
         self.lock_door1.set_color("green") 
         return 0 # State Ran succsessfully
 
-    def close_and_lock_door1_state(self):
-        print("close_and_lock_door1_state")
+    def close_and_lock_door1(self):
+        print("close_and_lock_door1")
         self.door1._close_door() 
         self.lock_door1.set_color("red")  
         return 0 # State Ran succsessfully
 
-    def unlock_and_open_door2_state(self, pin):
+    def unlock_and_open_door2(self, pin):
         if pin == self.button_door2:
             self.button_door2_pressed = True
             return self.button_door2_pressed
-        print("unlock_and_open_door2_state")
+        print("unlock_and_open_door2")
         self.door2._open_door() 
         self.lock_door2.set_color("green") 
         return 0 # State Ran succsessfully
 
-    def close_and_lock_door2_state(self):
-        print("close_and_lock_door2_state")
+    def close_and_lock_door2(self):
+        print("close_and_lock_door2")
         self.door2._close_door() 
         self.lock_door2.set_color("red") 
         return 0 # State Ran succsessfully    
@@ -191,7 +181,7 @@ class StateMachine:
 
             if self.state == self.INITIALISATION_STATE:
                 if not self.initialized:
-                    self.initialization_state()
+                    self.initialization()
                     self.initialized = True 
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
 
@@ -234,32 +224,32 @@ class StateMachine:
                     self.state = self.SCAN_FOR_FERROMETALS 
 
             elif self.state == self.METAL_DETECTED_STATE:
-                self.state = self.metal_detected_state()
-                if self.metal_detected_state() == 0:
-                    self.state = self.USER_FIELD_B_RESPONSE_STATE
+                print("metal_detected")
+                self.ferro_led.set_color("red")
+                self.state = self.USER_FIELD_B_RESPONSE_STATE
 
             elif self.state == self.METAL_NOT_DETECTED_STATE:
-                self.state = self.metal_not_detected_state()
-                if self.metal_not_detected_state() == 0:
-                    self.state = self.USER_FIELD_B_RESPONSE_STATE
+                print("metal_not_detected")
+                self.ferro_led.set_color("green")                
+                self.state = self.USER_FIELD_B_RESPONSE_STATE
 
             elif self.state == self.UNLOCK_AND_OPEN_DOOR1_STATE:
-                self.state = self.unlock_and_open_door1_state(None)
-                if self.unlock_and_open_door1_state(None) == 0:
+                self.state = self.unlock_and_open_door1(None)
+                if self.unlock_and_open_door1(None) == 0:
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.CLOSE_AND_LOCK_DOOR1_STATE:
-                self.state = self.close_and_lock_door1_state()
-                if self.close_and_lock_door1_state() == 0: 
+                self.state = self.close_and_lock_door1()
+                if self.close_and_lock_door1() == 0: 
                     self.state = self.SCAN_FOR_FERROMETALS
 
             elif self.state == self.UNLOCK_AND_OPEN_DOOR2_STATE:
                 if self.user_returned_from_mri == False:
-                    self.state = self.unlock_and_open_door2_state(None)
+                    self.state = self.unlock_and_open_door2(None)
                     self.state = self.NO_USER_FIELD_B_RESPONSE_STATE
 
             elif self.state == self.CLOSE_AND_LOCK_DOOR2_STATE:
-                self.state = self.close_and_lock_door2_state()
+                self.state = self.close_and_lock_door2()
                 if self.user_returned_from_mri == True:
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
