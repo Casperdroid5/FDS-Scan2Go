@@ -3,6 +3,8 @@ from system_utils import SystemInitCheck
 from machine import Pin, ADC
 import time
 
+
+
 # State Machine
 class StateMachine:
     def __init__(self):
@@ -117,14 +119,17 @@ class StateMachine:
         self.emergency_state = True
         return 0
 
+
     # State machine
     def run(self):
+        global running 
 
         self.state = self.INITIALISATION_STATE
 
-        while True:
+        while running:
             if self.emergency_state:
-                print("Emergency state triggered, stopping state machine after")
+                print("Emergency state triggered, stopping state machine")
+                running = False  # Set running to False
                 break
 
             if self.state == self.INITIALISATION_STATE:
@@ -136,7 +141,8 @@ class StateMachine:
                         self.lock_door2.off()  # Turn indicator off
                         self.ferro_led.off()  # Turn indicator off
                         self.door2._close_door()  
-                        self.door1._close_door()  
+                        self.door1._close_door()
+                        running = True  
                         self.initialized = True
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
 
@@ -166,7 +172,7 @@ class StateMachine:
                 if self.scanner_result == "MetalDetected":
                     self.open_door(self.door1)
                     self.state = self.INITIALISATION_STATE
-                elif self.scanner_result == "NoMetalDetected" and not self.person_detected_in_field('A'): # not metal and field A emtpy
+                elif self.scanner_result == "NoMetalDetected" and self.person_detected_in_field('A') == False:
                     self.open_door(self.door2)
                     self.state = self.USER_IN_MRIROOM
                 elif self.scanner_result == "ScanInProgress" or self.person_detected_in_field('A') == True:
@@ -197,9 +203,12 @@ if __name__ == "__main__":
     try:
         system_check = SystemInitCheck()  # Perform system check
         FDS = StateMachine()
-        FDS.run()
+        running = True
+        while running:
+            FDS.run()
     except SystemExit:
         print("System initialization failed. Exiting...")
     except Exception as e:
         print("An unexpected error occurred during initialization:", e)
-
+    finally:
+        running = False  # Stop the main loop when exiting
