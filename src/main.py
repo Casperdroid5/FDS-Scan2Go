@@ -147,11 +147,11 @@ class StateMachine:
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
-                if self.person_detected_in_field('A') and not self.user_returned_from_mri:
+                if self.person_detected_in_field('A') == True and not self.user_returned_from_mri:
                     self.close_door(self.door1)
                     self.state = self.SCAN_FOR_FERROMETALS
                 elif self.user_returned_from_mri:
-                    if self.person_detected_in_field('A'): 
+                    if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                         self.user_returned_from_mri = False
                         self.open_door(self.door1)
                         self.state = self.INITIALISATION_STATE 
@@ -168,11 +168,11 @@ class StateMachine:
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.SCAN_FOR_FERROMETALS:
-                self.state = self.scan_for_ferrometals() 
+                self.scan_for_ferrometals() 
                 if self.scanner_result == "MetalDetected":
                     self.open_door(self.door1)
                     self.state = self.INITIALISATION_STATE
-                elif self.scanner_result == "NoMetalDetected" and self.person_detected_in_field('A') == False:
+                elif self.scanner_result == "NoMetalDetected" and self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
                     self.open_door(self.door2)
                     self.state = self.USER_IN_MRIROOM
                 elif self.scanner_result == "ScanInProgress" or self.person_detected_in_field('A') == True:
@@ -184,7 +184,7 @@ class StateMachine:
                     self.state = self.USER_FIELD_B_RESPONSE_STATE
 
             else:
-                print("Invalid state")
+                print("Invalid state, exiting...")
                 break
             time.sleep(0.5) # to prevent the state machine from running too fast
 
