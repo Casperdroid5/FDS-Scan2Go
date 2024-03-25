@@ -47,11 +47,21 @@ class StateMachine:
         self.button_emergency_scanner = Pin(16, Pin.IN, Pin.PULL_UP)
         self.button_emergency_scanner.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_emergency_button_press)
         self.button_door1 = Pin(21, Pin.IN, Pin.PULL_UP)
-        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: self.operate_door(self.door1, 'open'))
+        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler = self.handle_door1_button_press)
         self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)
-        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=lambda pin: self.operate_door(self.door2, 'open'))
+        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler = self.handle_door2_button_press)
         self.switch_person_detector_field_a = Pin(19, Pin.IN, Pin.PULL_UP)
         self.switch_person_detector_field_b = Pin(20, Pin.IN, Pin.PULL_UP)
+
+    def handle_door1_button_press(self, pin):
+        if self.state == self.USER_FIELD_A_RESPONSE_STATE or self.state == self.SCAN_FOR_FERROMETALS:	
+            self.open_door(self.door1)
+            self.button_door1_pressed = False
+
+    def handle_door2_button_press(self, pin):
+        if self.state == self.USER_IN_MRIROOM:
+            self.open_door(self.door2)
+            self.button_door2_pressed = False
 
     def person_detected_in_field(self, field):
         print(f"Checking for person in field {field}")    # Bericht afdrukken om aan te geven welk veld wordt gecontroleerd
@@ -109,25 +119,17 @@ class StateMachine:
 
     # State machine
     def run(self):
-        print("supertest2")
+
         self.state = self.INITIALISATION_STATE
+
         while True:
             if self.emergency_state:
                 print("Emergency state triggered, stopping state machine after")
                 break
 
-            if self.button_door1_pressed:
-                if self.state in [self.USER_FIELD_A_RESPONSE_STATE, self.SCAN_FOR_FERROMETALS]:
-                    self.open_door(self.door1)
-                    self.button_door1_pressed = False
-
-            if self.button_door2_pressed:
-                if self.state in [self.USER_FIELD_B_RESPONSE_STATE, self.scanner_result == "NoMetalDetected"]:
-                    self.open_door(self.door2)
-                    self.button_door2_pressed = False
-
             if self.state == self.INITIALISATION_STATE:
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
+                    self.close_door(self.door1)
                     if not self.initialized:
                         print("initialization")
                         self.lock_door1.off()  # Turn indicator off
@@ -147,7 +149,6 @@ class StateMachine:
                         self.user_returned_from_mri = False
                         self.open_door(self.door1)
                         self.state = self.INITIALISATION_STATE 
-
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
                 if self.scanner_result == "MetalDetected" and self.person_detected_in_field('B'):
