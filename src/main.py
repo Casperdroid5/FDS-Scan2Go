@@ -3,6 +3,8 @@ from system_utils import SystemInitCheck
 from machine import Pin, ADC
 import time
 
+global running
+running = False  # Define the variable "running" at the top-level scope
 
 # State Machine
 class StateMachine:
@@ -57,17 +59,17 @@ class StateMachine:
             self.open_door(self.door2)
 
     def person_detected_in_field(self, field):
-        print(f"Checking for person in field {field}")    # Bericht afdrukken om aan te geven welk veld wordt gecontroleerd
-        if field == 'A':     # Detector selecteren op basis van het veld ('A' of 'B')
+        print(f"Checking for person in field {field}")
+        if field == 'A':
             detector = self.switch_person_detector_field_a
         elif field =='B':
             detector = self.switch_person_detector_field_b 
-        peron_detection_result = not detector.value() # waarde meten van schakelaar
+        peron_detection_result = not detector.value() 
         # if peron_detection_result:
         #     print("Person detected in the field")
         # else:
         #     print("No person detected in the field")
-        return peron_detection_result     # Retourneren of er wel of geen persoon wordt gedetecteerd in het veld (true of false)
+        return peron_detection_result     
 
     def scan_for_ferrometals(self):
         print("scan_for_ferrometals")
@@ -104,32 +106,32 @@ class StateMachine:
             self.emergency_state_triggerd = True
         elif pin == self.button_system_override:
             print("System override button pressed")
-            running = False
             door1_action = 'open'
             door2_action = 'open'
             self.lock_door1.set_color("white")
             self.lock_door2.set_color("white")
             self.ferro_led.set_color("white")
+            global running
             self.system_override_state_triggerd = not self.system_override_state_triggerd
-            if self.system_override_state_triggerd == False:
-                self.system_initialised = False
-                self.state = self.INITIALISATION_STATE
+            running = not running
+            self.freeze()
 
-        # Voer de deuracties uit
+            # Voer de deuracties uit
         self.operate_door(self.door1, door1_action)
         self.operate_door(self.door2, door2_action)
 
         return 0
 
-    # State machine
+# State machine
     def run(self):
 
-        self.state = self.INITIALISATION_STATE
         global running 
+        self.state = self.INITIALISATION_STATE
+
         while running:
             if self.emergency_state_triggerd == True:
                 print("Emergency state triggered, stopping state machine")
-                running = False  # Set running to False
+                running = False
                 break
 
             if self.state == self.INITIALISATION_STATE:
@@ -137,12 +139,11 @@ class StateMachine:
                     self.open_door(self.door1)
                     if not self.system_initialised:
                         print("initialization")
-                        self.lock_door1.off()  # Turn indicator off
-                        self.lock_door2.off()  # Turn indicator off
-                        self.ferro_led.off()  # Turn indicator off
+                        self.lock_door1.off()
+                        self.lock_door2.off()
+                        self.ferro_led.off() 
                         self.door2._close_door()  
                         self.door1._close_door()
-                        running = True  
                         self.system_initialised = True
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
 
@@ -192,6 +193,12 @@ class StateMachine:
                 break
             time.sleep(0.5) # to prevent the state machine from running too fast
 
+    def freeze(self):
+        global running
+        if running == True:
+            self.system_initialised = False
+            self.state = self.INITIALISATION_STATE
+
     def open_door(self, door):
         print(f"unlock_and_open_{door}")
         self.operate_door(door, 'open')
@@ -203,17 +210,19 @@ class StateMachine:
         return 0 # State Ran successfully
 
 if __name__ == "__main__":
-
+    running = True
     try:
-        system_check = SystemInitCheck()  # Perform system check
+        system_check = SystemInitCheck()  
         FDS = StateMachine()
-        running = True
-        while running:
-            FDS.run()
+        while True:
+            if running:  
+                FDS.run()
+            else:
+                FDS.freeze() 
+
     except SystemExit:
-        print("System initialization failed. Exiting...")
+        print("Systeeminitialisatie mislukt. Afsluiten...")
     except Exception as e:
-        print("An unexpected error occurred during initialization:", e)
-    finally:
-        running = False  # Stop the main loop when exiting
-        
+        print("Er is een onverwachte fout opgetreden tijdens de initialisatie:", e)
+
+
