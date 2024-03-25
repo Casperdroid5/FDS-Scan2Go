@@ -65,10 +65,6 @@ class StateMachine:
         elif field =='B':
             detector = self.switch_person_detector_field_b 
         peron_detection_result = not detector.value() 
-        # if peron_detection_result:
-        #     print("Person detected in the field")
-        # else:
-        #     print("No person detected in the field")
         return peron_detection_result     
 
     def scan_for_ferrometals(self):
@@ -94,7 +90,7 @@ class StateMachine:
         }
         door_function_map[action]()
         return 0
-    
+
     def handle_override_buttons(self, pin):
         if pin == self.button_emergency:
             print("Emergency button pressed")
@@ -104,6 +100,10 @@ class StateMachine:
             self.lock_door2.set_color("yellow")
             self.ferro_led.set_color("yellow")
             self.emergency_state_triggerd = True
+            global running
+            self.emergency_state_triggerd = not self.emergency_state_triggerd
+            running = False
+            self.freeze()
         elif pin == self.button_system_override:
             print("System override button pressed")
             door1_action = 'open'
@@ -126,13 +126,8 @@ class StateMachine:
     def run(self):
 
         global running 
-        self.state = self.INITIALISATION_STATE
 
         while running:
-            if self.emergency_state_triggerd == True:
-                print("Emergency state triggered, stopping state machine")
-                running = False
-                break
 
             if self.state == self.INITIALISATION_STATE:
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
@@ -198,6 +193,10 @@ class StateMachine:
         if running == True:
             self.system_initialised = False
             self.state = self.INITIALISATION_STATE
+        if running == False and self.system_override_state_triggerd == True: # System override for emergency button (reset)
+            self.emergency_state_triggerd = False
+            self.system_override_state_triggerd = False
+            self.state = self.INITIALISATION_STATE
 
     def open_door(self, door):
         print(f"unlock_and_open_{door}")
@@ -214,6 +213,8 @@ if __name__ == "__main__":
     try:
         system_check = SystemInitCheck()  
         FDS = StateMachine()
+        FDS.state = FDS.INITIALISATION_STATE
+        
         while True:
             if running:  
                 FDS.run()
