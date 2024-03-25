@@ -91,6 +91,16 @@ class StateMachine:
         door_function_map[action]()
         return 0
 
+    def open_door(self, door):
+        print(f"unlock_and_open_{door}")
+        self.operate_door(door, 'open')
+        return 0 # State Ran successfully
+
+    def close_door(self, door):
+        print(f"close_and_lock_{door}")
+        self.operate_door(door, 'close')
+        return 0 # State Ran successfully
+
     def handle_override_buttons(self, pin):
         if pin == self.button_emergency:
             print("Emergency button pressed")
@@ -198,15 +208,6 @@ class StateMachine:
             self.system_override_state_triggerd = False
             self.state = self.INITIALISATION_STATE
 
-    def open_door(self, door):
-        print(f"unlock_and_open_{door}")
-        self.operate_door(door, 'open')
-        return 0 # State Ran successfully
-
-    def close_door(self, door):
-        print(f"close_and_lock_{door}")
-        self.operate_door(door, 'close')
-        return 0 # State Ran successfully
 
 if __name__ == "__main__":
     running = True
