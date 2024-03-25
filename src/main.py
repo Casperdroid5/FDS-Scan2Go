@@ -34,7 +34,7 @@ class StateMachine:
         # Initialize doors
         self.angle_open = 0
         self.angle_closed = 90
-        self.door1 = DOOR(14, self.angle_closed, self.angle_open)
+        self.door1 = DOOR(14, self.angle_closed, self.angle_open) 
         self.door2 = DOOR(15, self.angle_closed, self.angle_open)
         self.ferrometalscanner = ADC(27)
 
@@ -55,7 +55,7 @@ class StateMachine:
             self.open_door(self.door1)
 
     def handle_door2_button_press(self, pin):
-        if self.state == self.USER_IN_MR_ROOM:
+        if self.state == self.USER_IN_MR_ROOM or self.scanner_result == "NoMetalDetected" and self.user_returned_from_mri == True or self.user_in_mri == True:
             self.open_door(self.door2)
 
     def person_detected_in_field(self, field):
@@ -159,6 +159,7 @@ class StateMachine:
                 elif self.user_returned_from_mri == True:
                     if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                         self.user_returned_from_mri = False
+                        self.close_door(self.door2)
                         self.open_door(self.door1)
                         self.state = self.INITIALISATION_STATE 
 
