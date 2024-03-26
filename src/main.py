@@ -1,6 +1,6 @@
-from hardware_s2g import RGB, DOOR
+from hardware_s2g import RGB, DOOR, PERSONDETECTOR
 from system_utils import SystemInitCheck
-from machine import Pin, ADC
+from machine import Pin
 import time
 
 # System running global variable
@@ -37,7 +37,10 @@ class StateMachine:
         self.angle_closed = 90
         self.door1 = DOOR(14, self.angle_closed, self.angle_open) 
         self.door2 = DOOR(15, self.angle_closed, self.angle_open)
-        self.ferrometalscanner = ADC(27)
+
+        # Initialize ferrometal scanner	
+        self.mmWaveFieldA = PERSONDETECTOR (uart_configs = {"baudrate": 115200, "tx": 1, "rx": 0}, on_person_detected = self.lock_door1.on(), on_person_not_detected = self.lock_door1.off())
+        self.mmWaveFieldB = PERSONDETECTOR (uart_configs = {"baudrate": 115200, "tx": 5, "rx": 4}, on_person_detected = self.lock_door2.on(), on_person_not_detected = self.lock_door2.off())
 
         # Initialize buttons
         self.button_emergency = Pin(9, Pin.IN, Pin.PULL_UP)
@@ -85,6 +88,8 @@ class StateMachine:
             self.scanner_result = "MetalDetected"
             self.ferro_led.set_color("red")  # Red
         return self.scanner_result
+    
+    
 
     def handle_override_buttons(self, pin):
         if pin == self.button_emergency:
