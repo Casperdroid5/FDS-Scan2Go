@@ -42,9 +42,14 @@ class StateMachine:
         self.ferrometalscanner = ADC(Pin(27))
 
         # Initialize persondetectors	
-        self.mmWaveFieldA = PERSONDETECTOR(uart_configs = {"baudrate": 115200, "tx": 1, "rx": 0}, on_person_detected = self.lock_door1.on(), on_person_not_detected = self.lock_door1.off())
-        self.mmWaveFieldB = PERSONDETECTOR(uart_configs = {"baudrate": 115200, "tx": 5, "rx": 4}, on_person_detected = self.lock_door2.on(), on_person_not_detected = self.lock_door2.off())
+        # self.mmWaveFieldA = PERSONDETECTOR(uart_config = (0, 115200, 0, 1), on_person_detected = False, on_person_not_detected = False)
+        # self.mmWaveFieldB = PERSONDETECTOR(uart_config = (1, 115200, 5, 4), on_person_detected = False, on_person_not_detected = False)
 
+        self.mmWaveFieldA = PERSONDETECTOR(uart_config = (0, 115200, (0, 1)), on_person_detected = None, on_person_not_detected = None)
+        self.mmWaveFieldB = PERSONDETECTOR(uart_config = (1, 115200, (4, 5)), on_person_detected = None, on_person_not_detected = None)
+        self.mmWaveFieldA.start_detection()
+        self.mmWaveFieldB.start_detection()
+        
         # Initialize buttons
         self.button_emergency = Pin(9, Pin.IN, Pin.PULL_UP)
         self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_override_buttons) # emergency situation button
@@ -54,8 +59,8 @@ class StateMachine:
         self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler = self.handle_door1_button_press) # door 1 button (open door)
         self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)
         self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler = self.handle_door2_button_press) # door 2 button (open door)
-        self.switch_person_detector_field_a = Pin(19, Pin.IN, Pin.PULL_UP) # person detector simulator
-        self.switch_person_detector_field_b = Pin(20, Pin.IN, Pin.PULL_UP) # person detector simulator
+        # self.switch_person_detector_field_a = Pin(19, Pin.IN, Pin.PULL_UP) # person detector simulator
+        # self.switch_person_detector_field_b = Pin(20, Pin.IN, Pin.PULL_UP) # person detector simulator
 
     def handle_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE or self.state == self.SCAN_FOR_FERROMETALS: 
