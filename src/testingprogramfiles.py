@@ -5,6 +5,7 @@ import time
 potentiometer = ADC(Pin(27))
 
 while True:
+
     # Read potentiometer value
     pot_value = potentiometer.read_u16()
 

@@ -54,7 +54,7 @@ class StateMachine:
     def handle_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE or self.state == self.SCAN_FOR_FERROMETALS: 
             if self.door1.door_state == "closed": # check if door is open
-                self.handle_door1_button_press.open_door()  
+                self.door1.open_door()  
 
     def handle_door2_button_press(self, pin):
         if self.state == self.USER_IN_MR_ROOM or (self.scanner_result == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
@@ -204,8 +204,8 @@ if __name__ == "__main__":
                 FDS.freeze() 
 
     except SystemExit:
-        print("Systeeminitialisatie mislukt. Afsluiten...")
+        print("Systeeminit failed, shutting down...")
     except Exception as e:
-        print("Er is een onverwachte fout opgetreden tijdens de initialisatie:", e)
+        print("unexpected error", e)
 
 
