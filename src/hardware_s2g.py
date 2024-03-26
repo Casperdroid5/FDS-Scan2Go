@@ -60,7 +60,6 @@ class PERSONDETECTOR:
         self._on_person_detected = self.on_person_detected
         self._on_person_not_detected = self.on_person_not_detected
 
-
     def poll_uart_data(self):
         data = self._uart_sensor.read()
         if data:
