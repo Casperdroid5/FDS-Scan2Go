@@ -3,8 +3,9 @@ from system_utils import SystemInitCheck
 from machine import Pin, ADC
 import time
 
+# System running global variable
 global running
-running = False  # Define the variable "running" at the top-level scope
+running = False  
 
 # State Machine
 class StateMachine:
@@ -51,11 +52,11 @@ class StateMachine:
         self.switch_person_detector_field_b = Pin(20, Pin.IN, Pin.PULL_UP) # person detector simulator
 
     def handle_door1_button_press(self, pin):
-        if self.state == self.USER_FIELD_A_RESPONSE_STATE or self.state == self.SCAN_FOR_FERROMETALS:	
+        if self.state == self.USER_FIELD_A_RESPONSE_STATE or self.state == self.SCAN_FOR_FERROMETALS:	 # Door can only be opened when meeting these conditions 
             self.open_door(self.door1)
 
     def handle_door2_button_press(self, pin):
-        if self.state == self.USER_IN_MR_ROOM or self.scanner_result == "NoMetalDetected" and self.user_returned_from_mri == True or self.user_in_mri == True:
+        if self.state == self.USER_IN_MR_ROOM or self.scanner_result == "NoMetalDetected" and self.user_returned_from_mri == True or self.user_in_mri == True: # Door can only be opened when meeting these conditions
             self.open_door(self.door2)
 
     def person_detected_in_field(self, field):
@@ -170,7 +171,6 @@ class StateMachine:
                     self.open_door(self.door2)
                     self.state = self.USER_IN_MR_ROOM
                 elif self.user_returned_from_mri == True and self.person_detected_in_field('B') == True:
-                    print("state reached")
                     self.close_door(self.door2)
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
 
@@ -178,7 +178,8 @@ class StateMachine:
                 self.scan_for_ferrometals()
                 if self.scanner_result == "MetalDetected":
                     self.open_door(self.door1)
-                    self.state = self.INITIALISATION_STATE
+                    if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
+                        self.state = self.INITIALISATION_STATE
                 elif self.scanner_result == "NoMetalDetected" and self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
                     self.open_door(self.door2)
                     self.state = self.USER_IN_MR_ROOM
@@ -188,7 +189,6 @@ class StateMachine:
             elif self.state == self.USER_IN_MR_ROOM:
                 if self.person_detected_in_field('B') == False:
                     self.user_in_mri = True
-                    print("User in MRI room")
                 if self.person_detected_in_field('B') == True and self.user_in_mri == True:
                     self.user_in_mri = False
                     self.user_returned_from_mri = True
