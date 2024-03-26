@@ -1,19 +1,19 @@
-from machine import Pin, ADC
-import time
 
-# Configure ADC on pin 27
-potentiometer = ADC(Pin(27))
+from PERSONDETECTOR import PERSONDETECTOR
 
-while True:
+# Definieer callbackfuncties
+def on_person_detected(message):
+    print("Person detected:", message)
 
-    # Read potentiometer value
-    pot_value = potentiometer.read_u16()
+def on_person_not_detected(message):
+    print("Person not detected:", message)
 
-    # Convert potentiometer value to a range between 0 and 100
-    scaled_value = (pot_value / 65535) * 100
+if __name__ == "__main__":
+    # Definieer UART-configuratie
+    uart_config = (1, 9600, (tx_pin, rx_pin))  # Vul de juiste UART-pinnummers in
 
-    # Print the scaled value
-    print("Potentiometer value:", scaled_value)
+    # Maak een instantie van PERSONDETECTOR
+    person_detector = PERSONDETECTOR(uart_config, on_person_detected, on_person_not_detected)
 
-    # Wait for a short interval before reading again
-    time.sleep(0.1)
+    # Start de detectie
+    person_detector.start_detection()

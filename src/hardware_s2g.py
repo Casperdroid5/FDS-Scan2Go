@@ -1,6 +1,5 @@
 from machine import Pin, PWM, UART
 
-
 class RGB:
     def __init__(self, pin_blue, pin_green, pin_red):
         self._pin_red = PWM(Pin(pin_red, Pin.OUT), freq=1000)
@@ -53,33 +52,36 @@ class DOOR:
         self.servo.set_angle(self.angle_closed)
         self.door_state = "closed"
         return self.door_state
-    
+
 class PERSONDETECTOR:
     def __init__(self, uart_config, on_person_detected, on_person_not_detected):
         uart_number, baudrate, (tx_pin, rx_pin) = uart_config
         self._uart_sensor = UART(uart_number, baudrate=baudrate, tx=tx_pin, rx=rx_pin)
-        self._on_person_detected = on_person_detected
-        self._on_person_not_detected = on_person_not_detected
+        self._on_person_detected = self.on_person_detected
+        self._on_person_not_detected = self.on_person_not_detected
 
-    def start_detection(self):
-        self.poll_uart_data()
 
     def poll_uart_data(self):
-        sreader = StreamReader(self._uart_sensor)
-        while True:
-            data = sreader.readline()
-            if data:
-                # Check data from UART and call appropriate callbacks
-                if b'\x02' in data:
-                    self._on_person_detected("Somebody moved")
-                elif b'\x01' in data:
-                    self._on_person_detected("Somebody stopped moving")
-                elif b'\x01' in data:
-                    self._on_person_detected("Somebody is close")
-                elif b'\x02' in data:
-                    self._on_person_detected("Somebody is away")
-                else:
-                    self._on_person_not_detected("No human activity detected")
+        data = self._uart_sensor.read()
+        if data:
+            # Check data from UART and call appropriate callbacks
+            if b'\x02' in data:
+                self._on_person_detected("Somebody moved")
+            elif b'\x01' in data:
+                self._on_person_detected("Somebody stopped moving")
+            elif b'\x03' in data:
+                self._on_person_detected("Somebody is close")
+            elif b'\x04' in data:
+                self._on_person_detected("Somebody is away")
+
+
+
+
+    def on_person_detected(self, message):
+        print("Person detected:", message)
+
+    def on_person_not_detected(self, message):
+        print("Person not detected:", message)
 
 class SERVOMOTOR:
     def __init__(self, pin_number):
