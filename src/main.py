@@ -1,4 +1,4 @@
-from hardware_s2g import RGB, DOOR, 
+from hardware_s2g import RGB, DOOR
 from system_utils import SystemInitCheck
 from machine import Pin, ADC
 import time
