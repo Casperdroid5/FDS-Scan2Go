@@ -1,6 +1,6 @@
 from hardware_s2g import RGB, DOOR, PERSONDETECTOR
 from system_utils import SystemInitCheck
-from machine import Pin
+from machine import Pin, ADC
 import time
 
 # System running global variable
@@ -37,10 +37,13 @@ class StateMachine:
         self.angle_closed = 90
         self.door1 = DOOR(14, self.angle_closed, self.angle_open) 
         self.door2 = DOOR(15, self.angle_closed, self.angle_open)
+        
+        # Initialize ferrometal scanner
+        self.ferrometalscanner = ADC(Pin(27))
 
-        # Initialize ferrometal scanner	
-        self.mmWaveFieldA = PERSONDETECTOR (uart_configs = {"baudrate": 115200, "tx": 1, "rx": 0}, on_person_detected = self.lock_door1.on(), on_person_not_detected = self.lock_door1.off())
-        self.mmWaveFieldB = PERSONDETECTOR (uart_configs = {"baudrate": 115200, "tx": 5, "rx": 4}, on_person_detected = self.lock_door2.on(), on_person_not_detected = self.lock_door2.off())
+        # Initialize persondetectors	
+        self.mmWaveFieldA = PERSONDETECTOR(uart_configs = {"baudrate": 115200, "tx": 1, "rx": 0}, on_person_detected = self.lock_door1.on(), on_person_not_detected = self.lock_door1.off())
+        self.mmWaveFieldB = PERSONDETECTOR(uart_configs = {"baudrate": 115200, "tx": 5, "rx": 4}, on_person_detected = self.lock_door2.on(), on_person_not_detected = self.lock_door2.off())
 
         # Initialize buttons
         self.button_emergency = Pin(9, Pin.IN, Pin.PULL_UP)
@@ -66,11 +69,19 @@ class StateMachine:
 
     def person_detected_in_field(self, field):
         print(f"Checking for person in field {field}")
-        if field == 'A':
-            detector = self.switch_person_detector_field_a
-        elif field =='B':
-            detector = self.switch_person_detector_field_b 
-        peron_detection_result = not detector.value() 
+        if field == 'A': # check persondetector fieldA
+            self.mmWaveFieldA.poll_uart_data() 
+            if self.mmWaveFieldA._on_person_detected == True:
+                peron_detection_result = True
+            elif self.mmWaveFieldA._on_person_not_detected == True:
+                peron_detection_result = False
+        elif field =='B': # check persondetector fieldB
+            self.mmWaveFieldB.poll_uart_data()
+            if self.mmWaveFieldB._on_person_detected == True:
+                peron_detection_result = True
+            elif self.mmWaveFieldB._on_person_not_detected == True:
+                peron_detection_result = False
+
         return peron_detection_result     
 
     def scan_for_ferrometals(self):
@@ -88,8 +99,6 @@ class StateMachine:
             self.scanner_result = "MetalDetected"
             self.ferro_led.set_color("red")  # Red
         return self.scanner_result
-    
-    
 
     def handle_override_buttons(self, pin):
         if pin == self.button_emergency:
