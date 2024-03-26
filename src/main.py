@@ -1,4 +1,4 @@
-from hardware_s2g import RGB, DOOR, SERVOMOTOR, PERSONDETECTOR
+from hardware_s2g import RGB, DOOR, 
 from system_utils import SystemInitCheck
 from machine import Pin, ADC
 import time
@@ -62,7 +62,7 @@ class StateMachine:
                 self.door2.open_door()  
 
     def person_detected_in_field(self, field):
-        print(f"Person in field {field}")
+        print(f"Checking for person in field {field}")
         if field == 'A':
             detector = self.switch_person_detector_field_a
         elif field =='B':
@@ -89,8 +89,8 @@ class StateMachine:
     def handle_override_buttons(self, pin):
         if pin == self.button_emergency:
             print("Emergency button pressed")
-            door1_action = 'open'
-            door2_action = 'open'
+            self.door1.open_door()
+            self.door2.open_door() 
             self.lock_door1.set_color("yellow")
             self.lock_door2.set_color("yellow")
             self.ferro_led.set_color("yellow")
@@ -101,8 +101,8 @@ class StateMachine:
             self.freeze()
         elif pin == self.button_system_override:
             print("System override button pressed")
-            door1_action = 'open'
-            door2_action = 'open'
+            self.door1.open_door()
+            self.door2.open_door()  
             self.lock_door1.set_color("white")
             self.lock_door2.set_color("white")
             self.ferro_led.set_color("white")
@@ -128,14 +128,14 @@ class StateMachine:
                         self.lock_door1.off()
                         self.lock_door2.off()
                         self.ferro_led.off() 
-                        self.door2.open_door()  
-                        self.door1.open_door()  
+                        self.door2.close_door()  
+                        self.door1.close_door()  
                         self.system_initialised = True
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
                 if self.person_detected_in_field('A') == True and not self.user_returned_from_mri:
-                    self.door2.close_door()  
+                    self.door1.close_door()  
                     self.state = self.SCAN_FOR_FERROMETALS
                 elif self.user_returned_from_mri == True:
                     if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
@@ -207,5 +207,6 @@ if __name__ == "__main__":
         print("Systeeminit failed, shutting down...")
     except Exception as e:
         print("unexpected error", e)
+
 
 
