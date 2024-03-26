@@ -43,13 +43,15 @@ class DOOR:
         self.angle_closed = angle_closed # maximum closing angle
         self.door_state = "closed" # initial state of the door
 
-    def _open_door(self): # Open the door
-        self.servo.set_angle(self.angle_open)   # 0 is the angle to open the door
+    def open_door(self):
+        print(f"unlock_and_open_{self}")
+        self.servo.set_angle(self.angle_open)
         self.door_state = "open"
         return self.door_state
 
-    def _close_door(self): # Close the door
-        self.servo.set_angle(self.angle_closed)  # 90 is the angle to close the door
+    def close_door(self):
+        print(f"close_and_lock_{self}")
+        self.servo.set_angle(self.angle_closed)
         self.door_state = "closed"
         return self.door_state
 
