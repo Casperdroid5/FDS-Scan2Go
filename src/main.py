@@ -1,4 +1,4 @@
-from hardware_s2g import RGB, DOOR
+from hardware_s2g import RGB, DOOR, SERVOMOTOR, PERSONDETECTOR
 from system_utils import SystemInitCheck
 from machine import Pin, ADC
 import time
@@ -62,7 +62,7 @@ class StateMachine:
                 self.door2.open_door()  
 
     def person_detected_in_field(self, field):
-        print(f"Checking for person in field {field}")
+        print(f"Person in field {field}")
         if field == 'A':
             detector = self.switch_person_detector_field_a
         elif field =='B':
