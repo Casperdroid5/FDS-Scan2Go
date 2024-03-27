@@ -136,12 +136,11 @@ class SERVOMOTOR: # Servo motor
         self.current_angle = 0  # Initialize current angle to 0
 
     def set_angle(self, angle):
-        # Convert angle to pulse width
-        pulse_width_us = self.min_us + (self.max_us - self.min_us) * angle / 180
-        # Convert pulse width from microseconds to duty cycle (0-65535)
-        duty_cycle = int(pulse_width_us / 20000 * 65535)  # 20000 microseconds = 20 milliseconds (period)
+        pulse_width_us = self.min_us + (self.max_us - self.min_us) * angle / 180  # Convert angle to pulse width
+        duty_cycle = int(pulse_width_us / 20000 * 65535) # Convert pulse width from microseconds to duty cycle (0-65535) # 20000 microseconds = 20 milliseconds (period)
         self.pwm.duty_u16(duty_cycle)  # Set duty cycle to control servo position
         self.current_angle = angle  # Update current angle
 
     def get_current_angle(self): 
         return self.current_angle
+

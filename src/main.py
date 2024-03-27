@@ -131,7 +131,7 @@ class StateMachine:
 
             if self.state == self.INITIALISATION_STATE:
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
-                    self.door1.open_door()  
+                    self.door1.open_door()
                     if not self.system_initialised:
                         print("initialization")
                         self.lock_door1.off()
@@ -216,6 +216,7 @@ if __name__ == "__main__":
         print("Systeeminit failed, shutting down...")
     except Exception as e:
         print("unexpected error", e)
+
 
 
 
