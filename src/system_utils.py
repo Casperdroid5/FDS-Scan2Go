@@ -1,3 +1,4 @@
+
 class ErrorHandler:
     def report_error(self, components):
         for component in components:
@@ -12,20 +13,10 @@ def check_sensors():
     _SensorFunctional = True  # for testing purposes this is set to...
     return _SensorFunctional
 
-def check_motors():
-    # Check if motors are connected and working
-    _MotorFunctional = True  # for testing purposes this is set to...
-    return _MotorFunctional
-
-def check_leds():
-    # Check if LEDs are connected and working
-    _LedsFunctional = True  # for testing purposes this is set to...
-    return _LedsFunctional
-
-def check_buttons():
-    # Check if buttons are connected and working
-    _ButtonsFunctional = True  # for testing purposes this is set to...
-    return _ButtonsFunctional
+def check_mmWave():
+    # Check if mmWave sensors are connected and working
+    _mmWaveFunctional = True  # for testing purposes this is set to...
+    return _mmWaveFunctional
 
 class SystemInitCheck:
     def __init__(self):
@@ -44,17 +35,5 @@ class SystemInitCheck:
         # Check sensors
         if not check_sensors():
             failing_components.append("Sensors")
-
-        # Check motors
-        if not check_motors():
-            failing_components.append("Motors")
-
-        # Check LEDs
-        if not check_leds():
-            failing_components.append("LEDs")
-
-        # Check buttons
-        if not check_buttons():
-            failing_components.append("Buttons")
 
         return failing_components # Return the list of failing components

@@ -1,6 +1,7 @@
 from machine import Pin, PWM, UART
+import neopixel
 
-class RGB:
+class RGB: # regeular RGB LED
     def __init__(self, pin_blue, pin_green, pin_red):
         self._pin_red = PWM(Pin(pin_red, Pin.OUT), freq=1000)
         self._pin_green = PWM(Pin(pin_green, Pin.OUT), freq=1000)
@@ -33,7 +34,42 @@ class RGB:
         self._pin_blue.duty_u16(0)
         return "off"
 
-class DOOR:
+class WS2812: # WS2812 RGB LED strip
+    def __init__(self, pin_number, num_leds):
+        self._np = neopixel.NeoPixel(Pin(pin_number), num_leds)
+        self._num_leds = num_leds
+        self._COLORS = {
+            "red": (65535, 0, 0),
+            "green": (0, 65535, 0),
+            "blue": (0, 0, 65535),
+            "yellow": (65535, 65535, 0),
+            "cyan": (0, 65535, 65535),
+            "magenta": (65535, 0, 65535),
+            "white": (65535, 65535, 65535),
+        }
+
+    def set_color(self, color):
+        color_values = self._COLORS.get(color.lower())
+        if color_values:
+            for i in range(self._num_leds):
+                self._np[i] = color_values
+            self._np.write()
+            return color
+        else:
+            return "Color not found"
+
+    def on(self):
+        self.set_color("white")
+        return "on"
+
+    def off(self):
+        for i in range(self._num_leds):
+            self._np[i] = (0, 0, 0)
+        self._np.write()
+        return "off"
+
+
+class DOOR: # Servo motor door
     def __init__(self, pin_number, angle_closed, angle_open):
         self.servo = SERVOMOTOR(Pin(pin_number)) 
         self.pin_number = pin_number 
@@ -53,30 +89,28 @@ class DOOR:
         self.door_state = "closed"
         return self.door_state
 
-class PERSONDETECTOR:
+class PERSONDETECTOR: # mmWave sensor
     def __init__(self, uart_config):
         uart_number, baudrate, (tx_pin, rx_pin) = uart_config
         self._uart_sensor = UART(uart_number, baudrate=baudrate, tx=tx_pin, rx=rx_pin)
 
+        
     def poll_uart_data(self):
         data = self._uart_sensor.read()
-        self.humanpresence = False
+        self.humanpresence = "unknown"
         if data:
             if b'\x02' in data:
-                self.humanpresence = True
+                self.humanpresence = "Somebodymoved"
             elif b'\x01' in data:
-                self.humanpresence = False
+                self.humanpresence = "Somebodystoppedmoving"
             elif b'\x03' in data:
-                self.humanpresence = True
+                self.humanpresence = "Somebodyisclose"
             elif b'\x04' in data:
-                self.humanpresence = False
-        return self.humanpresence  # Return True if human presence is detected, False otherwise
-        
+                self.humanpresence = "Somebodyisaway"
+        return self.humanpresence 
 
 
-
-
-class SERVOMOTOR:
+class SERVOMOTOR: # Servo motor 
     def __init__(self, pin_number):
         self.pwm = PWM(pin_number)
         self.pwm.freq(50)  # Set PWM frequency to 50 Hz for servo control

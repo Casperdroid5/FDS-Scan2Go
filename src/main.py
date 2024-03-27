@@ -1,4 +1,4 @@
-from hardware_s2g import RGB, DOOR, PERSONDETECTOR
+from hardware_s2g import RGB, DOOR, PERSONDETECTOR, WS2812
 from system_utils import SystemInitCheck
 from machine import Pin, ADC
 import time
@@ -28,9 +28,9 @@ class StateMachine:
         self.EMERGENCY_STATE = 5
 
         # Initialize indicator lights
-        self.lock_door2 = RGB(10, 11, 12)
-        self.lock_door1 = RGB(2, 3, 4)
-        self.ferro_led = RGB(6, 7, 8)
+        self.lock_door2 = WS2812(10, 1)
+        self.lock_door1 = WS2812(11, 1)
+        self.ferro_led = WS2812(12, 1)
 
         # Initialize doors
         self.angle_open = 0
@@ -71,11 +71,16 @@ class StateMachine:
         print(f"Checking for person in field {field}")
         if field == 'A':
             self.mmWaveFieldA.poll_uart_data()
-            return self.mmWaveFieldA.humanpresence  # Return the presence of a person
+            if self.mmWaveFieldA.humanpresence == "Somebodymoved":
+                return True
+            elif self.mmWaveFieldA.humanpresence == "Somebodystoppedmoving":
+                return False
         elif field == 'B':
             self.mmWaveFieldB.poll_uart_data()
-            return self.mmWaveFieldB.humanpresence  # Return the presence of a person
-    
+            if self.mmWaveFieldB.humanpresence == "Sombodymoved":
+                return True
+            elif self.mmWaveFieldB.humanpresence == "Somebodystoppedmoving":   
+                return False
 
     def scan_for_ferrometals(self):
         print("scan_for_ferrometals")
