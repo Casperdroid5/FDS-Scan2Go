@@ -36,7 +36,7 @@ class RGB: # regeular RGB LED
 
 class WS2812: # WS2812 RGB LED strip
     def __init__(self, pin_number, num_leds):
-        self._np = neopixel.NeoPixel(Pin(pin_number), num_leds)
+        self._np = neopixel.NeoPixel(Pin(pin_number), num_leds, bpp=3, timing=1)
         self._num_leds = num_leds
         self._COLORS = {
             "red": (65535, 0, 0),
@@ -68,7 +68,7 @@ class WS2812: # WS2812 RGB LED strip
         self._np.write()
         return "off"
 
-class DOOR: # Servo motor door
+class DOOR: # Door motor and positionsensor
     def __init__(self, pin_number, angle_closed, angle_open, door_sensor_pin):
         self.servo = SERVOMOTOR(Pin(pin_number)) 
         self.pin_number = pin_number 
@@ -109,11 +109,10 @@ class PERSONDETECTOR: # mmWave sensor
     def __init__(self, uart_config):
         uart_number, baudrate, (tx_pin, rx_pin) = uart_config
         self._uart_sensor = UART(uart_number, baudrate=baudrate, tx=tx_pin, rx=rx_pin)
+        self.humanpresence = "unknown"
 
-        
     def poll_uart_data(self):
         data = self._uart_sensor.read()
-        self.humanpresence = "unknown"
         if data:
             if b'\x02' in data:
                 self.humanpresence = "Somebodymoved"
@@ -124,7 +123,6 @@ class PERSONDETECTOR: # mmWave sensor
             elif b'\x04' in data:
                 self.humanpresence = "Somebodyisaway"
         return self.humanpresence 
-
 
 class SERVOMOTOR: # Servo motor 
     def __init__(self, pin_number):
