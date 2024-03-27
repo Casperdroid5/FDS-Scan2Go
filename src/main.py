@@ -39,18 +39,18 @@ class StateMachine:
         # Initialize ferrometal scanner
         self.ferrometalscanner = ADC(Pin(27))
 
-        # # Initialize persondetectors
+        # Initialize persondetectors
         self.mmWaveFieldA = PERSONDETECTOR(uart_number=0, baudrate=115200, tx_pin=0, rx_pin=1)
         self.mmWaveFieldB = PERSONDETECTOR(uart_number=1, baudrate=115200, tx_pin=4, rx_pin=5)
 
         # Initialize buttons
-        self.button_emergency = Pin(id=9, mode=Pin.IN, pull=Pin.PULL_UP)
+        self.button_emergency = Pin(9, Pin.IN, Pin.PULL_UP)
         self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_override_buttons) # Emergency situation button
-        self.button_system_override = Pin(id=16, mode=Pin.IN, pull=Pin.PULL_UP)  # System override button
+        self.button_system_override = Pin(16, Pin.IN, Pin.PULL_UP)  # System override button
         self.button_system_override.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_override_buttons)
-        self.button_door1 = Pin(id=21, mode=Pin.IN, pull=Pin.PULL_UP)  # Door 1 button (open door)
+        self.button_door1 = Pin(21, Pin.IN, Pin.PULL_UP)  # Door 1 button (open door)
         self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_door1_button_press)
-        self.button_door2 = Pin(id=17, mode=Pin.IN, pull=Pin.PULL_UP)  # Door 2 button (open door)
+        self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)  # Door 2 button (open door)
         self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_door2_button_press)
 
     def handle_door1_button_press(self, pin):
@@ -130,6 +130,7 @@ class StateMachine:
 
             if self.state == self.INITIALISATION_STATE:
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
+                    
                     self.door1.open_door()  
                     if not self.system_initialised:
                         print("initialization")
@@ -201,7 +202,7 @@ class StateMachine:
 if __name__ == "__main__":
     running = True
     try:
-        system_check = SystemInitCheck()  
+        system_check = SystemInitCheck()
         FDS = StateMachine()
         FDS.state = FDS.INITIALISATION_STATE
         
@@ -215,5 +216,6 @@ if __name__ == "__main__":
         print("Systeeminit failed, shutting down...")
     except Exception as e:
         print("unexpected error", e)
+
 
 
