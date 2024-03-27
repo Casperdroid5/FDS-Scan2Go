@@ -69,12 +69,12 @@ class WS2812: # WS2812 RGB LED strip
         return "off"
 
 class DOOR: # Door motor and positionsensor
-    def __init__(self, pin_number, angle_closed, angle_open, door_sensor_pin):
+    def __init__(self, pin_number, angle_closed, angle_open, position_sensor_pin):
         self.servo = SERVOMOTOR(Pin(pin_number)) 
         self.pin_number = pin_number 
         self.angle_open = angle_open # maximum opening angle
         self.angle_closed = angle_closed # maximum closing angle
-        self.door_sensor = Pin(door_sensor_pin, Pin.IN, Pin.PULL_UP)
+        self.door_sensor = Pin(position_sensor_pin, Pin.IN, Pin.PULL_UP)
         self.door_state = None  # Initialize door state
 
     def open_door(self):
@@ -106,9 +106,12 @@ class DOOR: # Door motor and positionsensor
         return self.door_state
 
 class PERSONDETECTOR: # mmWave sensor
-    def __init__(self, uart_config):
-        uart_number, baudrate, (tx_pin, rx_pin) = uart_config
-        self._uart_sensor = UART(uart_number, baudrate=baudrate, tx=tx_pin, rx=rx_pin)
+    def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
+        self.uart_number = uart_number
+        self.baudrate = baudrate
+        self.tx_pin = tx_pin  
+        self.rx_pin = rx_pin 
+        self._uart_sensor = UART(uart_number, baudrate, tx_pin, rx_pin)
         self.humanpresence = "unknown"
 
     def poll_uart_data(self):

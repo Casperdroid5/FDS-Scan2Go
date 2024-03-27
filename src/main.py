@@ -1,4 +1,4 @@
-from hardware_s2g import RGB, DOOR, PERSONDETECTOR, WS2812
+from hardware_s2g import DOOR, PERSONDETECTOR, WS2812
 from system_utils import SystemInitCheck
 from machine import Pin, ADC
 import time
@@ -28,34 +28,30 @@ class StateMachine:
         self.EMERGENCY_STATE = 5
 
         # Initialize indicator lights
-        self.lock_door2 = WS2812(10, 1)
-        self.lock_door1 = WS2812(11, 1)
-        self.ferro_led = WS2812(12, 1)
+        self.lock_door2 = WS2812(pin_number=10, num_leds=1)
+        self.lock_door1 = WS2812(pin_number=11, num_leds=1)
+        self.ferro_led = WS2812(pin_number=12, num_leds=1)
 
         # Initialize doors
-        self.angle_open = 0
-        self.angle_closed = 90
-        self.door1 = DOOR(14, self.angle_closed, self.angle_open) 
-        self.door2 = DOOR(15, self.angle_closed, self.angle_open)
+        self.door1 = DOOR(pin_number=14, angle_closed=0, angle_open=90, position_sensor_pin=19) 
+        self.door2 = DOOR(pin_number=15, angle_closed=0, angle_open=90, position_sensor_pin=20)
         
         # Initialize ferrometal scanner
         self.ferrometalscanner = ADC(Pin(27))
 
         # # Initialize persondetectors
-        self.mmWaveFieldA = PERSONDETECTOR((0, 115200, (0, 1)))
-        self.mmWaveFieldB = PERSONDETECTOR((1, 115200, (4, 5)))
+        self.mmWaveFieldA = PERSONDETECTOR(uart_number=0, baudrate=115200, tx_pin=0, rx_pin=1)
+        self.mmWaveFieldB = PERSONDETECTOR(uart_number=1, baudrate=115200, tx_pin=4, rx_pin=5)
 
         # Initialize buttons
-        self.button_emergency = Pin(9, Pin.IN, Pin.PULL_UP)
-        self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_override_buttons) # emergency situation button
-        self.button_system_override = Pin(16, Pin.IN, Pin.PULL_UP)
-        self.button_system_override.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_override_buttons) # system override button
-        self.button_door1 = Pin(21, Pin.IN, Pin.PULL_UP)
-        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler = self.handle_door1_button_press) # door 1 button (open door)
-        self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)
-        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler = self.handle_door2_button_press) # door 2 button (open door)
-        self.switch_person_detector_field_a = Pin(19, Pin.IN, Pin.PULL_UP) # person detector simulator
-        self.switch_person_detector_field_b = Pin(20, Pin.IN, Pin.PULL_UP) # person detector simulator
+        self.button_emergency = Pin(id=9, mode=Pin.IN, pull=Pin.PULL_UP)
+        self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_override_buttons) # Emergency situation button
+        self.button_system_override = Pin(id=16, mode=Pin.IN, pull=Pin.PULL_UP)  # System override button
+        self.button_system_override.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_override_buttons)
+        self.button_door1 = Pin(id=21, mode=Pin.IN, pull=Pin.PULL_UP)  # Door 1 button (open door)
+        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_door1_button_press)
+        self.button_door2 = Pin(id=17, mode=Pin.IN, pull=Pin.PULL_UP)  # Door 2 button (open door)
+        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_door2_button_press)
 
     def handle_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE or self.state == self.SCAN_FOR_FERROMETALS: 
