@@ -54,33 +54,27 @@ class DOOR:
         return self.door_state
 
 class PERSONDETECTOR:
-    def __init__(self, uart_config, on_person_detected, on_person_not_detected):
+    def __init__(self, uart_config):
         uart_number, baudrate, (tx_pin, rx_pin) = uart_config
         self._uart_sensor = UART(uart_number, baudrate=baudrate, tx=tx_pin, rx=rx_pin)
-        self._on_person_detected = self.on_person_detected
-        self._on_person_not_detected = self.on_person_not_detected
 
     def poll_uart_data(self):
         data = self._uart_sensor.read()
+        self.humanpresence = False
         if data:
-            # Check data from UART and call appropriate callbacks
             if b'\x02' in data:
-                self._on_person_detected("Somebody moved")
+                self.humanpresence = True
             elif b'\x01' in data:
-                self._on_person_detected("Somebody stopped moving")
+                self.humanpresence = False
             elif b'\x03' in data:
-                self._on_person_detected("Somebody is close")
+                self.humanpresence = True
             elif b'\x04' in data:
-                self._on_person_detected("Somebody is away")
+                self.humanpresence = False
+        return self.humanpresence  # Return True if human presence is detected, False otherwise
+        
 
 
 
-
-    def on_person_detected(self, message):
-        print("Person detected:", message)
-
-    def on_person_not_detected(self, message):
-        print("Person not detected:", message)
 
 class SERVOMOTOR:
     def __init__(self, pin_number):

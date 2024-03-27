@@ -18,7 +18,6 @@ class StateMachine:
         self.emergency_state_triggerd = False
         self.system_initialised = False
         self.system_override_state_triggerd = False
-        self.peron_detection_result = False
 
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
@@ -43,10 +42,8 @@ class StateMachine:
         self.ferrometalscanner = ADC(Pin(27))
 
         # # Initialize persondetectors
-        # self.mmWaveFieldA = PERSONDETECTOR(uart_config={"uart_number": 0,"baudrate": 115200, "tx": 0, "rx": 1}, on_person_detected=None, on_person_not_detected=None)
-        # self.mmWaveFieldB = PERSONDETECTOR(uart_config={"uart_number": 1,"baudrate": 115200, "tx": 5, "rx": 4}, on_person_detected=None, on_person_not_detected=None)
-        self.mmWaveFieldA = PERSONDETECTOR((0, 115200, (0, 1)), PERSONDETECTOR.on_person_detected, PERSONDETECTOR.on_person_not_detected)
-        self.mmWaveFieldB = PERSONDETECTOR((1, 115200, (4, 5)), PERSONDETECTOR.on_person_detected, PERSONDETECTOR.on_person_not_detected)
+        self.mmWaveFieldA = PERSONDETECTOR((0, 115200, (0, 1)))
+        self.mmWaveFieldB = PERSONDETECTOR((1, 115200, (4, 5)))
 
         # Initialize buttons
         self.button_emergency = Pin(9, Pin.IN, Pin.PULL_UP)
@@ -72,20 +69,13 @@ class StateMachine:
 
     def person_detected_in_field(self, field):
         print(f"Checking for person in field {field}")
-        if field == 'A': # check persondetector fieldA
-            self.mmWaveFieldA.poll_uart_data() 
-            if self.mmWaveFieldA._on_person_detected == True:
-                self.peron_detection_result = True
-            elif self.mmWaveFieldA._on_person_not_detected == True:
-                self.peron_detection_result = False
-        elif field =='B': # check persondetector fieldB
+        if field == 'A':
+            self.mmWaveFieldA.poll_uart_data()
+            return self.mmWaveFieldA.humanpresence  # Return the presence of a person
+        elif field == 'B':
             self.mmWaveFieldB.poll_uart_data()
-            if self.mmWaveFieldB._on_person_detected == True:
-                self.peron_detection_result = True
-            elif self.mmWaveFieldB._on_person_not_detected == True:
-                self.peron_detection_result = False
-
-        return self.peron_detection_result     
+            return self.mmWaveFieldB.humanpresence  # Return the presence of a person
+    
 
     def scan_for_ferrometals(self):
         print("scan_for_ferrometals")
