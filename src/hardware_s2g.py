@@ -75,7 +75,7 @@ class DOOR: # Door motor and positionsensor
         self.angle_open = angle_open # maximum opening angle
         self.angle_closed = angle_closed # maximum closing angle
         self.door_sensor = Pin(position_sensor_pin, Pin.IN, Pin.PULL_UP)
-        self.door_state = None  # Initialize door state
+        self.door_state = "closed"  # Initialize door state
 
     def open_door(self):
         print(f"unlock_and_open_{self}")

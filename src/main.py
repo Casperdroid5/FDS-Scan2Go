@@ -33,8 +33,8 @@ class StateMachine:
         self.ferro_led = WS2812(pin_number=12, num_leds=1)
 
         # Initialize doors
-        self.door1 = DOOR(pin_number=14, angle_closed=0, angle_open=90, position_sensor_pin=19) 
-        self.door2 = DOOR(pin_number=15, angle_closed=0, angle_open=90, position_sensor_pin=20)
+        self.door1 = DOOR(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19) 
+        self.door2 = DOOR(pin_number=15, angle_closed=90, angle_open=0, position_sensor_pin=20)
         
         # Initialize ferrometal scanner
         self.ferrometalscanner = ADC(Pin(27))
@@ -67,6 +67,7 @@ class StateMachine:
         print(f"Checking for person in field {field}")
         if field == 'A':
             self.mmWaveFieldA.poll_uart_data()
+            print(self.mmWaveFieldA.humanpresence) # for debugging purposes
             if self.mmWaveFieldA.humanpresence == "Somebodymoved":
                 return True
             elif self.mmWaveFieldA.humanpresence == "Somebodystoppedmoving":
@@ -130,7 +131,6 @@ class StateMachine:
 
             if self.state == self.INITIALISATION_STATE:
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
-                    
                     self.door1.open_door()  
                     if not self.system_initialised:
                         print("initialization")
