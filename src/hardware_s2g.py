@@ -68,37 +68,42 @@ class WS2812: # WS2812 RGB LED strip
         self._np.write()
         return "off"
 
-
 class DOOR: # Servo motor door
     def __init__(self, pin_number, angle_closed, angle_open, door_sensor_pin):
         self.servo = SERVOMOTOR(Pin(pin_number)) 
         self.pin_number = pin_number 
         self.angle_open = angle_open # maximum opening angle
         self.angle_closed = angle_closed # maximum closing angle
-        self.door_position = "closed" # initial state of the door
         self.door_sensor = Pin(door_sensor_pin, Pin.IN, Pin.PULL_UP)
+        self.door_state = None  # Initialize door state
 
     def open_door(self):
         print(f"unlock_and_open_{self}")
         self.servo.set_angle(self.angle_open)
-        if self.door_position == "open":
-            self.door_position = "open"
-        else:
-            self.door_position = "error" # failed to open door
-        return self.door_position
+        # Update door state based on sensor value
+        if self.door_sensor.value() == 1:
+            self.door_state = "open"
+        elif self.door_sensor.value() == 0:
+            self.door_state = "error" # Door opened but sensor indicates closed
+        return self.door_state
 
     def close_door(self):
         print(f"close_and_lock_{self}")
         self.servo.set_angle(self.angle_closed)
-        if self.door_position == "closed":
-            self.door_position = "closed"
-        else:
-            self.door_position = "error" # failed to close door
-        return self.door_position
+        # Update door state based on sensor value
+        if self.door_sensor.value() == 0:
+            self.door_state = "closed"
+        elif self.door_sensor.value() == 1:
+            self.door_state = "error" # Door closed but sensor indicates open
+        return self.door_state
 
     def check_door_position(self):
-        return self.door_sensor.value()  # Return the value of the door sensor
-
+        # Update door state based on sensor value
+        if self.door_sensor.value() == 1:
+            self.door_state = "open"
+        else:
+            self.door_state = "closed"
+        return self.door_state
 
 class PERSONDETECTOR: # mmWave sensor
     def __init__(self, uart_config):
