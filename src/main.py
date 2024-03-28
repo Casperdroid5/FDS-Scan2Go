@@ -128,15 +128,12 @@ class StateMachine:
         global running 
 
         while running:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-            self.lock_door2.set_color("red") # Red
+            self.lock_door2.set_brightness(10) # Set brightness to 100%
             time.sleep(1) 
-            self.lock_door2.off()                         
-            self.lock_door1.set_color("red") # Red
+            self.lock_door2.off() # Turn off the LED
             time.sleep(1)
-            self.lock_door1.off()
-            self.ferro_led.set_color("red") # Red
-            time.sleep(1)
-            self.ferro_led.off()   
+
+            print("done")
             if self.state == self.INITIALISATION_STATE:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()

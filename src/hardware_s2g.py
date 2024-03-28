@@ -1,6 +1,6 @@
 from machine import Pin, PWM, UART
 import neopixel
-
+import time
 
 class WS2812: # WS2812 RGB LED strip
     def __init__(self, pin_number, num_leds):
@@ -35,6 +35,17 @@ class WS2812: # WS2812 RGB LED strip
             self._np[i] = (0, 0, 0)
         self._np.write()
         return "off"
+
+    def set_brightness(self, brightness):
+        if brightness < 0 or brightness > 100:
+            return "Brightness should be between 0 and 100"
+        brightness_factor = brightness / 100
+        for i in range(self._num_leds):
+            r, g, b = self._np[i]
+            self._np[i] = (int(r * brightness_factor), int(g * brightness_factor), int(b * brightness_factor))
+        self._np.write()
+        return "brightness set"
+
 
 class DOOR: # Door motor and positionsensor
     def __init__(self, pin_number, angle_closed, angle_open, position_sensor_pin):
