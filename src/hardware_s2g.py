@@ -1,38 +1,6 @@
 from machine import Pin, PWM, UART
 import neopixel
 
-class RGB: # regeular RGB LED
-    def __init__(self, pin_blue, pin_green, pin_red):
-        self._pin_red = PWM(Pin(pin_red, Pin.OUT), freq=1000)
-        self._pin_green = PWM(Pin(pin_green, Pin.OUT), freq=1000)
-        self._pin_blue = PWM(Pin(pin_blue, Pin.OUT), freq=1000)
-        self._COLORS = {
-            "red": (65535, 0, 0),
-            "green": (0, 65535, 0),
-            "blue": (0, 0, 65535),
-            "yellow": (65535, 65535, 0),
-            "cyan": (0, 65535, 65535),
-            "magenta": (65535, 0, 65535),
-            "white": (65535, 65535, 65535),
-        }
-
-    def set_color(self, color):
-        red, green, blue = self._COLORS[color.lower()]
-        #print(f"{red}, {green}, {blue}")
-        self._pin_red.duty_u16(red)
-        self._pin_green.duty_u16(green)
-        self._pin_blue.duty_u16(blue)
-        return color
-
-    def on(self):
-        self.set_color("white")
-        return "on"
-
-    def off(self):
-        self._pin_red.duty_u16(0)
-        self._pin_green.duty_u16(0)
-        self._pin_blue.duty_u16(0)
-        return "off"
 
 class WS2812: # WS2812 RGB LED strip
     def __init__(self, pin_number, num_leds):

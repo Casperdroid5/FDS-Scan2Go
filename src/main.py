@@ -28,14 +28,14 @@ class StateMachine:
         self.EMERGENCY_STATE = 5
 
         # Initialize indicator lights
-        self.lock_door2 = WS2812(pin_number=10, num_leds=1)
-        self.lock_door1 = WS2812(pin_number=11, num_leds=1)
-        self.ferro_led = WS2812(pin_number=12, num_leds=1)
+        self.lock_door1 = WS2812(pin_number=3, num_leds=2)
+        self.lock_door2 = WS2812(pin_number=4, num_leds=2)
+        self.ferro_led = WS2812(pin_number=5, num_leds=2)
 
         # Initialize doors
         self.door1 = DOOR(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19) 
         self.door2 = DOOR(pin_number=15, angle_closed=90, angle_open=0, position_sensor_pin=20)
-        
+
         # Initialize ferrometal scanner
         self.ferrometalscanner = ADC(Pin(27))
 
@@ -127,9 +127,17 @@ class StateMachine:
 
         global running 
 
-        while running:
-
-            if self.state == self.INITIALISATION_STATE:
+        while running:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+            self.lock_door2.set_color("red") # Red
+            time.sleep(1) 
+            self.lock_door2.off()                         
+            self.lock_door1.set_color("red") # Red
+            time.sleep(1)
+            self.lock_door1.off()
+            self.ferro_led.set_color("red") # Red
+            time.sleep(1)
+            self.ferro_led.off()   
+            if self.state == self.INITIALISATION_STATE:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()
                     if not self.system_initialised:
@@ -216,7 +224,3 @@ if __name__ == "__main__":
         print("Systeeminit failed, shutting down...")
     except Exception as e:
         print("unexpected error", e)
-
-
-
-

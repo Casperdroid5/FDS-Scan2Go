@@ -1,19 +1,65 @@
+# Example using PIO to drive a set of WS2812 LEDs.
 
-from PERSONDETECTOR import PERSONDETECTOR
+# ruff: noqa: F821 - @asm_pio decorator adds names to function scope
 
-# Definieer callbackfuncties
-def on_person_detected(message):
-    print("Person detected:", message)
+import array, time
+from machine import Pin
+import rp2
 
-def on_person_not_detected(message):
-    print("Person not detected:", message)
+# Configure the number of WS2812 LEDs.
+NUM_LEDS = 3
 
-if __name__ == "__main__":
-    # Definieer UART-configuratie
-    uart_config = (1, 9600, (tx_pin, rx_pin))  # Vul de juiste UART-pinnummers in
 
-    # Maak een instantie van PERSONDETECTOR
-    person_detector = PERSONDETECTOR(uart_config, on_person_detected, on_person_not_detected)
+@rp2.asm_pio(
+    sideset_init=rp2.PIO.OUT_LOW,
+    out_shiftdir=rp2.PIO.SHIFT_LEFT,
+    autopull=True,
+    pull_thresh=24,
+)
+def ws2812():
+    # fmt: off
+    T1 = 2
+    T2 = 5
+    T3 = 3
+    wrap_target()
+    label("bitloop")
+    out(x, 1)               .side(0)    [T3 - 1]
+    jmp(not_x, "do_zero")   .side(1)    [T1 - 1]
+    jmp("bitloop")          .side(1)    [T2 - 1]
+    label("do_zero")
+    nop()                   .side(0)    [T2 - 1]
+    wrap()
+    # fmt: on
 
-    # Start de detectie
-    person_detector.start_detection()
+
+# Create the StateMachine with the ws2812 program, outputting on Pin(22).
+sm = rp2.StateMachine(0, ws2812, freq=8_000_000, sideset_base=Pin(5))
+sm2 = rp2.StateMachine(0, ws2812, freq=8_000_000, sideset_base=Pin(4))
+sm3 = rp2.StateMachine(0, ws2812, freq=8_000_000, sideset_base=Pin(3))
+
+# Start the StateMachine, it will wait for data on its FIFO.
+sm.active(1)
+sm2.active(1)
+sm3.active(1)
+
+# Display a pattern on the LEDs via an array of LED RGB values.
+ar = array.array("I", [0 for _ in range(NUM_LEDS)])
+
+# Cycle colours.
+for i in range(4 * NUM_LEDS):
+    for j in range(NUM_LEDS):
+        r = j * 100 // (NUM_LEDS - 1)
+        b = 100 - j * 100 // (NUM_LEDS - 1)
+        if j != i % NUM_LEDS:
+            r >>= 3
+            b >>= 3
+        ar[j] = r << 16 | b
+    sm.put(ar, 8)
+    time.sleep_ms(50)
+
+# Fade out.
+for i in range(24):
+    for j in range(NUM_LEDS):
+        ar[j] = ar[j] >> 1 & 0x7F7F7F
+    sm.put(ar, 8)
+    time.sleep_ms(50)
