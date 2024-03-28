@@ -7,7 +7,7 @@ import time
 global running
 running = False  
 
-# State Machine
+
 class StateMachine:
     def __init__(self):
 
@@ -28,9 +28,9 @@ class StateMachine:
         self.EMERGENCY_STATE = 5
 
         # Initialize indicator lights
-        self.lock_door1 = WS2812(pin_number=3, num_leds=2)
-        self.lock_door2 = WS2812(pin_number=4, num_leds=2)
-        self.ferro_led = WS2812(pin_number=5, num_leds=2)
+        self.lock_door1 = WS2812(pin_number=3, num_leds=2, brightness=0.5) # brigness is a value between 0.0001 and 1
+        self.lock_door2 = WS2812(pin_number=4, num_leds=2, brightness=0.5)
+        self.ferro_led = WS2812(pin_number=5, num_leds=2, brightness=0.5)
 
         # Initialize doors
         self.door1 = DOOR(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19) 
@@ -127,12 +127,11 @@ class StateMachine:
 
         global running 
 
-        while running:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
-            self.lock_door2.set_brightness(10) # Set brightness to 100%
-            time.sleep(1) 
-            self.lock_door2.off() # Turn off the LED
+        while running: 
+            print("TTT")
+            self.lock_door1.set_color("green")
+            self.lock_door1.set_brightness(0.0001)
             time.sleep(1)
-
             print("done")
             if self.state == self.INITIALISATION_STATE:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
