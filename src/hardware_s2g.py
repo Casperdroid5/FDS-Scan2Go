@@ -42,7 +42,6 @@ class WS2812:
             self._np[i] = (0, 0, 0)
         self._np.write()
         return "off"
-
 class DOOR: # Door motor and positionsensor
     def __init__(self, pin_number, angle_closed, angle_open, position_sensor_pin):
         self.servo = SERVOMOTOR(Pin(pin_number)) 
@@ -52,33 +51,39 @@ class DOOR: # Door motor and positionsensor
         self.door_sensor = Pin(position_sensor_pin, Pin.IN, Pin.PULL_UP)
         self.door_state = "closed"  # Initialize door state
 
+    def __repr__(self):
+        return f"DOOR at Pin {self.pin_number}, State: {self.door_state}"
+
     def open_door(self):
         print(f"unlock_and_open_{self}")
         self.servo.set_angle(self.angle_open)
         # Update door state based on sensor value
-        if self.door_sensor.value() == 1:
+        if self.door_sensor.value() == 0:
             self.door_state = "open"
-        elif self.door_sensor.value() == 0:
+        elif self.door_sensor.value() == 1:
             self.door_state = "error" # Door opened but sensor indicates closed
+        print(self.door_state)
         return self.door_state
 
     def close_door(self):
         print(f"close_and_lock_{self}")
         self.servo.set_angle(self.angle_closed)
         # Update door state based on sensor value
-        if self.door_sensor.value() == 0:
+        if self.door_sensor.value() == 1:
             self.door_state = "closed"
-        elif self.door_sensor.value() == 1:
+        elif self.door_sensor.value() == 0:
             self.door_state = "error" # Door closed but sensor indicates open
+        print(self.door_state)
         return self.door_state
 
     def check_door_position(self):
         # Update door state based on sensor value
-        if self.door_sensor.value() == 1:
+        if self.door_sensor.value() == 0:
             self.door_state = "open"
         else:
             self.door_state = "closed"
         return self.door_state
+
 
 class PERSONDETECTOR: # mmWave sensor
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
@@ -118,4 +123,5 @@ class SERVOMOTOR: # Servo motor
 
     def get_current_angle(self): 
         return self.current_angle
+
 
