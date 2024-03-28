@@ -28,13 +28,13 @@ class StateMachine:
         self.EMERGENCY_STATE = 5
 
         # Initialize indicator lights
-        self.lock_door1 = WS2812(pin_number=3, num_leds=2, brightness=0.5) # brigness is a value between 0.0001 and 1
-        self.lock_door2 = WS2812(pin_number=4, num_leds=2, brightness=0.5)
-        self.ferro_led = WS2812(pin_number=5, num_leds=2, brightness=0.5)
+        self.lock_door1 = WS2812(pin_number=2, num_leds=2, brightness=0.5) # brigness is a value between 0.0001 and 1
+        self.lock_door2 = WS2812(pin_number=3, num_leds=2, brightness=0.5)
+        self.ferro_led = WS2812(pin_number=4, num_leds=2, brightness=0.5)
 
         # Initialize doors
         self.door1 = DOOR(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19) 
-        self.door2 = DOOR(pin_number=15, angle_closed=90, angle_open=0, position_sensor_pin=20)
+        self.door2 = DOOR(pin_number=15, angle_closed=90, angle_open=180, position_sensor_pin=20)
 
         # Initialize ferrometal scanner
         self.ferrometalscanner = ADC(Pin(27))
@@ -44,7 +44,7 @@ class StateMachine:
         self.mmWaveFieldB = PERSONDETECTOR(uart_number=1, baudrate=115200, tx_pin=4, rx_pin=5)
 
         # Initialize buttons
-        self.button_emergency = Pin(9, Pin.IN, Pin.PULL_UP)
+        self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)
         self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_override_buttons) # Emergency situation button
         self.button_system_override = Pin(16, Pin.IN, Pin.PULL_UP)  # System override button
         self.button_system_override.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_override_buttons)
@@ -65,19 +65,32 @@ class StateMachine:
 
     def person_detected_in_field(self, field):
         print(f"Checking for person in field {field}")
-        if field == 'A':
-            self.mmWaveFieldA.poll_uart_data()
-            print(self.mmWaveFieldA.humanpresence) # for debugging purposes
-            if self.mmWaveFieldA.humanpresence == "Somebodymoved":
-                return True
-            elif self.mmWaveFieldA.humanpresence == "Somebodystoppedmoving":
-                return False
-        elif field == 'B':
-            self.mmWaveFieldB.poll_uart_data()
-            if self.mmWaveFieldB.humanpresence == "Sombodymoved":
-                return True
-            elif self.mmWaveFieldB.humanpresence == "Somebodystoppedmoving":   
-                return False
+        user_input = input("Enter 'True' if person detected, 'False' otherwise: ").strip().lower()
+
+        if user_input == 'true':
+            return True
+        elif user_input == 'false':
+            return False
+        else:
+            print("Invalid input. Please enter 'True' or 'False'.")
+            # Als de invoer ongeldig is, retourneer False om aan te geven dat er geen persoon is gedetecteerd.
+            return False
+        
+        #mmWave code disabled for testing purposes
+        # print(f"Checking for person in field {field}")
+        # if field == 'A':
+        #     self.mmWaveFieldA.poll_uart_data()
+        #     print(self.mmWaveFieldA.humanpresence) # for debugging purposes
+        #     if self.mmWaveFieldA.humanpresence == "Somebodymoved":
+        #         return True
+        #     elif self.mmWaveFieldA.humanpresence == "Somebodystoppedmoving":
+        #         return False
+        # elif field == 'B':
+        #     self.mmWaveFieldB.poll_uart_data()
+        #     if self.mmWaveFieldB.humanpresence == "Sombodymoved":
+        #         return True
+        #     elif self.mmWaveFieldB.humanpresence == "Somebodystoppedmoving":   
+        #         return False
 
     def scan_for_ferrometals(self):
         print("scan_for_ferrometals")
@@ -128,11 +141,6 @@ class StateMachine:
         global running 
 
         while running: 
-            print("TTT")
-            self.lock_door1.set_color("green")
-            self.lock_door1.set_brightness(0.0001)
-            time.sleep(1)
-            print("done")
             if self.state == self.INITIALISATION_STATE:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()
