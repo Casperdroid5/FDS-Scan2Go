@@ -1,7 +1,6 @@
 from machine import Pin, PWM, UART
 import neopixel
 
-
 class WS2812:
     def __init__(self, pin_number, num_leds, brightness):
         self._np = neopixel.NeoPixel(Pin(pin_number), num_leds, bpp=3, timing=1)
@@ -42,9 +41,10 @@ class WS2812:
             self._np[i] = (0, 0, 0)
         self._np.write()
         return "off"
+    
 class DOOR: # Door motor and positionsensor
     def __init__(self, pin_number, angle_closed, angle_open, position_sensor_pin):
-        self.servo = SERVOMOTOR(Pin(pin_number)) 
+        self.servo = SERVOMOTOR(pin_number) 
         self.pin_number = pin_number 
         self.angle_open = angle_open # maximum opening angle
         self.angle_closed = angle_closed # maximum closing angle
@@ -55,35 +55,20 @@ class DOOR: # Door motor and positionsensor
         return f"DOOR at Pin {self.pin_number}, State: {self.door_state}"
 
     def open_door(self):
-        print(f"unlock_and_open_{self}")
+        print(f"open_{self}")
         self.servo.set_angle(self.angle_open)
-        # Update door state based on sensor value
-        if self.door_sensor.value() == 0:
+        if self.servo.get_current_angle() == self.angle_open and self.door_sensor.value() == 0:
+            print("New state: dooropened")
             self.door_state = "open"
-        elif self.door_sensor.value() == 1:
-            self.door_state = "error" # Door opened but sensor indicates closed
-        print(self.door_state)
-        return self.door_state
+            return self.door_state
 
     def close_door(self):
-        print(f"close_and_lock_{self}")
+        print(f"close_{self}")
         self.servo.set_angle(self.angle_closed)
-        # Update door state based on sensor value
-        if self.door_sensor.value() == 1:
+        if self.servo.get_current_angle() == self.angle_closed and self.door_sensor.value() == 1:
+            print("New state: doorclosed")
             self.door_state = "closed"
-        elif self.door_sensor.value() == 0:
-            self.door_state = "error" # Door closed but sensor indicates open
-        print(self.door_state)
-        return self.door_state
-
-    def check_door_position(self):
-        # Update door state based on sensor value
-        if self.door_sensor.value() == 0:
-            self.door_state = "open"
-        else:
-            self.door_state = "closed"
-        return self.door_state
-
+            return self.door_state
 
 class PERSONDETECTOR: # mmWave sensor
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
@@ -120,8 +105,15 @@ class SERVOMOTOR: # Servo motor
         duty_cycle = int(pulse_width_us / 20000 * 65535) # Convert pulse width from microseconds to duty cycle (0-65535) # 20000 microseconds = 20 milliseconds (period)
         self.pwm.duty_u16(duty_cycle)  # Set duty cycle to control servo position
         self.current_angle = angle  # Update current angle
+        self.wait_for_completion()  # Wait for servo to reach target position
 
     def get_current_angle(self): 
         return self.current_angle
-
+    
+    def wait_for_completion(self):
+        # Wait until servo reaches target position
+        while True:
+            # Check if current angle matches target angle within a tolerance
+            if abs(self.current_angle - self.get_current_angle()) < 1:
+                break
 
