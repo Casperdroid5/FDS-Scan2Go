@@ -139,8 +139,7 @@ class StateMachine:
     def run(self):
 
         global running 
-        print("Test2")
-        
+
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 print("initialization")
@@ -208,11 +207,15 @@ class StateMachine:
         global running
         if running == True:
             self.system_initialised = False
+            print("SYSTEM IS NO LONGER FROZEN")
+            print("Enter text to unfreeze system: ")
             self.state = self.INITIALISATION_STATE
-        if running == False and self.system_override_state_triggerd == True: # System override for emergency button (reset)
+            return 0
+        elif running == False and self.system_override_state_triggerd == True: # System override for emergency button (reset)
+            print("SYSTEM IS FROZEN")
             self.emergency_state_triggerd = False
             self.system_override_state_triggerd = False
-            self.state = self.INITIALISATION_STATE
+            return 0
 
 
 if __name__ == "__main__":
