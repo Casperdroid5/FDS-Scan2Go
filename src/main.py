@@ -28,9 +28,9 @@ class StateMachine:
         self.EMERGENCY_STATE = 5
 
         # Initialize indicator lights
-        self.lock_door1 = WS2812(pin_number=2, num_leds=2, brightness=0.0005) # brigness is a value between 0.0001 and 1
-        self.lock_door2 = WS2812(pin_number=3, num_leds=2, brightness=0.0005)
-        self.ferro_led = WS2812(pin_number=4, num_leds=2, brightness=0.0005)
+        self.door1_leds = WS2812(pin_number=2, num_leds=2, brightness=0.0005) # brigness is a value between 0.0001 and 1
+        self.door2_leds = WS2812(pin_number=3, num_leds=2, brightness=0.0005)
+        self.ferro_leds = WS2812(pin_number=4, num_leds=2, brightness=0.0005)
 
         # Initialize doors
         self.door1 = DOOR(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19) 
@@ -98,14 +98,14 @@ class StateMachine:
         scaled_value = (metalsensorvalue / 65535) * 100 # Convert potentiometer value to a range between 0 and 100
         print("Potentiometer value:", scaled_value)
         if 0 <= scaled_value < 30:
-            self.ferro_led.set_color("green")  # Green
+            self.ferro_leds.set_color("green")  # Green
             self.scanner_result = "NoMetalDetected"
         elif 30 <= scaled_value <= 80:
             self.scanner_result = "ScanInProgress"
-            self.ferro_led.set_color("blue")
+            self.ferro_leds.set_color("blue")
         elif 90 < scaled_value <= 100:
             self.scanner_result = "MetalDetected"
-            self.ferro_led.set_color("red")  # Red
+            self.ferro_leds.set_color("red")  # Red
         return self.scanner_result
 
     def handle_override_buttons(self, pin):
@@ -113,9 +113,9 @@ class StateMachine:
             print("Emergency button pressed")
             self.door1.open_door()
             self.door2.open_door() 
-            self.lock_door1.set_color("yellow")
-            self.lock_door2.set_color("yellow")
-            self.ferro_led.set_color("yellow")
+            self.door1_leds.set_color("yellow")
+            self.door2_leds.set_color("yellow")
+            self.ferro_leds.set_color("yellow")
             self.emergency_state_triggerd = True
             global running
             self.emergency_state_triggerd = not self.emergency_state_triggerd
@@ -125,9 +125,9 @@ class StateMachine:
             print("System override button pressed")
             self.door1.open_door()
             self.door2.open_door()  
-            self.lock_door1.set_color("white")
-            self.lock_door2.set_color("white")
-            self.ferro_led.set_color("white")
+            self.door1_leds.set_color("white")
+            self.door2_leds.set_color("white")
+            self.ferro_leds.set_color("white")
             global running
             self.system_override_state_triggerd = not self.system_override_state_triggerd
             running = not running
@@ -147,45 +147,54 @@ class StateMachine:
                     self.door1.open_door()
                     if not self.system_initialised:
                         print("FIRST initialization")
-                        self.lock_door1.off()
-                        self.lock_door2.off()
-                        self.ferro_led.off() 
+                        self.door1_leds.off()
+                        self.door2_leds.off()
+                        self.ferro_leds.off() 
                         self.door2.close_door()  
                         self.door1.close_door()  
                         self.system_initialised = True
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
+                self.door1_leds.set_color("green")
+                self.door2_leds.set_color("red")
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
                 if self.user_returned_from_mri == True:
                     if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                         self.user_returned_from_mri = False
-                        self.door2.close_door()  
-                        self.door1.open_door()  
+                        self.door2.close_door()
+                        self.door2_leds.set_color("red")
+                        self.door1.open_door()
+                        self.door1_leds.set_color("green")
                         self.state = self.INITIALISATION_STATE
                 elif self.person_detected_in_field('A') == True and not self.user_returned_from_mri:
-                    self.door1.close_door()  
+                    self.door1.close_door()
+                    self.door1_leds.set_color("red")
                     self.state = self.SCAN_FOR_FERROMETALS
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
                 if self.user_returned_from_mri == True:
-                    self.door2.close_door()  
+                    self.door2.close_door()
+                    self.door2_leds.set_color("red")
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
                 elif self.scanner_result == "MetalDetected" and self.person_detected_in_field('B'):
                     self.state = self.INITIALISATION_STATE
                 elif self.scanner_result == "NoMetalDetected" and self.person_detected_in_field('B') == True and self.user_returned_from_mri == False:
-                    self.door2.open_door()  
+                    self.door2.open_door()
+                    self.door1_leds.set_color("green")
                     self.state = self.USER_IN_MR_ROOM
 
             elif self.state == self.SCAN_FOR_FERROMETALS:
                 self.scan_for_ferrometals()
                 if self.scanner_result == "MetalDetected":
                     print(self.scanner_result)
-                    self.door1.open_door()  
+                    self.door1.open_door()
+                    self.door1_leds.set_color("green")
                     if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                         self.state = self.INITIALISATION_STATE
                 elif self.scanner_result == "NoMetalDetected" and self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
                     print(self.scanner_result)
                     self.door2.open_door()
+                    self.door2_leds.set_color("green")
                     self.state = self.USER_IN_MR_ROOM
                 elif self.scanner_result == "ScanInProgress" or self.person_detected_in_field('A') == True:
                     print(self.scanner_result)
@@ -236,5 +245,6 @@ if __name__ == "__main__":
         print("Systeeminit failed, shutting down...")
     except Exception as e:
         print("unexpected error", e)
+
 
 
