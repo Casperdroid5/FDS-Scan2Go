@@ -179,23 +179,24 @@ class StateMachine:
             elif self.state == self.SCAN_FOR_FERROMETALS:
                 self.scan_for_ferrometals()
                 if self.scanner_result == "MetalDetected":
+                    print(self.scanner_result)
                     self.door1.open_door()  
                     if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                         self.state = self.INITIALISATION_STATE
                 elif self.scanner_result == "NoMetalDetected" and self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
+                    print(self.scanner_result)
                     self.door2.open_door()
                     self.state = self.USER_IN_MR_ROOM
                 elif self.scanner_result == "ScanInProgress" or self.person_detected_in_field('A') == True:
+                    print(self.scanner_result)
                     self.state = self.SCAN_FOR_FERROMETALS 
 
             elif self.state == self.USER_IN_MR_ROOM:
                 if self.person_detected_in_field('B') == False:
                     self.user_in_mri = True
-                    print("userin mri is now TRUE")
                 if self.person_detected_in_field('B') == True and self.user_in_mri == True:
                     self.user_in_mri = False
                     self.user_returned_from_mri = True
-                    print("going to = userfieldB_response ")
                     self.state = self.USER_FIELD_B_RESPONSE_STATE
 
             else:
@@ -208,7 +209,7 @@ class StateMachine:
         if running == True:
             self.system_initialised = False
             print("SYSTEM IS NO LONGER FROZEN")
-            print("Enter text to unfreeze system: ")
+            print("Enter text to continue")
             self.state = self.INITIALISATION_STATE
             return 0
         elif running == False and self.system_override_state_triggerd == True: # System override for emergency button (reset)
