@@ -192,9 +192,11 @@ class StateMachine:
             elif self.state == self.USER_IN_MR_ROOM:
                 if self.person_detected_in_field('B') == False:
                     self.user_in_mri = True
-                elif self.person_detected_in_field('B') == True and self.user_in_mri == True:
+                    print("userin mri is now TRUE")
+                if self.person_detected_in_field('B') == True and self.user_in_mri == True:
                     self.user_in_mri = False
                     self.user_returned_from_mri = True
+                    print("going to = userfieldB_response ")
                     self.state = self.USER_FIELD_B_RESPONSE_STATE
 
             else:
