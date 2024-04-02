@@ -1,15 +1,21 @@
 from hardware_s2g import DOOR, PERSONDETECTOR, WS2812
 from system_utils import SystemInitCheck
-from machine import Pin, ADC
+from machine import Pin, ADC, RTC
 import time
 
 # System running global variable
 global running
 running = False  
 
+# init on-board RTC
+rtc = RTC()
+rtc.datetime((2024, 4, 2, 1, 0, 0, 0, 0)) # set a specific date and time for the RTC (year, month, day, weekday, hours, minutes, seconds, subseconds)
+print(rtc.datetime())
 
 class StateMachine:
     def __init__(self):
+        #create log file:
+        self.log_file = "temps.txt"
 
         # StatemachineVariables
         self.scanner_result = "ScanInProgress"
@@ -53,10 +59,26 @@ class StateMachine:
         self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)  # Door 2 button (open door)
         self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_door2_button_press)
 
+    def log(self, message):
+    
+        with open("log.txt", "w") as file:
+
+            # Timeregistration
+            timestamp = rtc.datetime()
+            timestring = "%04d-%02d-%02d %02d:%02d:%02d" % timestamp[:6]
+
+            # Data to be logged
+            LogData = message
+            
+            # write time and data to file
+            file.write(timestring + "," + str(LogData) + "\n")
+            file.flush()  # Write data to file immidiately
+
     def handle_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE or self.state == self.SCAN_FOR_FERROMETALS: 
             if self.door1.door_state == "closed": # check if door is open
                 self.door1.open_door()  
+                self.log("Door 1 button pressed.")
 
     def handle_door2_button_press(self, pin):
         if self.state == self.USER_IN_MR_ROOM or (self.scanner_result == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
