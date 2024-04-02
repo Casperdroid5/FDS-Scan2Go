@@ -1,15 +1,29 @@
 import machine
 import utime
 
-sensor_temp = machine.ADC(machine.ADC.CORE_TEMP)
-conversion_factor = 3.3 / (65535)
+# RTC initialisatie en instellen op 1 januari 2024
+rtc = machine.RTC()
+rtc.datetime((2024, 1, 1, 0, 0, 0, 0, 0))
 
-with open("temps.txt", "w") as file:
-    for i in range(5):
-        reading = sensor_temp.read_u16() * conversion_factor
-        temperature = 27 - (reading - 0.706) / 0.001721
-        file.write(str(temperature) + '\n')
-        utime.sleep(0.2)
+# Potentiometer initialisatie
+potentiometer = machine.ADC(machine.Pin(27))
 
-with open("temps.txt", "r") as file:
-    print(file.read())
+# Openen van het bestand "log.txt" om te schrijven
+with open("log.txt", "w") as file:
+    while True:
+        # Timeregistration
+        timestamp = rtc.datetime()
+        timestring = "%04d-%02d-%02d %02d:%02d:%02d" % timestamp[:6]
+
+        # Lees de waarde van de potentiometer
+        pot_value = potentiometer.read_u16()
+        
+        # Data om te loggen
+        LogData = pot_value
+        
+        # Schrijven van tijd en data naar bestand
+        file.write(timestring + "," + str(LogData) + "\n")
+        file.flush()  # Schrijf de gegevens onmiddellijk naar het bestand
+        
+        # Wacht voor een bepaalde tijd voordat de volgende meting wordt uitgevoerd
+        utime.sleep(1)  # Bijvoorbeeld elke seconde
