@@ -271,8 +271,10 @@ if __name__ == "__main__":
                     FDS.freeze() 
 
         except SystemExit:
+            FDS.log("SystemExit, shutting down...")
             print("Systeeminit failed, shutting down...")
         except Exception as e:
+            FDS.log("unexpected error")
             print("unexpected error", e)
 
 
