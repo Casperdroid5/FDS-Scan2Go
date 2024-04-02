@@ -4,8 +4,8 @@ from machine import Pin, ADC, RTC
 import time
 
 # System running global variable
-global running
-running = False  
+global running # system flag to set the system in a running state or not
+running = False  # wait for system to be initialised before starting the state machine
 
 # init on-board RTC
 rtc = RTC()
@@ -19,11 +19,14 @@ class StateMachine:
 
         # StatemachineVariables
         self.scanner_result = "ScanInProgress"
-        self.user_returned_from_mri = False
         self.user_in_mri = False
         self.emergency_state_triggerd = False
         self.system_initialised = False
         self.system_override_state_triggerd = False
+        self.user_returned_from_mri = False
+        
+        # Define the initial state of the state machine
+        self.state = None
 
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
@@ -31,7 +34,7 @@ class StateMachine:
         self.USER_FIELD_B_RESPONSE_STATE = 2
         self.SCAN_FOR_FERROMETALS = 3
         self.USER_IN_MR_ROOM = 4
-        self.EMERGENCY_STATE = 5
+        self.USER_RETURNS_FROM_MR_ROOM = 6
 
         # Initialize indicator lights
         self.door1_leds = WS2812(pin_number=2, num_leds=2, brightness=0.0005) # brigness is a value between 0.0001 and 1
@@ -51,39 +54,63 @@ class StateMachine:
 
         # Initialize buttons
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)
-        self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_override_buttons) # Emergency situation button
+        self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_emergencybutton_press) # Emergency situation button
         self.button_system_override = Pin(16, Pin.IN, Pin.PULL_UP)  # System override button
-        self.button_system_override.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_override_buttons)
+        self.button_system_override.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_overridebutton_press)
         self.button_door1 = Pin(21, Pin.IN, Pin.PULL_UP)  # Door 1 button (open door)
-        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_door1_button_press)
+        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door1_button_press)
         self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)  # Door 2 button (open door)
-        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.handle_door2_button_press)
+        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door2_button_press)
 
     def log(self, message):
-    
-        with open("log.txt", "w") as file:
-
+        with open("log.txt", "a") as file:  # Open het bestand in append-modus
             # Timeregistration
             timestamp = rtc.datetime()
-            timestring = "%04d-%02d-%02d %02d:%02d:%02d" % timestamp[:6]
+            timestring = "%04d-%02d-%02d %02d:%02d:%02d.%03d" % timestamp[:7]
 
             # Data to be logged
             LogData = message
-            
-            # write time and data to file
-            file.write(timestring + "," + str(LogData) + "\n")
-            file.flush()  # Write data to file immidiately
 
-    def handle_door1_button_press(self, pin):
+            # Schrijf tijd en data naar bestand
+            file.write(timestring + "," + str(LogData) + "\n")
+            file.flush()  # Schrijf de gegevens onmiddellijk naar het bestand
+
+    def IRQ_handler_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE or self.state == self.SCAN_FOR_FERROMETALS: 
             if self.door1.door_state == "closed": # check if door is open
                 self.door1.open_door()  
                 self.log("Door 1 button pressed.")
 
-    def handle_door2_button_press(self, pin):
+    def IRQ_handler_door2_button_press(self, pin):
         if self.state == self.USER_IN_MR_ROOM or (self.scanner_result == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
             if self.door2.door_state == "closed":
                 self.door2.open_door()  
+
+    def IRQ_handler_emergencybutton_press(self):
+            print("Emergency button pressed")
+            self.door1.open_door()
+            self.door2.open_door() 
+            self.door1_leds.set_color("yellow")
+            self.door2_leds.set_color("yellow")
+            self.ferro_leds.set_color("yellow")
+            self.emergency_state_triggerd = True
+            global running
+            running = False # stop the state machine
+            self.freeze()
+            return 0
+
+    def IRQ_handler_overridebutton_press(self):
+            print("System override button pressed")
+            self.door1.open_door()
+            self.door2.open_door()  
+            self.door1_leds.set_color("white")
+            self.door2_leds.set_color("white")
+            self.ferro_leds.set_color("white")
+            global running
+            self.system_override_state_triggerd = not self.system_override_state_triggerd # toggle system override state
+            running = not running # toggle statemachine running state
+            self.freeze()
+            return 0
 
     def person_detected_in_field(self, field):
         print(f"Checking for person in field {field}")
@@ -120,42 +147,28 @@ class StateMachine:
         scaled_value = (metalsensorvalue / 65535) * 100 # Convert potentiometer value to a range between 0 and 100
         print("Potentiometer value:", scaled_value)
         if 0 <= scaled_value < 30:
-            self.ferro_leds.set_color("green")  # Green
+            self.ferro_leds.set_color("green")
             self.scanner_result = "NoMetalDetected"
         elif 30 <= scaled_value <= 80:
             self.scanner_result = "ScanInProgress"
             self.ferro_leds.set_color("blue")
         elif 90 < scaled_value <= 100:
             self.scanner_result = "MetalDetected"
-            self.ferro_leds.set_color("red")  # Red
+            self.ferro_leds.set_color("red")
+        else:
+            print("Invalid value")
+            self.scanner_result = "InvalidValue"
         return self.scanner_result
 
-    def handle_override_buttons(self, pin):
-        if pin == self.button_emergency:
-            print("Emergency button pressed")
-            self.door1.open_door()
-            self.door2.open_door() 
-            self.door1_leds.set_color("yellow")
-            self.door2_leds.set_color("yellow")
-            self.ferro_leds.set_color("yellow")
-            self.emergency_state_triggerd = True
-            global running
-            self.emergency_state_triggerd = not self.emergency_state_triggerd
-            running = False
-            self.freeze()
-        elif pin == self.button_system_override:
-            print("System override button pressed")
-            self.door1.open_door()
-            self.door2.open_door()  
-            self.door1_leds.set_color("white")
-            self.door2_leds.set_color("white")
-            self.ferro_leds.set_color("white")
-            global running
-            self.system_override_state_triggerd = not self.system_override_state_triggerd
-            running = not running
-            self.freeze()
-
+    def systemset (self):
+        print("FIRST initialization")
+        self.door1_leds.off()
+        self.door2_leds.off()
+        self.ferro_leds.off() 
+        self.door2.close_door()  
+        self.door1.close_door()  
         return 0
+
 
 # State machine
     def run(self):
@@ -164,20 +177,13 @@ class StateMachine:
 
         while running: 
             if self.state == self.INITIALISATION_STATE:
-                print("initialization")
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()
                     if not self.system_initialised:
-                        print("FIRST initialization")
-                        self.door1_leds.off()
-                        self.door2_leds.off()
-                        self.ferro_leds.off() 
-                        self.door2.close_door()  
-                        self.door1.close_door()  
-                        self.system_initialised = True
-                    self.state = self.USER_FIELD_A_RESPONSE_STATE
+                        self.systemset()
                 self.door1_leds.set_color("green")
                 self.door2_leds.set_color("red")
+                self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
                 if self.user_returned_from_mri == True:
@@ -188,22 +194,24 @@ class StateMachine:
                         self.door1.open_door()
                         self.door1_leds.set_color("green")
                         self.state = self.INITIALISATION_STATE
+                elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
+                    print("please position yourself in field A, before the scanner")
                 elif self.person_detected_in_field('A') == True and not self.user_returned_from_mri:
                     self.door1.close_door()
                     self.door1_leds.set_color("red")
                     self.state = self.SCAN_FOR_FERROMETALS
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
-                if self.user_returned_from_mri == True:
-                    self.door2.close_door()
-                    self.door2_leds.set_color("red")
-                    self.state = self.USER_FIELD_A_RESPONSE_STATE
-                elif self.scanner_result == "MetalDetected" and self.person_detected_in_field('B'):
+                if self.scanner_result == "MetalDetected" and self.person_detected_in_field('B'):
                     self.state = self.INITIALISATION_STATE
                 elif self.scanner_result == "NoMetalDetected" and self.person_detected_in_field('B') == True and self.user_returned_from_mri == False:
                     self.door2.open_door()
                     self.door1_leds.set_color("green")
                     self.state = self.USER_IN_MR_ROOM
+                else:
+                    self.scanner_result = "invalidState"
+                    self.ferro_leds.set_color("yellow")
+                    self.state = self.INITIALISATION_STATE
 
             elif self.state == self.SCAN_FOR_FERROMETALS:
                 self.scan_for_ferrometals()
@@ -221,18 +229,27 @@ class StateMachine:
                 elif self.scanner_result == "ScanInProgress" or self.person_detected_in_field('A') == True:
                     print(self.scanner_result)
                     self.state = self.SCAN_FOR_FERROMETALS 
+                else:
+                    self.scanner_result = "invalidState"
+                    self.ferro_leds.set_color("yellow")
+                    self.state = self.INITIALISATION_STATE
 
             elif self.state == self.USER_IN_MR_ROOM:
                 if self.person_detected_in_field('B') == False:
                     self.user_in_mri = True
+                    self.state = self.USER_RETURNS_FROM_MR_ROOM
+
+            elif self.state == self.USER_RETURNS_FROM_MR_ROOM:
                 if self.person_detected_in_field('B') == True and self.user_in_mri == True:
                     self.user_in_mri = False
                     self.user_returned_from_mri = True
-                    self.state = self.USER_FIELD_B_RESPONSE_STATE
+                    self.door2.close_door()
+                    self.door2_leds.set_color("red")
+                    self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             else:
-                print("Invalid state, exiting...")
-                break
+                print("Invalid state, create emergency request")
+                self.IRQ_handler_emergencybutton_press()
             time.sleep(0.5) # to prevent the state machine from running too fast
 
     def freeze(self):
