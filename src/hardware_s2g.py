@@ -42,36 +42,6 @@ class WS2812:
         self._np.write()
         return "off"
 
-class METALDETECTOR: # Metal detector sensor
-    def __init__(self, pin_number):
-        self.pin_number = pin_number
-        self.metal_sensor = Pin(pin_number, Pin.IN, Pin.PULL_UP)
-        self.metal_state = "NoMetalDetected"  # Initialize metal state
-
-    def __repr__(self):
-        return f"METALDETECTOR at Pin {self.pin_number}, State: {self.metal_state}"
-
-    def check_metal(self):
-        if self.metal_sensor.value() == 0:
-            self.metal_state = "MetalDetected"
-        else:
-            self.metal_state = "NoMetalDetected"
-        return self.metal_state
-
-class METALDETECTORWITHLED(METALDETECTOR, WS2812):
-    def __init__(self, pin_number, led_pin_number, num_leds, brightness):
-        METALDETECTOR.__init__(self, pin_number)
-        WS2812.__init__(self, led_pin_number, num_leds, brightness)
-
-    def check_metal(self):
-        metal_state = super().check_metal()  # Call the check_metal method of METALDETECTOR
-        if metal_state == "MetalDetected":
-            self.set_color("red")  # Set LED color to red when metal is detected
-        else:
-            self.set_color("green")  # Set LED color to green when no metal is detected
-        return metal_state
-
-
 class DOOR: # Door motor and positionsensor
     def __init__(self, pin_number, angle_closed, angle_open, position_sensor_pin):
         self.servo = SERVOMOTOR(pin_number) 

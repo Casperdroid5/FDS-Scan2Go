@@ -1,4 +1,4 @@
-from hardware_s2g import PERSONDETECTOR, DOORWITHLED, METALDETECTORWITHLED, WS2812
+from hardware_s2g import PERSONDETECTOR, DOORWITHLED, WS2812
 from system_utils import SystemInitCheck
 from machine import Pin, RTC
 import time
@@ -7,6 +7,8 @@ import time
 global running   # System running global variable
 running = False  # wait for system to be initialised before starting the state machine
 rtc = RTC()      # init on-board RTC
+global ferrometaldetected
+ferrometaldetected = False  # Global variable to check if metal is detected
 
 # File to log the system events
 file = open("log.txt", "w")  # open the file in write mode:
@@ -41,8 +43,6 @@ class StateMachine:
         self.door1 = DOORWITHLED(door_pin_number=14, door_angle_closed=90, door_angle_open=0, door_position_sensor_pin=19, led_pin_number=2, num_leds=2, brightness=0.0005)
         self.door2 = DOORWITHLED(door_pin_number=15, door_angle_closed=90, door_angle_open=185, door_position_sensor_pin=20, led_pin_number=3, num_leds=2, brightness=0.0005)
 
-        # Initialize ferrometal scanner
-        self.ferrometalscanner = METALDETECTORWITHLED(pin_number=19, led_pin_number=4, num_leds=2, brightness=0.0005)
 
         # Initialize persondetectors
         self.mmWaveFieldA = PERSONDETECTOR(uart_number=0, baudrate=115200, tx_pin=0, rx_pin=1)
@@ -57,6 +57,10 @@ class StateMachine:
         self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door1_button_press)
         self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)  # Door 2 button (open door)
         self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door2_button_press)
+        
+        # Initialize ferrometal scanner
+        self.ferrometalscanner = Pin(18, Pin.IN, Pin.PULL_UP)
+        self.ferrometalscanner.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_ferrometal_detected)
 
     def log(self, message):
         if file:
@@ -73,7 +77,7 @@ class StateMachine:
                 self.log("Door 1 button pressed.")
 
     def IRQ_handler_door2_button_press(self, pin):
-        if self.state == self.USER_IN_MR_ROOM or (self.scanner_result == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
+        if self.state == self.USER_IN_MR_ROOM or (ferrometaldetected == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
             if self.door2.door_state == "closed":
                 self.door2.open_door()  
                 self.log("Door 2 button pressed.")
@@ -105,6 +109,12 @@ class StateMachine:
         running = not running # toggle statemachine running state
         self.freeze()
         return 0
+
+    def IRQ_handler_ferrometal_detected(self, pin):
+        global ferrometaldetected
+        self.log("Ferrometalscanner detected metal.")
+        print("Ferrometalscanner detected metal")
+        ferrometaldetected = True
 
     def person_detected_in_field(self, field):
         print(f"Checking for person in field {field}")
@@ -145,23 +155,29 @@ class StateMachine:
 
 # State machine
     def run(self):
-
+        
+        global ferrometaldetected
         global running 
+        
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
+                    ferrometaldetected = False
                     self.door1.open_door()
                     if not self.system_initialised:
                         self.systemset()
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
+                print (ferrometaldetected)
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                     self.door1.close_door()
-                    if self.ferrometalscanner.check_metal == "MetalDetected":
+                    if ferrometaldetected == True:
                         self.door1.open_door()
+                        print("Metal detected, please remove metal objects")
                         self.state = self.INITIALISATION_STATE
-                    elif self.ferrometalscanner.check_metal == "NoMetalDetected":
+                    elif ferrometaldetected == False:
+                        print("No metal detected, please proceed to field B")
                         self.state = self.USER_FIELD_B_RESPONSE_STATE
                 elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
                     print("please position yourself in field A, before the scanner")
@@ -186,7 +202,7 @@ class StateMachine:
                     self.state = self.USER_EXITS_FDS
             
             elif self.state == self.USER_EXITS_FDS:
-                if self.person_detected_in_field('B') == False: 
+                if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == True: 
                     self.door1.open_door()
                     self.state = self.INITIALISATION_STATE
 
