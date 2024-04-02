@@ -15,7 +15,7 @@ print(rtc.datetime())
 class StateMachine:
     def __init__(self):
         #create log file:
-        self.log_file = "temps.txt"
+        self.log_file = "log.txt"
 
         # StatemachineVariables
         self.scanner_result = "ScanInProgress"
@@ -75,13 +75,13 @@ class StateMachine:
             file.write(timestring + "," + str(LogData) + "\n")
             file.flush()  # Schrijf de gegevens onmiddellijk naar het bestand
 
-    def IRQ_handler_door1_button_press(self, pin):
+    def IRQ_handler_door1_button_press(self):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE or self.state == self.SCAN_FOR_FERROMETALS: 
             if self.door1.door_state == "closed": # check if door is open
                 self.door1.open_door()  
                 self.log("Door 1 button pressed.")
 
-    def IRQ_handler_door2_button_press(self, pin):
+    def IRQ_handler_door2_button_press(self):
         if self.state == self.USER_IN_MR_ROOM or (self.scanner_result == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
             if self.door2.door_state == "closed":
                 self.door2.open_door()  
@@ -211,6 +211,7 @@ class StateMachine:
                 else:
                     self.scanner_result = "invalidState"
                     self.ferro_leds.set_color("yellow")
+                    print("invalid state ferroscanner")
                     self.state = self.INITIALISATION_STATE
 
             elif self.state == self.SCAN_FOR_FERROMETALS:
@@ -284,6 +285,7 @@ if __name__ == "__main__":
         print("Systeeminit failed, shutting down...")
     except Exception as e:
         print("unexpected error", e)
+
 
 
 
