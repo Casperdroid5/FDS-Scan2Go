@@ -70,6 +70,20 @@ class DOOR: # Door motor and positionsensor
             self.door_state = "closed"
             return self.door_state
 
+class DoorWithLED(DOOR, WS2812):
+    def __init__(self, door_pin_number, door_angle_closed, door_angle_open, door_position_sensor_pin, led_pin_number, num_leds, brightness):
+        DOOR.__init__(self, door_pin_number, door_angle_closed, door_angle_open, door_position_sensor_pin)
+        WS2812.__init__(self, led_pin_number, num_leds, brightness)
+
+    def open_door(self):
+        super().open_door()
+        self.set_color("green")  # Set LED color to green when the door is opened
+
+    def close_door(self):
+        super().close_door()
+        self.set_color("red")  # Set LED color to red when the door is closed
+
+
 class PERSONDETECTOR: # mmWave sensor
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
         self.uart_number = uart_number
