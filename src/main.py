@@ -7,15 +7,11 @@ import time
 global running # system flag to set the system in a running state or not
 running = False  # wait for system to be initialised before starting the state machine
 
-# init on-board RTC
-rtc = RTC()
-rtc.datetime((2024, 4, 2, 1, 0, 0, 0, 0)) # set a specific date and time for the RTC (year, month, day, weekday, hours, minutes, seconds, subseconds)
-print(rtc.datetime())
+# File to log the system events 
+file = open("log.txt", "w") # open the file in write mode:
 
 class StateMachine:
     def __init__(self):
-        #create log file:
-        self.log_file = "log.txt"
 
         # StatemachineVariables
         self.scanner_result = "ScanInProgress"
@@ -63,17 +59,12 @@ class StateMachine:
         self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door2_button_press)
 
     def log(self, message):
-        with open("log.txt", "a") as file:  # Open het bestand in append-modus
-            # Timeregistration
-            timestamp = rtc.datetime()
-            timestring = "%04d-%02d-%02d %02d:%02d:%02d.%03d" % timestamp[:7]
-
-            # Data to be logged
-            LogData = message
-
-            # Schrijf tijd en data naar bestand
-            file.write(timestring + "," + str(LogData) + "\n")
-            file.flush()  # Schrijf de gegevens onmiddellijk naar het bestand
+        if file:
+            print("Logging: ", message)
+            timestamp = rtc.datetime()		# Timeregistration
+            timestring = "%04d-%02d-%02d %02d:%02d:%02d.%03d" % timestamp[:7] 
+            file.write(timestring + "," + message + "\n")		# Write time and message to the file
+            file.flush()  # Write the data immediately to the file
 
     def IRQ_handler_door1_button_press(self):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE or self.state == self.SCAN_FOR_FERROMETALS: 
@@ -85,32 +76,35 @@ class StateMachine:
         if self.state == self.USER_IN_MR_ROOM or (self.scanner_result == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
             if self.door2.door_state == "closed":
                 self.door2.open_door()  
+                self.log("Door 2 button pressed.")
 
     def IRQ_handler_emergencybutton_press(self):
-            print("Emergency button pressed")
-            self.door1.open_door()
-            self.door2.open_door() 
-            self.door1_leds.set_color("yellow")
-            self.door2_leds.set_color("yellow")
-            self.ferro_leds.set_color("yellow")
-            self.emergency_state_triggerd = True
-            global running
-            running = False # stop the state machine
-            self.freeze()
-            return 0
+        self.log("Emergency button pressed.")
+        print("Emergency button pressed")
+        self.door1.open_door()
+        self.door2.open_door() 
+        self.door1_leds.set_color("yellow")
+        self.door2_leds.set_color("yellow")
+        self.ferro_leds.set_color("yellow")
+        self.emergency_state_triggerd = True
+        global running
+        running = False # stop the state machine
+        self.freeze()
+        return 0
 
     def IRQ_handler_overridebutton_press(self):
-            print("System override button pressed")
-            self.door1.open_door()
-            self.door2.open_door()  
-            self.door1_leds.set_color("white")
-            self.door2_leds.set_color("white")
-            self.ferro_leds.set_color("white")
-            global running
-            self.system_override_state_triggerd = not self.system_override_state_triggerd # toggle system override state
-            running = not running # toggle statemachine running state
-            self.freeze()
-            return 0
+        self.log("System override button pressed.")
+        print("System override button pressed")
+        self.door1.open_door()
+        self.door2.open_door()  
+        self.door1_leds.set_color("white")
+        self.door2_leds.set_color("white")
+        self.ferro_leds.set_color("white")
+        global running
+        self.system_override_state_triggerd = not self.system_override_state_triggerd # toggle system override state
+        running = not running # toggle statemachine running state
+        self.freeze()
+        return 0
 
     def person_detected_in_field(self, field):
         print(f"Checking for person in field {field}")
@@ -270,11 +264,15 @@ class StateMachine:
 
 if __name__ == "__main__":
     running = True
+    rtc = RTC()     # init on-board RTC
+    rtc.datetime((2024, 4, 2, 1, 0, 0, 0, 0)) # set a specific date and time for the RTC (year, month, day, weekday, hours, minutes, seconds, subseconds)
+    print(rtc.datetime())
+
     try:
         system_check = SystemInitCheck()  
         FDS = StateMachine()
         FDS.state = FDS.INITIALISATION_STATE
-
+        FDS.log("test6")
         while True:
             if running:  
                 FDS.run()
@@ -285,7 +283,5 @@ if __name__ == "__main__":
         print("Systeeminit failed, shutting down...")
     except Exception as e:
         print("unexpected error", e)
-
-
 
 
