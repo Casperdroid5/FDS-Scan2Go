@@ -1,6 +1,6 @@
-from hardware_s2g import PERSONDETECTOR, WS2812, DOORWITHLED
+from hardware_s2g import PERSONDETECTOR, DOORWITHLED, METALDETECTORWITHLED, WS2812
 from system_utils import SystemInitCheck
-from machine import Pin, ADC, RTC
+from machine import Pin, RTC
 import time
 
 
@@ -15,7 +15,6 @@ class StateMachine:
     def __init__(self):
 
         # StatemachineVariables
-        self.scanner_result = "ScanInProgress"
         self.user_in_mri = False
         self.emergency_state_triggerd = False
         self.system_initialised = False
@@ -29,10 +28,10 @@ class StateMachine:
         self.INITIALISATION_STATE = 0
         self.USER_FIELD_A_RESPONSE_STATE = 1
         self.USER_FIELD_B_RESPONSE_STATE = 2
-        self.SCAN_FOR_FERROMETALS = 3
-        self.USER_IN_MR_ROOM = 4
-        self.USER_RETURNS_FROM_MR_ROOM = 6
-
+        self.USER_IN_MR_ROOM = 3
+        self.USER_RETURNS_FROM_MR_ROOM = 4
+        self.USER_EXITS_FDS = 5
+        
         # Initialize indicator lights
         self.door1_leds = WS2812(pin_number=2, num_leds=2, brightness=0.0005)  # brigness is a value between 0.0001 and 1
         self.door2_leds = WS2812(pin_number=3, num_leds=2, brightness=0.0005)
@@ -43,7 +42,7 @@ class StateMachine:
         self.door2 = DOORWITHLED(door_pin_number=15, door_angle_closed=90, door_angle_open=185, door_position_sensor_pin=20, led_pin_number=3, num_leds=2, brightness=0.0005)
 
         # Initialize ferrometal scanner
-        self.ferrometalscanner = ADC(Pin(27))
+        self.ferrometalscanner = METALDETECTORWITHLED(pin_number=19, led_pin_number=4, num_leds=2, brightness=0.0005)
 
         # Initialize persondetectors
         self.mmWaveFieldA = PERSONDETECTOR(uart_number=0, baudrate=115200, tx_pin=0, rx_pin=1)
@@ -68,7 +67,7 @@ class StateMachine:
             file.flush()  # Write the data immediately to the file
 
     def IRQ_handler_door1_button_press(self, pin):
-        if self.state == self.USER_FIELD_A_RESPONSE_STATE or self.state == self.SCAN_FOR_FERROMETALS: 
+        if self.state == self.USER_FIELD_A_RESPONSE_STATE:
             if self.door1.door_state == "closed": # check if door is open
                 self.door1.open_door()  
                 self.log("Door 1 button pressed.")
@@ -117,7 +116,6 @@ class StateMachine:
             return False
         else:
             print("Invalid input. Please enter 'True' or 'False'.")
-            # Als de invoer ongeldig is, retourneer False om aan te geven dat er geen persoon is gedetecteerd.
             return False
         
         #mmWave code disabled for testing purposes
@@ -136,8 +134,6 @@ class StateMachine:
         #     elif self.mmWaveFieldB.humanpresence == "Somebodystoppedmoving":   
         #         return False
 
-
-
     def systemset (self):
         print("FIRST initialization")
         self.door1_leds.off()
@@ -146,7 +142,6 @@ class StateMachine:
         self.door2.close_door()  
         self.door1.close_door()  
         return 0
-
 
 # State machine
     def run(self):
@@ -161,22 +156,18 @@ class StateMachine:
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
-                if self.user_returned_from_mri == True:
-                    if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
-                        self.user_returned_from_mri = False
-                        self.door2.close_door()
+                if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
+                    self.door1.close_door()
+                    if self.ferrometalscanner.check_metal == "MetalDetected":
                         self.door1.open_door()
                         self.state = self.INITIALISATION_STATE
+                    elif self.ferrometalscanner.check_metal == "NoMetalDetected":
+                        self.state = self.USER_FIELD_B_RESPONSE_STATE
                 elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
                     print("please position yourself in field A, before the scanner")
-                elif self.person_detected_in_field('A') == True and not self.user_returned_from_mri:
-                    self.door1.close_door()
-                    self.state = self.SCAN_FOR_FERROMETALS
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
-                if self.scanner_result == "MetalDetected" and self.person_detected_in_field('B'):
-                    self.state = self.INITIALISATION_STATE
-                elif self.scanner_result == "NoMetalDetected" and self.person_detected_in_field('B') == True and self.user_returned_from_mri == False:
+                if self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False:
                     self.door2.open_door()
                     self.state = self.USER_IN_MR_ROOM
                 else:
@@ -185,36 +176,19 @@ class StateMachine:
                     print("invalid state ferroscanner")
                     self.state = self.INITIALISATION_STATE
 
-            elif self.state == self.SCAN_FOR_FERROMETALS:
-                self.scan_for_ferrometals()
-                if self.scanner_result == "MetalDetected":
-                    print(self.scanner_result)
-                    self.door1.open_door()
-                    if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
-                        self.state = self.INITIALISATION_STATE
-                elif self.scanner_result == "NoMetalDetected" and self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
-                    print(self.scanner_result)
-                    self.door2.open_door()
-                    self.state = self.USER_IN_MR_ROOM
-                elif self.scanner_result == "ScanInProgress" or self.person_detected_in_field('A') == True:
-                    print(self.scanner_result)
-                    self.state = self.SCAN_FOR_FERROMETALS 
-                else:
-                    self.scanner_result = "invalidState"
-                    self.ferro_leds.set_color("yellow")
-                    self.state = self.INITIALISATION_STATE
-
             elif self.state == self.USER_IN_MR_ROOM:
                 if self.person_detected_in_field('B') == False:
-                    self.user_in_mri = True
                     self.state = self.USER_RETURNS_FROM_MR_ROOM
 
             elif self.state == self.USER_RETURNS_FROM_MR_ROOM:
-                if self.person_detected_in_field('B') == True and self.user_in_mri == True:
-                    self.user_in_mri = False
-                    self.user_returned_from_mri = True
+                if self.person_detected_in_field('B') == True:
                     self.door2.close_door()
-                    self.state = self.USER_FIELD_A_RESPONSE_STATE
+                    self.state = self.USER_EXITS_FDS
+            
+            elif self.state == self.USER_EXITS_FDS:
+                if self.person_detected_in_field('B') == False: 
+                    self.door1.open_door()
+                    self.state = self.INITIALISATION_STATE
 
             else:
                 print("Invalid state, create emergency request")
@@ -254,11 +228,10 @@ if __name__ == "__main__":
                     FDS.freeze() 
 
         except SystemExit:
-            FDS.log("SystemExit, shutting down...")
             print("Systeeminit failed, shutting down...")
         except Exception as e:
-            FDS.log("unexpected error")
             print("unexpected error", e)
+
 
 
 

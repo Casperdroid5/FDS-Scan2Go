@@ -46,16 +46,16 @@ class METALDETECTOR: # Metal detector sensor
     def __init__(self, pin_number):
         self.pin_number = pin_number
         self.metal_sensor = Pin(pin_number, Pin.IN, Pin.PULL_UP)
-        self.metal_state = "nometal"  # Initialize metal state
+        self.metal_state = "NoMetalDetected"  # Initialize metal state
 
     def __repr__(self):
         return f"METALDETECTOR at Pin {self.pin_number}, State: {self.metal_state}"
 
     def check_metal(self):
         if self.metal_sensor.value() == 0:
-            self.metal_state = "metal detected"
+            self.metal_state = "MetalDetected"
         else:
-            self.metal_state = "no metal detected"
+            self.metal_state = "NoMetalDetected"
         return self.metal_state
 
 class METALDETECTORWITHLED(METALDETECTOR, WS2812):
@@ -65,7 +65,7 @@ class METALDETECTORWITHLED(METALDETECTOR, WS2812):
 
     def check_metal(self):
         metal_state = super().check_metal()  # Call the check_metal method of METALDETECTOR
-        if metal_state == "metal detected":
+        if metal_state == "MetalDetected":
             self.set_color("red")  # Set LED color to red when metal is detected
         else:
             self.set_color("green")  # Set LED color to green when no metal is detected
