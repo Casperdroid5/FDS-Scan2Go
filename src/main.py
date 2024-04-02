@@ -1,4 +1,4 @@
-from hardware_s2g import PERSONDETECTOR, WS2812, DoorWithLED
+from hardware_s2g import PERSONDETECTOR, WS2812, DOORWITHLED
 from system_utils import SystemInitCheck
 from machine import Pin, ADC, RTC
 import time
@@ -39,8 +39,8 @@ class StateMachine:
         self.ferro_leds = WS2812(pin_number=4, num_leds=2, brightness=0.0005)
 
         # Initialize doors with LEDs
-        self.door1 = DoorWithLED(door_pin_number=14, door_angle_closed=90, door_angle_open=0, door_position_sensor_pin=19, led_pin_number=2, num_leds=2, brightness=0.0005)
-        self.door2 = DoorWithLED(door_pin_number=15, door_angle_closed=90, door_angle_open=185, door_position_sensor_pin=20, led_pin_number=3, num_leds=2, brightness=0.0005)
+        self.door1 = DOORWITHLED(door_pin_number=14, door_angle_closed=90, door_angle_open=0, door_position_sensor_pin=19, led_pin_number=2, num_leds=2, brightness=0.0005)
+        self.door2 = DOORWITHLED(door_pin_number=15, door_angle_closed=90, door_angle_open=185, door_position_sensor_pin=20, led_pin_number=3, num_leds=2, brightness=0.0005)
 
         # Initialize ferrometal scanner
         self.ferrometalscanner = ADC(Pin(27))
@@ -123,37 +123,20 @@ class StateMachine:
         #mmWave code disabled for testing purposes
         # print(f"Checking for person in field {field}")
         # if field == 'A':
-        #     self.mmWaveFieldA.poll_uart_data()
+        #     self.mmWaveFieldA.check_humanpresence()
         #     print(self.mmWaveFieldA.humanpresence) # for debugging purposes
         #     if self.mmWaveFieldA.humanpresence == "Somebodymoved":
         #         return True
         #     elif self.mmWaveFieldA.humanpresence == "Somebodystoppedmoving":
         #         return False
         # elif field == 'B':
-        #     self.mmWaveFieldB.poll_uart_data()
+        #     self.mmWaveFieldB.check_humanpresence()
         #     if self.mmWaveFieldB.humanpresence == "Sombodymoved":
         #         return True
         #     elif self.mmWaveFieldB.humanpresence == "Somebodystoppedmoving":   
         #         return False
 
-    def scan_for_ferrometals(self):
-        print("scan_for_ferrometals")
-        metalsensorvalue = self.ferrometalscanner.read_u16()
-        scaled_value = (metalsensorvalue / 65535) * 100 # Convert potentiometer value to a range between 0 and 100
-        print("Potentiometer value:", scaled_value)
-        if 0 <= scaled_value < 30:
-            self.ferro_leds.set_color("green")
-            self.scanner_result = "NoMetalDetected"
-        elif 30 <= scaled_value <= 80:
-            self.scanner_result = "ScanInProgress"
-            self.ferro_leds.set_color("blue")
-        elif 90 < scaled_value <= 100:
-            self.scanner_result = "MetalDetected"
-            self.ferro_leds.set_color("red")
-        else:
-            print("Invalid value")
-            self.scanner_result = "InvalidValue"
-        return self.scanner_result
+
 
     def systemset (self):
         print("FIRST initialization")

@@ -41,7 +41,37 @@ class WS2812:
             self._np[i] = (0, 0, 0)
         self._np.write()
         return "off"
-    
+
+class METALDETECTOR: # Metal detector sensor
+    def __init__(self, pin_number):
+        self.pin_number = pin_number
+        self.metal_sensor = Pin(pin_number, Pin.IN, Pin.PULL_UP)
+        self.metal_state = "nometal"  # Initialize metal state
+
+    def __repr__(self):
+        return f"METALDETECTOR at Pin {self.pin_number}, State: {self.metal_state}"
+
+    def check_metal(self):
+        if self.metal_sensor.value() == 0:
+            self.metal_state = "metal detected"
+        else:
+            self.metal_state = "no metal detected"
+        return self.metal_state
+
+class METALDETECTORWITHLED(METALDETECTOR, WS2812):
+    def __init__(self, pin_number, led_pin_number, num_leds, brightness):
+        METALDETECTOR.__init__(self, pin_number)
+        WS2812.__init__(self, led_pin_number, num_leds, brightness)
+
+    def check_metal(self):
+        metal_state = super().check_metal()  # Call the check_metal method of METALDETECTOR
+        if metal_state == "metal detected":
+            self.set_color("red")  # Set LED color to red when metal is detected
+        else:
+            self.set_color("green")  # Set LED color to green when no metal is detected
+        return metal_state
+
+
 class DOOR: # Door motor and positionsensor
     def __init__(self, pin_number, angle_closed, angle_open, position_sensor_pin):
         self.servo = SERVOMOTOR(pin_number) 
@@ -70,7 +100,7 @@ class DOOR: # Door motor and positionsensor
             self.door_state = "closed"
             return self.door_state
 
-class DoorWithLED(DOOR, WS2812):
+class DOORWITHLED(DOOR, WS2812):
     def __init__(self, door_pin_number, door_angle_closed, door_angle_open, door_position_sensor_pin, led_pin_number, num_leds, brightness):
         DOOR.__init__(self, door_pin_number, door_angle_closed, door_angle_open, door_position_sensor_pin)
         WS2812.__init__(self, led_pin_number, num_leds, brightness)
@@ -83,7 +113,6 @@ class DoorWithLED(DOOR, WS2812):
         super().close_door()
         self.set_color("red")  # Set LED color to red when the door is closed
 
-
 class PERSONDETECTOR: # mmWave sensor
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
         self.uart_number = uart_number
@@ -93,7 +122,7 @@ class PERSONDETECTOR: # mmWave sensor
         self._uart_sensor = UART(uart_number, baudrate, tx_pin, rx_pin)
         self.humanpresence = "unknown"
 
-    def poll_uart_data(self):
+    def check_humanpresence(self):
         data = self._uart_sensor.read()
         if data:
             if b'\x02' in data:
