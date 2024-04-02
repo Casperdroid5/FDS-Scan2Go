@@ -175,8 +175,6 @@ class StateMachine:
                     self.door1.open_door()
                     if not self.system_initialised:
                         self.systemset()
-                self.door1_leds.set_color("green")
-                self.door2_leds.set_color("red")
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
@@ -184,15 +182,12 @@ class StateMachine:
                     if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                         self.user_returned_from_mri = False
                         self.door2.close_door()
-                        self.door2_leds.set_color("red")
                         self.door1.open_door()
-                        self.door1_leds.set_color("green")
                         self.state = self.INITIALISATION_STATE
                 elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
                     print("please position yourself in field A, before the scanner")
                 elif self.person_detected_in_field('A') == True and not self.user_returned_from_mri:
                     self.door1.close_door()
-                    self.door1_leds.set_color("red")
                     self.state = self.SCAN_FOR_FERROMETALS
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
@@ -200,7 +195,6 @@ class StateMachine:
                     self.state = self.INITIALISATION_STATE
                 elif self.scanner_result == "NoMetalDetected" and self.person_detected_in_field('B') == True and self.user_returned_from_mri == False:
                     self.door2.open_door()
-                    self.door1_leds.set_color("green")
                     self.state = self.USER_IN_MR_ROOM
                 else:
                     self.scanner_result = "invalidState"
@@ -213,13 +207,11 @@ class StateMachine:
                 if self.scanner_result == "MetalDetected":
                     print(self.scanner_result)
                     self.door1.open_door()
-                    self.door1_leds.set_color("green")
                     if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                         self.state = self.INITIALISATION_STATE
                 elif self.scanner_result == "NoMetalDetected" and self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
                     print(self.scanner_result)
                     self.door2.open_door()
-                    self.door2_leds.set_color("green")
                     self.state = self.USER_IN_MR_ROOM
                 elif self.scanner_result == "ScanInProgress" or self.person_detected_in_field('A') == True:
                     print(self.scanner_result)
@@ -239,7 +231,6 @@ class StateMachine:
                     self.user_in_mri = False
                     self.user_returned_from_mri = True
                     self.door2.close_door()
-                    self.door2_leds.set_color("red")
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             else:
