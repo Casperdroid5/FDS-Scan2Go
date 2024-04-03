@@ -164,11 +164,12 @@ class StateMachine:
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     ferrometaldetected = False
                     self.door1.open_door()
-                    if not self.system_initialised:
+                    if self.system_initialised == False:
                         self.systemset()
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
+                print ("ferrometal detected: ")
                 print (ferrometaldetected)
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                     self.door1.close_door()
@@ -183,9 +184,13 @@ class StateMachine:
                     print("please position yourself in field A, before the scanner")
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
-                if self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False:
+                if self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False and ferrometaldetected == False:
                     self.door2.open_door()
                     self.state = self.USER_IN_MR_ROOM
+                elif ferrometaldetected == True:
+                    self.door1.open_door()
+                    print("Metal detected, please remove metal objects")
+                    self.state = self.INITIALISATION_STATE
                 else:
                     self.scanner_result = "invalidState"
                     self.ferro_leds.set_color("yellow")
@@ -247,6 +252,7 @@ if __name__ == "__main__":
             print("Systeeminit failed, shutting down...")
         except Exception as e:
             print("unexpected error", e)
+
 
 
 
