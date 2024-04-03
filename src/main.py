@@ -229,6 +229,7 @@ class StateMachine:
             print("SYSTEM IS FROZEN")
             self.emergency_state_triggerd = False
             self.system_override_state_triggerd = False
+            self.state = self.INITIALISATION_STATE
             return 0
 
 if __name__ == "__main__":
