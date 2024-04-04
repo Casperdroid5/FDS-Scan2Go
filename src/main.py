@@ -30,9 +30,9 @@ class StateMachine:
         self.INITIALISATION_STATE = 0
         self.USER_FIELD_A_RESPONSE_STATE = 1
         self.USER_FIELD_B_RESPONSE_STATE = 2
-        self.USER_IN_MR_ROOM = 3
-        self.USER_RETURNS_FROM_MR_ROOM = 4
-        self.USER_EXITS_FDS = 5
+        self.USER_IN_MR_ROOM_STATE = 3
+        self.USER_RETURNS_FROM_MR_ROOM_STATE = 4
+        self.USER_EXITS_FDS_STATE = 5
         
         # Initialize indicator lights
         self.door1_leds = WS2812(pin_number=2, num_leds=2, brightness=0.0005)  # brigness is a value between 0.0001 and 1
@@ -77,7 +77,7 @@ class StateMachine:
                 self.log("Door 1 button pressed.")
 
     def IRQ_handler_door2_button_press(self, pin):
-        if self.state == self.USER_IN_MR_ROOM or (ferrometaldetected == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
+        if self.state == self.USER_IN_MR_ROOM_STATE or (ferrometaldetected == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
             if self.door2.door_state == "closed":
                 self.door2.open_door()  
                 self.log("Door 2 button pressed.")
@@ -118,14 +118,14 @@ class StateMachine:
 
     def person_detected_in_field(self, field):
         print(f"Checking for person in field {field}")
-        user_input = input("Enter 'True' if person detected, 'False' otherwise: ").strip().lower()
+        user_input = input("Enter 1 ('True') if person detected, 0 ('False') otherwise: ").strip().lower()
 
-        if user_input == 'true':
+        if user_input == '1':
             return True
-        elif user_input == 'false':
+        elif user_input == '0':
             return False
         else:
-            print("Invalid input. Please enter 'True' or 'False'.")
+            print("Invalid input. Please enter '1 (true)' or '0 (False)'.")
             return False
         
         #mmWave code disabled for testing purposes
@@ -158,17 +158,19 @@ class StateMachine:
         
         global ferrometaldetected
         global running 
-        
+        print("test if it works)")
         while running: 
             if self.state == self.INITIALISATION_STATE:
+                print("INITIALISATION_STATE")
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
-                    ferrometaldetected = False
                     self.door1.open_door()
                     if self.system_initialised == False:
                         self.systemset()
+                ferrometaldetected = False
                 self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
+                print("USER_FIELD_A_RESPONSE_STATE")
                 print ("ferrometal detected: ")
                 print (ferrometaldetected)
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
@@ -184,29 +186,31 @@ class StateMachine:
                     print("please position yourself in field A, before the scanner")
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
+                print("USER_FIELD_B_RESPONSE_STATE")
                 if self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False and ferrometaldetected == False:
                     self.door2.open_door()
-                    self.state = self.USER_IN_MR_ROOM
+                    self.state = self.USER_IN_MR_ROOM_STATE
                 elif ferrometaldetected == True:
                     self.door1.open_door()
                     print("Metal detected, please remove metal objects")
                     self.state = self.INITIALISATION_STATE
                 else:
-                    self.scanner_result = "invalidState"
                     self.ferro_leds.set_color("yellow")
-                    print("invalid state ferroscanner")
-                    self.state = self.INITIALISATION_STATE
+                    print("person in field A and B detected, please remove person from field A")
 
-            elif self.state == self.USER_IN_MR_ROOM:
-                if self.person_detected_in_field('B') == False:
-                    self.state = self.USER_RETURNS_FROM_MR_ROOM
+            elif self.state == self.USER_IN_MR_ROOM_STATE:
+                print("USER_IN_MR_ROOM_STATE")
+                if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == False:
+                    self.state = self.USER_RETURNS_FROM_MR_ROOM_STATE
 
-            elif self.state == self.USER_RETURNS_FROM_MR_ROOM:
-                if self.person_detected_in_field('B') == True:
+            elif self.state == self.USER_RETURNS_FROM_MR_ROOM_STATE:
+                print("USER_RETURNS_FROM_MR_ROOM_STATE")
+                if self.person_detected_in_field('B') == True or self.person_detected_in_field('A') == True:
                     self.door2.close_door()
-                    self.state = self.USER_EXITS_FDS
+                    self.state = self.USER_EXITS_FDS_STATE
             
-            elif self.state == self.USER_EXITS_FDS:
+            elif self.state == self.USER_EXITS_FDS_STATE:
+                print("USER_EXITS_FDS_STATE")
                 if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == True: 
                     self.door1.open_door()
                     self.state = self.INITIALISATION_STATE
