@@ -1,4 +1,5 @@
 from hardware_s2g import PERSONDETECTOR, DOORWITHLED, WS2812
+from UARTCommunication import UARTCommunication
 from system_utils import SystemInitCheck
 from machine import Pin, RTC
 import time
@@ -43,7 +44,6 @@ class StateMachine:
         self.door1 = DOORWITHLED(door_pin_number=14, door_angle_closed=90, door_angle_open=0, door_position_sensor_pin=19, led_pin_number=2, num_leds=2, brightness=0.0005)
         self.door2 = DOORWITHLED(door_pin_number=15, door_angle_closed=90, door_angle_open=185, door_position_sensor_pin=20, led_pin_number=3, num_leds=2, brightness=0.0005)
 
-
         # Initialize persondetectors
         self.mmWaveFieldA = PERSONDETECTOR(uart_number=0, baudrate=115200, tx_pin=0, rx_pin=1)
         self.mmWaveFieldB = PERSONDETECTOR(uart_number=1, baudrate=115200, tx_pin=4, rx_pin=5)
@@ -62,6 +62,9 @@ class StateMachine:
         self.ferrometalscanner = Pin(18, Pin.IN, Pin.PULL_UP)
         self.ferrometalscanner.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_ferrometal_detected)
 
+        # Initialisatie van UART-communicatie
+        self.RPI5_uart_line = UARTCommunication(uart_number=1, baudrate=9600, tx_pin=4, rx_pin=5)
+
     def log(self, message):
         if file:
             print("Logging: ", message)
@@ -69,6 +72,7 @@ class StateMachine:
             timestring = "%04d-%02d-%02d %02d:%02d:%02d.%03d" % timestamp[:7] 
             file.write(timestring + "," + message + "\n")		# Write time and message to the file
             file.flush()  # Write the data immediately to the file
+            # In de StateMachine-klasse, voeg de volgende methode toe:
 
     def IRQ_handler_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
@@ -158,10 +162,11 @@ class StateMachine:
         
         global ferrometaldetected
         global running 
-        print("test if it works)")
+
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 print("INITIALISATION_STATE")
+                UARTCommunication.send_command(self.RPI5_uart_line, "System", "System initialised")
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()
                     if self.system_initialised == False:
@@ -257,6 +262,7 @@ if __name__ == "__main__":
             print("Systeeminit failed, shutting down...")
         except Exception as e:
             print("unexpected error", e)
+
 
 
 
