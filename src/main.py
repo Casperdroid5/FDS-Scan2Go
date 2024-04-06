@@ -11,9 +11,6 @@ rtc = RTC()      # init on-board RTC
 global ferrometaldetected
 ferrometaldetected = False  # Global variable to check if metal is detected
 
-# File to log the system events
-file = open("log.txt", "w")  # open the file in write mode:
-
 class StateMachine:
     def __init__(self):
 
@@ -65,29 +62,18 @@ class StateMachine:
         # Initialisatie van UART-communicatie
         self.RPI5_uart_line = UARTCommunication(uart_number=1, baudrate=9600, tx_pin=4, rx_pin=5)
 
-    def log(self, message):
-        if file:
-            print("Logging: ", message)
-            timestamp = rtc.datetime()		# Timeregistration
-            timestring = "%04d-%02d-%02d %02d:%02d:%02d.%03d" % timestamp[:7] 
-            file.write(timestring + "," + message + "\n")		# Write time and message to the file
-            file.flush()  # Write the data immediately to the file
-            # In de StateMachine-klasse, voeg de volgende methode toe:
 
     def IRQ_handler_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
             if self.door1.door_state == "closed": # check if door is open
-                self.door1.open_door()  
-                self.log("Door 1 button pressed.")
+                self.door1.open_door()  )
 
     def IRQ_handler_door2_button_press(self, pin):
         if self.state == self.USER_IN_MR_ROOM_STATE or (ferrometaldetected == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
             if self.door2.door_state == "closed":
                 self.door2.open_door()  
-                self.log("Door 2 button pressed.")
 
     def IRQ_handler_emergencybutton_press(self, pin):
-        self.log("Emergency button pressed.")
         print("Emergency button pressed")
         self.door1.open_door()
         self.door2.open_door() 
@@ -101,7 +87,6 @@ class StateMachine:
         return 0
 
     def IRQ_handler_overridebutton_press(self, pin):
-        self.log("System override button pressed.")
         print("System override button pressed")
         self.door1.open_door()
         self.door2.open_door()  
@@ -116,7 +101,6 @@ class StateMachine:
 
     def IRQ_handler_ferrometal_detected(self, pin):
         global ferrometaldetected
-        self.log("Ferrometalscanner detected metal.")
         print("Ferrometalscanner detected metal")
         ferrometaldetected = True
 
@@ -220,7 +204,6 @@ class StateMachine:
 
             else:
                 print("Invalid state, create emergency request")
-                self.log("Invalid state, create emergency request")
                 self.freeze()
             time.sleep(0.5) # to prevent the state machine from running too fast
 
@@ -262,6 +245,7 @@ if __name__ == "__main__":
         except Exception as e:
             print("unexpected error", e)
             UARTCommunication.send_command(FDS.RPI5_uart_line, "System", "System encountered unexpected error")
+
 
 
 
