@@ -176,8 +176,6 @@ class StateMachine:
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
                 print("USER_FIELD_A_RESPONSE_STATE")
-                print ("ferrometal detected: ")
-                print (ferrometaldetected)
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                     self.door1.close_door()
                     if ferrometaldetected == True:
@@ -188,7 +186,7 @@ class StateMachine:
                         print("No metal detected, please proceed to field B")
                         self.state = self.USER_FIELD_B_RESPONSE_STATE
                 elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
-                    print("please position yourself in field A, before the scanner")
+                    print("Please position in field A, before the scanner")
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
                 print("USER_FIELD_B_RESPONSE_STATE")
@@ -260,8 +258,10 @@ if __name__ == "__main__":
 
         except SystemExit:
             print("Systeeminit failed, shutting down...")
+            UARTCommunication.send_command(FDS.RPI5_uart_line, "System", "System failed to initialise")
         except Exception as e:
             print("unexpected error", e)
+            UARTCommunication.send_command(FDS.RPI5_uart_line, "System", "System encountered unexpected error")
 
 
 

@@ -58,7 +58,7 @@ class DOOR: # Door motor and positionsensor
         print(f"open_{self}")
         self.servo.set_angle(self.angle_open)
         if self.servo.get_current_angle() == self.angle_open and self.door_sensor.value() == 0:
-            print("New state: dooropened")
+            #print("New state: dooropened")
             self.door_state = "open"
             return self.door_state
 
@@ -66,7 +66,7 @@ class DOOR: # Door motor and positionsensor
         print(f"close_{self}")
         self.servo.set_angle(self.angle_closed)
         if self.servo.get_current_angle() == self.angle_closed and self.door_sensor.value() == 1:
-            print("New state: doorclosed")
+            #print("New state: doorclosed")
             self.door_state = "closed"
             return self.door_state
 
