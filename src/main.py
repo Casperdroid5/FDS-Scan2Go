@@ -1,13 +1,12 @@
 from hardware_s2g import PERSONDETECTOR, DOORWITHLED, WS2812
 from UARTCommunication import UARTCommunication
 from system_utils import SystemInitCheck
-from machine import Pin, RTC
+from machine import Pin
 import time
 
 
 global running   # System running global variable
 running = False  # wait for system to be initialised before starting the state machine
-rtc = RTC()      # init on-board RTC
 global ferrometaldetected
 ferrometaldetected = False  # Global variable to check if metal is detected
 
@@ -66,7 +65,7 @@ class StateMachine:
     def IRQ_handler_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
             if self.door1.door_state == "closed": # check if door is open
-                self.door1.open_door()  )
+                self.door1.open_door() 
 
     def IRQ_handler_door2_button_press(self, pin):
         if self.state == self.USER_IN_MR_ROOM_STATE or (ferrometaldetected == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
@@ -106,14 +105,14 @@ class StateMachine:
 
     def person_detected_in_field(self, field):
         print(f"Checking for person in field {field}")
-        user_input = input("Enter 1 ('True') if person detected, 0 ('False') otherwise: ").strip().lower()
+        user_input = input("Enter 1 ('True') if person detected, 2 ('False') otherwise").strip().lower()
 
         if user_input == '1':
             return True
-        elif user_input == '0':
+        elif user_input == '2':
             return False
         else:
-            print("Invalid input. Please enter '1 (true)' or '0 (False)'.")
+            print("Invalid input. Please enter '1 (true)' or '2 (False)'.")
             return False
         
         #mmWave code disabled for testing purposes
@@ -150,7 +149,7 @@ class StateMachine:
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 print("INITIALISATION_STATE")
-                UARTCommunication.send_command(self.RPI5_uart_line, "System", "System initialised")
+                UARTCommunication.send_message(self.RPI5_uart_line, "System initialised")
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()
                     if self.system_initialised == False:
@@ -226,9 +225,6 @@ if __name__ == "__main__":
 
         running = True
 
-        rtc.datetime((2024, 4, 2, 1, 0, 0, 0, 0)) # set a specific date and time for the RTC (year, month, day, weekday, hours, minutes, seconds, subseconds)
-        print(rtc.datetime())
-
         try:
             system_check = SystemInitCheck()  
             FDS = StateMachine()
@@ -241,10 +237,10 @@ if __name__ == "__main__":
 
         except SystemExit:
             print("Systeeminit failed, shutting down...")
-            UARTCommunication.send_command(FDS.RPI5_uart_line, "System", "System failed to initialise")
+            UARTCommunication.send_message(FDS.RPI5_uart_line, "System failed to initialise")
         except Exception as e:
             print("unexpected error", e)
-            UARTCommunication.send_command(FDS.RPI5_uart_line, "System", "System encountered unexpected error")
+            UARTCommunication.send_message(FDS.RPI5_uart_line, "System encountered unexpected error")
 
 
 
