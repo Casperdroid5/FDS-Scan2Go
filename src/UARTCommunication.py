@@ -31,4 +31,3 @@ class UARTCommunication:
                 return None, None
         else:
             return None, None
-
