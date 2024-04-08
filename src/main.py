@@ -29,7 +29,7 @@ class StateMachine:
         self.USER_IN_MR_ROOM_STATE = 3
         self.USER_RETURNS_FROM_MR_ROOM_STATE = 4
         self.USER_EXITS_FDS_STATE = 5
-        
+
         # Initialize indicator lights
         self.door1_leds = WS2812(pin_number=2, num_leds=2, brightness=0.0005)  # brigness is a value between 0.0001 and 1
         self.door2_leds = WS2812(pin_number=3, num_leds=2, brightness=0.0005)
@@ -52,12 +52,12 @@ class StateMachine:
         self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door1_button_press)
         self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)  # Door 2 button (open door)
         self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door2_button_press)
-        
-        # Initialize ferrometal scanner
-        # self.ferrometalscanner = Pin(18, Pin.IN, Pin.PULL_UP)
-        # self.ferrometalscanner.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_ferrometal_detected)
 
-        # Initialisatie van UART-communicatie
+        # Initialize ferrometal scanner
+        self.ferrometalscanner = Pin(18, Pin.IN, Pin.PULL_UP)
+        self.ferrometalscanner.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_ferrometal_detected)
+
+        # Initialisatie van UART-communicatie met RPI5
         self.RPI5_uart_line = UARTCommunication(uart_number=0, baudrate=115200, tx_pin=12, rx_pin=13)
 
 
@@ -104,7 +104,7 @@ class StateMachine:
         print("Ferrometalscanner detected metal")
         ferrometaldetected = True
 
-    def person_detected_in_field(self, field):
+    def person_detected_in_field(self, field): # input via keyboard, testing purposes
         print(f"Checking for person in field {field}")
         user_input = input("Enter 1 ('True') if person detected, 2 ('False') otherwise").strip().lower()
 
@@ -139,7 +139,11 @@ class StateMachine:
         self.ferro_leds.off() 
         self.door2.close_door()  
         self.door1.close_door()  
-        return 0
+        UARTCommunication.send_message(self.RPI5_uart_line, "RPI, you awake?")
+        if UARTCommunication.receive_message(self.RPI5_uart_line):
+            self.system_initialised = True
+            print("System initialised")
+            return 0
 
 # State machine
     def run(self):
@@ -242,4 +246,5 @@ if __name__ == "__main__":
         except Exception as e:
             print("unexpected error", e)
             UARTCommunication.send_message(FDS.RPI5_uart_line, "System encountered unexpected error")
+
 

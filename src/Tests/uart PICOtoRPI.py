@@ -1,13 +1,13 @@
-import serial
+from UARTCommunication import UARTCommunication    
+import time
 
-def receive_messages():
-    ser = serial.Serial('/dev/ttyAMA10', baudrate=115200, timeout=1)  # Open serial port
-    while True:
-        if ser.in_waiting > 0:
-            message = ser.readline().decode('utf-8').strip()  # Read the message from serial port
-            print("Message received:", message )  # Print the received message
-            if  message == "System initialised":
-                print("yes recieved specific message")
 if __name__ == "__main__":
-    receive_messages()
+    
+    # Initialisatie van UART-communicatie
+    RPI5_uart_line = UARTCommunication(uart_number=0, baudrate=115200, tx_pin=12, rx_pin=13)
 
+
+while True:
+    RPI5_uart_line.send_message("\nRPI, you awake?")
+    RPI5_uart_line.receive_message()
+    time.sleep(0.6)
