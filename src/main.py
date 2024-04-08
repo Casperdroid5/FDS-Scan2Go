@@ -4,8 +4,7 @@ from system_utils import SystemInitCheck
 from machine import Pin
 import time
 
-
-global running   # System running global variable
+global running   # system running global variable
 running = False  # wait for system to be initialised before starting the state machine
 global ferrometaldetected
 ferrometaldetected = False  # Global variable to check if metal is detected
@@ -34,15 +33,15 @@ class StateMachine:
         # Initialize indicator lights
         self.door1_leds = WS2812(pin_number=2, num_leds=2, brightness=0.0005)  # brigness is a value between 0.0001 and 1
         self.door2_leds = WS2812(pin_number=3, num_leds=2, brightness=0.0005)
-        self.ferro_leds = WS2812(pin_number=4, num_leds=2, brightness=0.0005)
+        self.ferro_leds = WS2812(pin_number=6, num_leds=2, brightness=0.0005)
 
         # Initialize doors with LEDs
         self.door1 = DOORWITHLED(door_pin_number=14, door_angle_closed=90, door_angle_open=0, door_position_sensor_pin=19, led_pin_number=2, num_leds=2, brightness=0.0005)
         self.door2 = DOORWITHLED(door_pin_number=15, door_angle_closed=90, door_angle_open=185, door_position_sensor_pin=20, led_pin_number=3, num_leds=2, brightness=0.0005)
 
         # Initialize persondetectors
-        self.mmWaveFieldA = PERSONDETECTOR(uart_number=0, baudrate=115200, tx_pin=0, rx_pin=1)
-        self.mmWaveFieldB = PERSONDETECTOR(uart_number=1, baudrate=115200, tx_pin=4, rx_pin=5)
+        # self.mmWaveFieldA = PERSONDETECTOR(uart_number=0, baudrate=115200, tx_pin=0, rx_pin=1)
+        # self.mmWaveFieldB = PERSONDETECTOR(uart_number=1, baudrate=115200, tx_pin=4, rx_pin=5)
 
         # Initialize buttons
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)
@@ -59,7 +58,7 @@ class StateMachine:
         self.ferrometalscanner.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_ferrometal_detected)
 
         # Initialisatie van UART-communicatie
-        self.RPI5_uart_line = UARTCommunication(uart_number=1, baudrate=9600, tx_pin=4, rx_pin=5)
+        self.RPI5_uart_line = UARTCommunication(uart_number=1, baudrate=115200, tx_pin=4, rx_pin=5)
 
 
     def IRQ_handler_door1_button_press(self, pin):
@@ -74,6 +73,7 @@ class StateMachine:
 
     def IRQ_handler_emergencybutton_press(self, pin):
         print("Emergency button pressed")
+        UARTCommunication.send_message(self.RPI5_uart_line, "Emergency button")
         self.door1.open_door()
         self.door2.open_door() 
         self.door1_leds.set_color("yellow")
@@ -87,6 +87,7 @@ class StateMachine:
 
     def IRQ_handler_overridebutton_press(self, pin):
         print("System override button pressed")
+        UARTCommunication.send_message(self.RPI5_uart_line, "Override button pressed")
         self.door1.open_door()
         self.door2.open_door()  
         self.door1_leds.set_color("white")
@@ -241,6 +242,7 @@ if __name__ == "__main__":
         except Exception as e:
             print("unexpected error", e)
             UARTCommunication.send_message(FDS.RPI5_uart_line, "System encountered unexpected error")
+
 
 
 
