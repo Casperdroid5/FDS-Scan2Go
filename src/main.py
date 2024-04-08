@@ -40,8 +40,8 @@ class StateMachine:
         self.door2 = DOORWITHLED(door_pin_number=15, door_angle_closed=90, door_angle_open=185, door_position_sensor_pin=20, led_pin_number=3, num_leds=2, brightness=0.0005)
 
         # Initialize persondetectors
-        # self.mmWaveFieldA = PERSONDETECTOR(uart_number=0, baudrate=115200, tx_pin=0, rx_pin=1)
-        # self.mmWaveFieldB = PERSONDETECTOR(uart_number=1, baudrate=115200, tx_pin=4, rx_pin=5)
+        self.mmWaveFieldA = PERSONDETECTOR(uart_number=0, baudrate=115200, tx_pin=0, rx_pin=1)
+        self.mmWaveFieldB = PERSONDETECTOR(uart_number=1, baudrate=115200, tx_pin=4, rx_pin=5)
 
         # Initialize buttons
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)
@@ -54,11 +54,11 @@ class StateMachine:
         self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door2_button_press)
         
         # Initialize ferrometal scanner
-        self.ferrometalscanner = Pin(18, Pin.IN, Pin.PULL_UP)
-        self.ferrometalscanner.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_ferrometal_detected)
+        # self.ferrometalscanner = Pin(18, Pin.IN, Pin.PULL_UP)
+        # self.ferrometalscanner.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_ferrometal_detected)
 
         # Initialisatie van UART-communicatie
-        self.RPI5_uart_line = UARTCommunication(uart_number=1, baudrate=115200, tx_pin=4, rx_pin=5)
+        self.RPI5_uart_line = UARTCommunication(uart_number=0, baudrate=115200, tx_pin=12, rx_pin=13)
 
 
     def IRQ_handler_door1_button_press(self, pin):
@@ -242,11 +242,4 @@ if __name__ == "__main__":
         except Exception as e:
             print("unexpected error", e)
             UARTCommunication.send_message(FDS.RPI5_uart_line, "System encountered unexpected error")
-
-
-
-
-
-
-
 
