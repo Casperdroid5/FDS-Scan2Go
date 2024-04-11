@@ -1,6 +1,5 @@
 import select
 import sys
-import time
 
 # Set up the poll object
 poll_obj = select.poll()
