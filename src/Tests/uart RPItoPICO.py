@@ -1,20 +1,19 @@
 import serial
 import time
 
-def recieve_uart():
-    ser = serial.Serial('COM3', baudrate=115200, timeout=1)  # Open serial port, check if this works    
-    message = ser.readline().decode('utf-8').strip()  # Read the message from serial port
-    print("Message received:", message)  # Print the received message
+def receive_uart(port):
+    ser = serial.Serial(port, baudrate=115200, timeout=1)  
+    message = ser.readline().decode('utf-8').strip()  
+    print("Message received:", message)  
+    ser.close()  # Sluit de seriële poort nadat de boodschap is ontvangen
     return message
 
-def sent_uart():
-    ser = serial.Serial('COM3', baudrate=115200, timeout=1)  # Open serial port, check if this works
+def send_uart(port):
+    ser = serial.Serial(port, baudrate=115200, timeout=1)  
     print("I think I am awake, sending reply")
-    ser.write(b"1")  # Write back to the serial port
-
+    ser.write(b"1")  
+    ser.close()  # Sluit de seriële poort nadat het bericht is verzonden
 
 if __name__ == "__main__":
-    recieve_uart()
-    if recieve_uart.message == b"1":
-        sent_uart()
-
+    received_message = receive_uart('COM8')  # Verander 'COM8' naar de juiste poort voor de Raspberry Pi Pico
+    send_uart('COM8')  # Verander 'COM8' naar de juiste poort voor de Raspberry Pi Pico

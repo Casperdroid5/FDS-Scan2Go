@@ -5,7 +5,7 @@ class UARTCommunication:
         self.uart = machine.UART(uart_number, baudrate=baudrate, tx=machine.Pin(tx_pin), rx=machine.Pin(rx_pin))
 
     def send_message(self, message):
-        self.uart.write(message.encode('utf-8'))
+        self.uart.write(message)
         self.uart.flush()
 
     def receive_message(self):

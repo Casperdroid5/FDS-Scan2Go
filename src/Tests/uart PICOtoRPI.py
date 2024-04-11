@@ -9,4 +9,4 @@ if __name__ == "__main__":
 while True:
     RPI5_uart_line.send_message(b"1")
     RPI5_uart_line.receive_message()
-    time.sleep(0.6)
+    time.sleep(0.3)
