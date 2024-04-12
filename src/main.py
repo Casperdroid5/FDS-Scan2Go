@@ -1,4 +1,4 @@
-from hardware_s2g import PERSONDETECTOR, DOORWITHLED, WS2812
+from hardware_s2g import NEWPERSONDETECTOR, DOORWITHLED, WS2812
 from UARTCommunication import UARTCommunication
 from system_utils import SystemInitCheck
 from machine import Pin
@@ -40,8 +40,8 @@ class StateMachine:
         self.door2 = DOORWITHLED(door_pin_number=15, door_angle_closed=90, door_angle_open=185, door_position_sensor_pin=20, led_pin_number=3, num_leds=2, brightness=0.0005)
 
         # Initialize persondetectors
-        self.mmWaveFieldA = PERSONDETECTOR(uart_number=0, baudrate=115200, tx_pin=0, rx_pin=1)
-        self.mmWaveFieldB = PERSONDETECTOR(uart_number=1, baudrate=115200, tx_pin=4, rx_pin=5)
+        self.mmWaveFieldA = NEWPERSONDETECTOR(uart_number=0, baudrate=115200, tx_pin=0, rx_pin=1)
+        self.mmWaveFieldB = NEWPERSONDETECTOR(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
 
         # Initialize buttons
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)

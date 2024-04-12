@@ -1,5 +1,6 @@
 from machine import Pin, PWM, UART
 import neopixel
+import time
 
 class WS2812:
     def __init__(self, pin_number, num_leds, brightness):
@@ -83,27 +84,178 @@ class DOORWITHLED(DOOR, WS2812):
         super().close_door()
         self.set_color("red")  # Set LED color to red when the door is closed
 
-class PERSONDETECTOR: # mmWave sensor
-    def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
-        self.uart_number = uart_number
-        self.baudrate = baudrate
-        self.tx_pin = tx_pin  
-        self.rx_pin = rx_pin 
-        self._uart_sensor = UART(uart_number, baudrate, tx_pin, rx_pin)
-        self.humanpresence = "unknown"
+# class PERSONDETECTOR: # mmWave sensor
+#     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
+#         self.uart_number = uart_number
+#         self.baudrate = baudrate
+#         self.tx_pin = tx_pin  
+#         self.rx_pin = rx_pin 
+#         self._uart_sensor = UART(uart_number, baudrate, tx_pin, rx_pin)
+#         self.humanpresence = "unknown"
 
-    def check_humanpresence(self):
-        data = self._uart_sensor.read()
-        if data:
-            if b'\x02' in data:
-                self.humanpresence = "Somebodymoved"
-            elif b'\x01' in data:
-                self.humanpresence = "Somebodystoppedmoving"
-            elif b'\x03' in data:
-                self.humanpresence = "Somebodyisclose"
-            elif b'\x04' in data:
-                self.humanpresence = "Somebodyisaway"
-        return self.humanpresence 
+#     def check_humanpresence(self):
+#         data = self._uart_sensor.read()
+#         if data:
+#             if b'\x02' in data:
+#                 self.humanpresence = "Somebodymoved"
+#             elif b'\x01' in data:
+#                 self.humanpresence = "Somebodystoppedmoving"
+#             elif b'\x03' in data:
+#                 self.humanpresence = "Somebodyisclose"
+#             elif b'\x04' in data:
+#                 self.humanpresence = "Somebodyisaway"
+#         return self.humanpresence 
+
+class NEWPERSONDETECTOR:
+    HEADER = bytes([0xfd, 0xfc, 0xfb, 0xfa])
+    TERMINATOR = bytes([0x04, 0x03, 0x02, 0x01])
+    NULLDATA = bytes([])
+    REPORT_HEADER = bytes([0xf4, 0xf3, 0xf2, 0xf1])
+    REPORT_TERMINATOR = bytes([0xf8, 0xf7, 0xf6, 0xf5])
+
+    STATE_NO_TARGET = 0
+    STATE_MOVING_TARGET = 1
+    STATE_STATIONARY_TARGET = 2
+    STATE_COMBINED_TARGET = 3
+    TARGET_NAME = ["no_target", "moving_target", "stationary_target", "combined_target"]
+
+    def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
+        self.boardled = Pin(Pin.OUT)
+        self.ser = UART(uart_number, baudrate=baudrate, tx=Pin(tx_pin), rx=Pin(rx_pin), timeout=1)
+        self.meas = {
+            "state": self.STATE_NO_TARGET,
+            "moving_distance": 0,
+            "moving_energy": 0,
+            "stationary_distance": 0,
+            "stationary_energy": 0,
+            "detection_distance": 0 }
+
+    def print_bytes(self, data):
+        if len(data) == 0:
+            print("<no data>")
+            return
+        text = f"hex: {data[0]:02x}"
+        for i in range(1, len(data)):
+            text = text + f" {data[i]:02x}"
+        print(text)
+
+    def send_command(self, cmd, data=NULLDATA, response_expected=True):
+        cmd_data_len = bytes([len(cmd) + len(data), 0x00])
+        frame = self.HEADER + cmd_data_len + cmd + data + self.TERMINATOR
+        self.ser.write(frame)
+        if response_expected:
+            response = self.ser.read()
+        else:
+            response = self.NULLDATA
+        return response
+
+    def enable_config(self):
+        response = self.send_command(bytes([0xff, 0x00]), bytes([0x01, 0x00]))
+        self.print_bytes(response)
+
+    def end_config(self):
+        response = self.send_command(bytes([0xfe, 0x00]), response_expected=False)
+
+    def read_firmware_version(self):
+        response = self.ser.read()
+        if response is None:
+            print("Error: No response from serial.")
+            return
+        self.print_bytes(response)
+
+    def enable_engineering(self):
+        response = self.send_command(bytes([0x62, 0x00]))
+        self.print_bytes(response)
+
+    def end_engineering(self):
+        response = self.send_command(bytes([0x63, 0x00]))
+        self.print_bytes(response)
+
+    def read_serial_buffer(self):
+        response = self.ser.read()
+        self.print_bytes(response)
+        return response
+
+    def print_meas(self):
+        print(f"state: {self.TARGET_NAME[self.meas['state']]}")
+        print(f"moving distance: {self.meas['moving_distance']}")
+        print(f"moving energy: {self.meas['moving_energy']}")
+        print(f"stationary distance: {self.meas['stationary_distance']}")
+        print(f"stationary energy: {self.meas['stationary_energy']}")
+        print(f"detection distance: {self.meas['detection_distance']}")
+
+    def parse_report(self, data):
+        # sanity checks
+        if len(data) < 23:
+            print(f"error, frame length {data} is too short")
+            return
+        if data[0:4] != self.REPORT_HEADER:
+            print(f"error, frame header is incorrect")
+            return
+        # Check if data[4] (frame length) is valid. It must be 0x0d or 0x23
+        # depending on if we are in basic mode or engineering mode
+        if data[4] != 0x0d and data[4] != 0x23:
+            print(f"error, frame length is incorrect")
+            return
+        # data[7] must be report 'head' value 0xaa
+        if data[7] != 0xaa:
+            print(f"error, frame report head value is incorrect")
+            return
+        # sanity checks passed. Store the sensor data in meas
+        self.meas["state"] = data[8]
+        self.meas["moving_distance"] = data[9] + (data[10] << 8)
+        self.meas["moving_energy"] = data[11]
+        self.meas["stationary_distance"] = data[12] + (data[13] << 8)
+        self.meas["stationary_energy"] = data[14]
+        self.meas["detection_distance"] = data[15] + (data[16] << 8)
+        # print the data
+        self.print_meas()
+
+    def read_serial_until(self, identifier):
+        content = bytes([])
+        while len(identifier) > 0:
+            v = self.ser.read(1)
+            if v == None:
+                # timeout
+                return None
+                break
+            if v[0] == identifier[0]:
+                content = content + v[0:1]
+                identifier = identifier[1:len(identifier)]
+            else:
+                content = bytes([])
+        return content
+
+    def serial_flush(self):
+        dummy = self.ser.read()
+        return dummy
+
+    def read_serial_frame(self):
+        # dummy read to flush out the read buffer:
+        self.serial_flush()
+        time.sleep_ms(100)
+        # keep reading to see a header arrive:
+        header = self.read_serial_until(self.REPORT_HEADER)
+        if header == None:
+            return None
+        # read the rest of the frame:
+        response = self.ser.read(23-4)
+        if response == None:
+            return None
+        response = header + response
+        if response[-4:] != self.REPORT_TERMINATOR:
+            # error, packet seems incorrect
+            return None
+        self.print_bytes(response)
+        self.parse_report(response)
+        return response
+
+    def run_forever(self):
+        while True:
+            self.read_serial_frame()
+            if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
+                print("detected moving target")
+
 
 class SERVOMOTOR: # Servo motor 
     def __init__(self, pin_number):
