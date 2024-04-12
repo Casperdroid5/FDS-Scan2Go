@@ -18,7 +18,7 @@ import utime
 
 # board LED on the Pi Pico is 25
 # board LED on the Pico EuroCard is 22
-boardled = Pin(22, Pin.OUT)
+boardled = Pin(25, Pin.OUT)
 
 ser = UART(1, baudrate = 256000, tx=Pin(4), rx=Pin(5), timeout = 1)
 serial_status = False
