@@ -10,9 +10,7 @@ def test_person_detection_with_leds():
     led_fieldA = WS2812(pin_number=2, num_leds=2, brightness=0.5)  # LED op pin 2 voor veld A
     led_fieldB = WS2812(pin_number=3, num_leds=2, brightness=0.5)  # LED op pin 3 voor veld B
 
-    while True:
-        # Voer continu de detectielogica uit voor elk veld
-
+    while True:  # Voer continu de detectielogica uit voor elk veld
         # Veld A
         print("Checking for person in field A")
         if mmWaveFieldA.run_forever() == "detected moving target":
@@ -29,7 +27,7 @@ def test_person_detection_with_leds():
         elif mmWaveFieldB.run_forever() == "detected stationary target":
             led_fieldB.set_color("red")  # Rode LED brandt wanneer geen persoon wordt gedetecteerd
 
-        time.sleep(0.3)  # Wacht 0.5 seconde tussen elke detectiepoging
+        time.sleep(1)  # Wacht 1 seconde tussen elke detectiepoging
 
 if __name__ == "__main__":
     test_person_detection_with_leds()
