@@ -40,7 +40,7 @@ class StateMachine:
         self.door2 = DOORWITHLED(door_pin_number=15, door_angle_closed=90, door_angle_open=185, door_position_sensor_pin=20, led_pin_number=3, num_leds=2, brightness=0.0005)
 
         # Initialize persondetectors
-        self.mmWaveFieldA = NEWPERSONDETECTOR(uart_number=0, baudrate=115200, tx_pin=0, rx_pin=1)
+        self.mmWaveFieldA = NEWPERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
         self.mmWaveFieldB = NEWPERSONDETECTOR(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
 
         # Initialize buttons
@@ -58,7 +58,7 @@ class StateMachine:
         self.ferrometalscanner.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_ferrometal_detected)
 
         # Initialisatie van UART-communicatie met RPI5
-        self.RPI5_uart_line = UARTCommunication(uart_number=0, baudrate=115200, tx_pin=12, rx_pin=13)
+        # self.RPI5_uart_line = UARTCommunication(uart_number=0, baudrate=115200, tx_pin=12, rx_pin=13)
 
 
     def IRQ_handler_door1_button_press(self, pin):
@@ -73,7 +73,7 @@ class StateMachine:
 
     def IRQ_handler_emergencybutton_press(self, pin):
         print("Emergency button pressed")
-        UARTCommunication.send_message(self.RPI5_uart_line, "Emergency button")
+        # UARTCommunication.send_message(self.RPI5_uart_line, "Emergency button")
         self.door1.open_door()
         self.door2.open_door() 
         self.door1_leds.set_color("yellow")
@@ -87,7 +87,7 @@ class StateMachine:
 
     def IRQ_handler_overridebutton_press(self, pin):
         print("System override button pressed")
-        UARTCommunication.send_message(self.RPI5_uart_line, "Override button pressed")
+        # UARTCommunication.send_message(self.RPI5_uart_line, "Override button pressed")
         self.door1.open_door()
         self.door2.open_door()  
         self.door1_leds.set_color("white")
@@ -106,31 +106,19 @@ class StateMachine:
 
     def person_detected_in_field(self, field): # input via keyboard, testing purposes
         print(f"Checking for person in field {field}")
-        user_input = input("Enter 1 ('True') if person detected, 2 ('False') otherwise").strip().lower()
-
-        if user_input == '1':
-            return True
-        elif user_input == '2':
-            return False
-        else:
-            print("Invalid input. Please enter '1 (true)' or '2 (False)'.")
-            return False
-        
-        #mmWave code disabled for testing purposes
-        # print(f"Checking for person in field {field}")
-        # if field == 'A':
-        #     self.mmWaveFieldA.check_humanpresence()
-        #     print(self.mmWaveFieldA.humanpresence) # for debugging purposes
-        #     if self.mmWaveFieldA.humanpresence == "Somebodymoved":
-        #         return True
-        #     elif self.mmWaveFieldA.humanpresence == "Somebodystoppedmoving":
-        #         return False
-        # elif field == 'B':
-        #     self.mmWaveFieldB.check_humanpresence()
-        #     if self.mmWaveFieldB.humanpresence == "Sombodymoved":
-        #         return True
-        #     elif self.mmWaveFieldB.humanpresence == "Somebodystoppedmoving":   
-        #         return False
+        if field == 'A':
+            self.mmWaveFieldA.run_forever()
+            print(self.mmWaveFieldA.run_forever()) # for debugging purposes
+            if self.mmWaveFieldA.run_forever() == NEWPERSONDETECTOR.STATE_MOVING_TARGET:
+                return True
+            elif self.mmWaveFieldA.run_forever() == NEWPERSONDETECTOR.STATE_STATIONARY_TARGET:
+                return False
+        elif field == 'B':
+            self.mmWaveFieldB.run_forever()
+            if self.mmWaveFieldB.run_forever() == NEWPERSONDETECTOR.STATE_MOVING_TARGET:
+                return True
+            elif self.mmWaveFieldB.run_forever() == NEWPERSONDETECTOR.STATE_STATIONARY_TARGET:   
+                return False
 
     def systemset (self):
         print("FIRST initialization")
@@ -139,11 +127,11 @@ class StateMachine:
         self.ferro_leds.off() 
         self.door2.close_door()  
         self.door1.close_door()  
-        UARTCommunication.send_message(self.RPI5_uart_line, "RPI, you awake?")
-        if UARTCommunication.receive_message(self.RPI5_uart_line):
-            self.system_initialised = True
-            print("System initialised")
-            return 0
+        # UARTCommunication.send_message(self.RPI5_uart_line, "RPI, you awake?")
+        # if UARTCommunication.receive_message(self.RPI5_uart_line):
+        #     self.system_initialised = True
+        #     print("System initialised")
+        #     return 0
 
 # State machine
     def run(self):
@@ -154,7 +142,7 @@ class StateMachine:
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 print("INITIALISATION_STATE")
-                UARTCommunication.send_message(self.RPI5_uart_line, "System initialised")
+                # UARTCommunication.send_message(self.RPI5_uart_line, "System initialised")
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()
                     if self.system_initialised == False:
@@ -242,9 +230,8 @@ if __name__ == "__main__":
 
         except SystemExit:
             print("Systeeminit failed, shutting down...")
-            UARTCommunication.send_message(FDS.RPI5_uart_line, "System failed to initialise")
+            # UARTCommunication.send_message(FDS.RPI5_uart_line, "System failed to initialise")
         except Exception as e:
             print("unexpected error", e)
-            UARTCommunication.send_message(FDS.RPI5_uart_line, "System encountered unexpected error")
-
+            # UARTCommunication.send_message(FDS.RPI5_uart_line, "System encountered unexpected error")
 

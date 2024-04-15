@@ -237,14 +237,17 @@ class NEWPERSONDETECTOR:
         # keep reading to see a header arrive:
         header = self.read_serial_until(self.REPORT_HEADER)
         if header == None:
+            print("error, frame header not found")
             return None
         # read the rest of the frame:
         response = self.ser.read(23-4)
         if response == None:
+            print("error, frame length is too short")
             return None
         response = header + response
         if response[-4:] != self.REPORT_TERMINATOR:
             # error, packet seems incorrect
+            print("error, frame terminator is incorrect")
             return None
         self.print_bytes(response)
         self.parse_report(response)
@@ -255,7 +258,8 @@ class NEWPERSONDETECTOR:
             self.read_serial_frame()
             if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
                 print("detected moving target")
-
+            elif self.meas['state'] == self.STATE_STATIONARY_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
+                print("detected stationary target")
 
 class SERVOMOTOR: # Servo motor 
     def __init__(self, pin_number):
@@ -274,7 +278,7 @@ class SERVOMOTOR: # Servo motor
 
     def get_current_angle(self): 
         return self.current_angle
-    
+
     def wait_for_completion(self):
         # Wait until servo reaches target position
         while True:
