@@ -258,8 +258,10 @@ class NEWPERSONDETECTOR:
             self.read_serial_frame()
             if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
                 print("detected moving target")
+                return "detected moving target"
             elif self.meas['state'] == self.STATE_STATIONARY_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
                 print("detected stationary target")
+                return "detected stationary target"
 
 class SERVOMOTOR: # Servo motor 
     def __init__(self, pin_number):

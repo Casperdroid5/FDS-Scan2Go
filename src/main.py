@@ -109,15 +109,19 @@ class StateMachine:
         if field == 'A':
             self.mmWaveFieldA.run_forever()
             print(self.mmWaveFieldA.run_forever()) # for debugging purposes
-            if self.mmWaveFieldA.run_forever() == NEWPERSONDETECTOR.STATE_MOVING_TARGET:
+            if self.mmWaveFieldA.run_forever() == "detected moving target":
+                print("Person detected in field A")
                 return True
-            elif self.mmWaveFieldA.run_forever() == NEWPERSONDETECTOR.STATE_STATIONARY_TARGET:
+            elif self.mmWaveFieldA.run_forever() == "detected stationary target":	
+                print("No person detected in field A")
                 return False
         elif field == 'B':
             self.mmWaveFieldB.run_forever()
-            if self.mmWaveFieldB.run_forever() == NEWPERSONDETECTOR.STATE_MOVING_TARGET:
+            if self.mmWaveFieldB.run_forever() == "detected moving target":
+                print("Person detected in field B")
                 return True
-            elif self.mmWaveFieldB.run_forever() == NEWPERSONDETECTOR.STATE_STATIONARY_TARGET:   
+            elif self.mmWaveFieldB.run_forever() =="detected stationary target": 
+                print("No person detected in field B")  
                 return False
 
     def systemset (self):
