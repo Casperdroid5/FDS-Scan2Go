@@ -233,7 +233,7 @@ class NEWPERSONDETECTOR:
     def read_serial_frame(self):
         # dummy read to flush out the read buffer:
         self.serial_flush()
-        time.sleep_ms(100)
+        time.sleep(0.1)
         # keep reading to see a header arrive:
         header = self.read_serial_until(self.REPORT_HEADER)
         if header == None:
@@ -251,17 +251,17 @@ class NEWPERSONDETECTOR:
             return None
         self.print_bytes(response)
         self.parse_report(response)
+        time.sleep(0.1)
         return response
 
-    def run_forever(self):
-        while True:
-            self.read_serial_frame()
-            if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
-                print("detected moving target")
-                return "detected moving target"
-            elif self.meas['state'] == self.STATE_STATIONARY_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
-                print("detected stationary target")
-                return "detected stationary target"
+    def scan_for_people(self):      
+        self.read_serial_frame()
+        if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
+            print("detected moving target")
+            return True
+        elif self.meas['state'] == self.STATE_STATIONARY_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
+            print("detected stationary target")
+            return False        
 
 class SERVOMOTOR: # Servo motor 
     def __init__(self, pin_number):

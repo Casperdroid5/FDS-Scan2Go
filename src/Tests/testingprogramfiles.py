@@ -13,18 +13,18 @@ def test_person_detection_with_leds():
     while True:  # Voer continu de detectielogica uit voor elk veld
         # Veld A
         print("Checking for person in field A")
-        if mmWaveFieldA.run_forever() == "detected moving target":
+        if mmWaveFieldA.scan_for_people() == True:
             print("Person detected in field A")
             led_fieldA.set_color("green")  # Groene LED brandt wanneer een persoon wordt gedetecteerd
-        elif mmWaveFieldA.run_forever() == "detected stationary target":
+        elif mmWaveFieldA.scan_for_people() == False:
             led_fieldA.set_color("red")  # Rode LED brandt wanneer geen persoon wordt gedetecteerd
 
         # Veld B
         print("Checking for person in field B")
-        if mmWaveFieldB.run_forever() == "detected moving target":
+        if mmWaveFieldB.scan_for_people() == True:
             print("Person detected in field B")
             led_fieldB.set_color("green")  # Groene LED brandt wanneer een persoon wordt gedetecteerd
-        elif mmWaveFieldB.run_forever() == "detected stationary target":
+        elif mmWaveFieldB.scan_for_people() == False:
             led_fieldB.set_color("red")  # Rode LED brandt wanneer geen persoon wordt gedetecteerd
 
         time.sleep(1)  # Wacht 1 seconde tussen elke detectiepoging

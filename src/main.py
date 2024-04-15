@@ -40,8 +40,8 @@ class StateMachine:
         self.door2 = DOORWITHLED(door_pin_number=15, door_angle_closed=90, door_angle_open=185, door_position_sensor_pin=20, led_pin_number=3, num_leds=2, brightness=0.0005)
 
         # Initialize persondetectors
-        self.mmWaveFieldA = NEWPERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
-        self.mmWaveFieldB = NEWPERSONDETECTOR(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
+        self.mmWaveFieldB = NEWPERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
+        self.mmWaveFieldA = NEWPERSONDETECTOR(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
 
         # Initialize buttons
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)
@@ -107,20 +107,19 @@ class StateMachine:
     def person_detected_in_field(self, field): # input via keyboard, testing purposes
         print(f"Checking for person in field {field}")
         if field == 'A':
-            self.mmWaveFieldA.run_forever()
-            print(self.mmWaveFieldA.run_forever()) # for debugging purposes
-            if self.mmWaveFieldA.run_forever() == "detected moving target":
+            self.mmWaveFieldA.scan_for_people()
+            if self.mmWaveFieldA.scan_for_people() == True:
                 print("Person detected in field A")
                 return True
-            elif self.mmWaveFieldA.run_forever() == "detected stationary target":	
+            elif self.mmWaveFieldA.scan_for_people() == False:	
                 print("No person detected in field A")
                 return False
         elif field == 'B':
-            self.mmWaveFieldB.run_forever()
-            if self.mmWaveFieldB.run_forever() == "detected moving target":
+            self.mmWaveFieldB.scan_for_people()
+            if self.mmWaveFieldB.scan_for_people() == True:
                 print("Person detected in field B")
                 return True
-            elif self.mmWaveFieldB.run_forever() =="detected stationary target": 
+            elif self.mmWaveFieldB.scan_for_people() == False: 
                 print("No person detected in field B")  
                 return False
 
@@ -130,7 +129,8 @@ class StateMachine:
         self.door2_leds.off()
         self.ferro_leds.off() 
         self.door2.close_door()  
-        self.door1.close_door()  
+        self.door1.open_door()  
+        print("system initialised")
         # UARTCommunication.send_message(self.RPI5_uart_line, "RPI, you awake?")
         # if UARTCommunication.receive_message(self.RPI5_uart_line):
         #     self.system_initialised = True
@@ -238,4 +238,5 @@ if __name__ == "__main__":
         except Exception as e:
             print("unexpected error", e)
             # UARTCommunication.send_message(FDS.RPI5_uart_line, "System encountered unexpected error")
+
 
