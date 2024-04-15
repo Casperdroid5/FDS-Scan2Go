@@ -120,7 +120,7 @@ class NEWPERSONDETECTOR:
     TARGET_NAME = ["no_target", "moving_target", "stationary_target", "combined_target"]
 
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
-        self.boardled = Pin(Pin.OUT)
+        self.last_detection_time = 0  # Initialize the last detection time
         self.ser = UART(uart_number, baudrate=baudrate, tx=Pin(tx_pin), rx=Pin(rx_pin), timeout=1)
         self.meas = {
             "state": self.STATE_NO_TARGET,
@@ -257,11 +257,17 @@ class NEWPERSONDETECTOR:
     def scan_for_people(self):      
         self.read_serial_frame()
         if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
-            print("detected moving target")
-            return True
+            # Detected moving target
+            if time.time() - self.last_detection_time > 0.5:  # Apply debounce time of 1 second
+                print("Detected moving target")
+                self.last_detection_time = time.time()  # Update last detection time
+                return True
         elif self.meas['state'] == self.STATE_STATIONARY_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
-            # print("detected stationary target")
-            return False        
+            # Detected stationary target
+            if time.time() - self.last_detection_time > 0.5:  # Apply debounce time of 1 second
+                print("Detected stationary target")
+                self.last_detection_time = time.time()  # Update last detection time
+                return False
 
 class SERVOMOTOR: # Servo motor 
     def __init__(self, pin_number):
