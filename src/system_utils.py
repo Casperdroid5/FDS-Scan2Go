@@ -1,3 +1,21 @@
+import time
+
+class Timer:
+    def __init__(self):
+        self.start_time = None  # Start time is set to None initially
+
+    def start_timer(self):
+        self.start_time = time.ticks_ms()  # Start the timer by storing the current time
+
+    def get_time(self):
+        if self.start_time is None:  # If timer is not started, return 0
+            return 0  
+        else:
+            return time.ticks_ms() - self.start_time # Return the time difference  
+
+    def reset(self):
+        self.start_time = None  # Reset the timer
+
 
 class ErrorHandler:
     def report_error(self, components):

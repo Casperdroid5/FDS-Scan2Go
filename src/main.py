@@ -1,6 +1,6 @@
 from hardware_s2g import NEWPERSONDETECTOR, DOORWITHLED, WS2812
 from UARTCommunication import UARTCommunication
-from system_utils import SystemInitCheck
+from system_utils import SystemInitCheck, Timer
 from machine import Pin
 import time
 
@@ -59,9 +59,11 @@ class StateMachine:
         self.ferrometalscanner = Pin(18, Pin.IN, Pin.PULL_UP)
         self.ferrometalscanner.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_ferrometal_detected)
 
-        # Initialisatie van UART-communicatie met RPI5
+        # Initialize UART-communication with RPI5
         # self.RPI5_uart_line = UARTCommunication(uart_number=0, baudrate=115200, tx_pin=12, rx_pin=13)
 
+        # Initialize the timer
+        self.FDStimer = Timer()  # Instantieer de Timer-klasse
 
     def IRQ_handler_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
