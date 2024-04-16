@@ -1,5 +1,6 @@
 from machine import Pin, PWM, UART
 import neopixel
+from system_utils import Timer
 import time
 
 class WS2812:
@@ -120,8 +121,10 @@ class NEWPERSONDETECTOR:
     TARGET_NAME = ["no_target", "moving_target", "stationary_target", "combined_target"]
     
     # Timer variables
-    standing_threshold = 3  # Threshold in seconds for determining if someone has been standing for too long
-    moving_threshold = 7  # Threshold in seconds for determining if someone has been moving for too long
+    mmWaveTimer = Timer()
+
+    standing_threshold = 40  # Threshold for determining if someone has been standing for too long (40 = 4 seconds somehow)
+    moving_threshold = 40  # Threshold for determining if someone has been moving for too long
 
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
         self.boardled = Pin(Pin.OUT)
@@ -259,38 +262,37 @@ class NEWPERSONDETECTOR:
             return None
         # self.print_bytes(response)
         self.parse_report(response)
-        # time.sleep(0.1)
         return response
 
     def get_detection_distance(self):
         return self.meas["detection_distance"]
                 
-    def scan_for_people(self):      
+    def scan_for_people(self):
         # Controleer de status van self.person_detected om de LED te beheren
         self.read_serial_frame()
         if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
             print("Detected moving target")
-            self.standing_timer = 0  
+            self.standing_timer = 0
             if self.moving_timer < self.moving_threshold:
                 self.moving_timer += 1
                 print(f"Moving timer: {self.moving_timer} seconds")
 
             elif self.moving_timer >= self.moving_threshold:
                 print("Threshold exceeded: Person has been moving for too long")
-                self.person_detected = True  
+                self.person_detected = True
                 self.moving_timer = 0
                 return self.person_detected
 
         elif self.meas['state'] == self.STATE_STATIONARY_TARGET:
-                self.standing_timer += 1
-                print(f"Standing timer: {self.standing_timer} seconds")
-                # Controleer of de persoon stilstaat gedurende een korte periode
-                if self.standing_timer >= self.standing_threshold:  # Korte periode 
-                    print("No movement detected for a short period")
-                    self.moving_timer = 0
-                    self.standing_timer = 0
-                    self.person_detected = False
-                    return self.person_detected
+            self.standing_timer += 1
+            print(f"Standing timer: {self.standing_timer} seconds")
+            # Controleer of de persoon stilstaat gedurende een korte periode
+            if self.standing_timer >= self.standing_threshold:  # Korte periode
+                print("No movement detected for a short period")
+                self.moving_timer = 0
+                self.standing_timer = 0
+                self.person_detected = False
+                return self.person_detected
 
         return self.person_detected
 

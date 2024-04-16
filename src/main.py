@@ -2,7 +2,6 @@ from hardware_s2g import NEWPERSONDETECTOR, DOORWITHLED, WS2812
 from UARTCommunication import UARTCommunication
 from system_utils import SystemInitCheck, Timer
 from machine import Pin
-import time
 
 global running   # system running global variable
 running = False  # wait for system to be initialised before starting the state machine
@@ -18,7 +17,7 @@ class StateMachine:
         self.system_initialised = False
         self.system_override_state_triggerd = False
         self.user_returned_from_mri = False
-        self.distance_threshold = 180 # distance threshold for person detection in cm
+        self.sensor_to_object_distance_threshold = 180 # distance threshold for person detection in cm
 
         # Define the initial state of the state machine
         self.state = None
@@ -63,7 +62,8 @@ class StateMachine:
         # self.RPI5_uart_line = UARTCommunication(uart_number=0, baudrate=115200, tx_pin=12, rx_pin=13)
 
         # Initialize the timer
-        self.FDStimer = Timer()  # Instantieer de Timer-klasse
+        self.FDStimer = Timer()  
+        self.FDStimer.start_timer() # Start the timer 
 
     def IRQ_handler_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
@@ -111,14 +111,14 @@ class StateMachine:
     def person_detected_in_field(self, field): 
             print(f"Checking for person in field {field}")
             if field == 'A':
-                if self.mmWaveFieldA.scan_for_people() and self.mmWaveFieldA.get_detection_distance() < self.distance_threshold:
+                if self.mmWaveFieldA.scan_for_people() and self.mmWaveFieldA.get_detection_distance() < self.sensor_to_object_distance_threshold:
                     print("Person detected in field A")
                     return True
                 else:
                     print("No person detected in field A")
                     return False
             elif field == 'B':
-                if self.mmWaveFieldB.scan_for_people() and self.mmWaveFieldB.get_detection_distance() < self.distance_threshold:
+                if self.mmWaveFieldB.scan_for_people() and self.mmWaveFieldB.get_detection_distance() < self.sensor_to_object_distance_threshold:
                     print("Person detected in field B")
                     return True
                 else:
@@ -132,8 +132,7 @@ class StateMachine:
         self.ferro_leds.off() 
         self.door2.close_door()  
         self.door1.open_door()  
-        self.FDStimer.start_timer()
-        print(Timer().get_time())
+        print(self.FDStimer.get_time())
         print("system initialised")
         # UARTCommunication.send_message(self.RPI5_uart_line, "RPI, you awake?")
         # if UARTCommunication.receive_message(self.RPI5_uart_line):
@@ -149,6 +148,7 @@ class StateMachine:
 
         while running: 
             if self.state == self.INITIALISATION_STATE:
+                print(self.FDStimer.get_time())
                 print("INITIALISATION_STATE")
                 # UARTCommunication.send_message(self.RPI5_uart_line, "System initialised")
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
