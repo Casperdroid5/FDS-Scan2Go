@@ -120,7 +120,7 @@ class NEWPERSONDETECTOR:
     TARGET_NAME = ["no_target", "moving_target", "stationary_target", "combined_target"]
     
     # Timer variables
-    standing_threshold = 7  # Threshold in seconds for determining if someone has been standing for too long
+    standing_threshold = 3  # Threshold in seconds for determining if someone has been standing for too long
     moving_threshold = 7  # Threshold in seconds for determining if someone has been moving for too long
 
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
@@ -268,7 +268,6 @@ class NEWPERSONDETECTOR:
     def scan_for_people(self):      
         # Controleer de status van self.person_detected om de LED te beheren
         self.read_serial_frame()
-        
         if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
             print("Detected moving target")
             self.standing_timer = 0  
@@ -283,12 +282,16 @@ class NEWPERSONDETECTOR:
                 self.moving_timer = 0
                 return self.person_detected
 
-        # Als er geen beweging wordt gedetecteerd, reset de timers
-        else:
-            self.moving_timer = 0
-            self.standing_timer = 0
-            self.person_detected = False
-            print("No movement detected, resetting timers")
+        elif self.meas['state'] == self.STATE_STATIONARY_TARGET:
+                self.standing_timer += 1
+                print(f"Standing timer: {self.standing_timer} seconds")
+                # Controleer of de persoon stilstaat gedurende een korte periode
+                if self.standing_timer >= self.standing_threshold:  # Korte periode 
+                    print("No movement detected for a short period")
+                    self.moving_timer = 0
+                    self.standing_timer = 0
+                    self.person_detected = False
+                    return self.person_detected
 
         return self.person_detected
 
