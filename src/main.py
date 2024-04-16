@@ -40,9 +40,10 @@ class StateMachine:
         self.door2 = DOORWITHLED(door_pin_number=15, door_angle_closed=90, door_angle_open=185, door_position_sensor_pin=20, led_pin_number=3, num_leds=2, brightness=0.0005)
 
         # Initialize persondetectors
-        self.mmWaveFieldB = NEWPERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
         self.mmWaveFieldA = NEWPERSONDETECTOR(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
+        self.mmWaveFieldB = NEWPERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
 
+        
         # Initialize buttons
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)
         self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_emergencybutton_press)  # Emergency situation button
@@ -104,24 +105,22 @@ class StateMachine:
         print("Ferrometalscanner detected metal")
         ferrometaldetected = True
 
-    def person_detected_in_field(self, field): # input via keyboard, testing purposes
-        print(f"Checking for person in field {field}")
-        if field == 'A':
-            self.mmWaveFieldA.scan_for_people()
-            if self.mmWaveFieldA.scan_for_people() == True:
-                print("Person detected in field A")
-                return True
-            elif self.mmWaveFieldA.scan_for_people() == False:	
-                print("No person detected in field A")
-                return False
-        elif field == 'B':
-            self.mmWaveFieldB.scan_for_people()
-            if self.mmWaveFieldB.scan_for_people() == True:
-                print("Person detected in field B")
-                return True
-            elif self.mmWaveFieldB.scan_for_people() == False: 
-                print("No person detected in field B")  
-                return False
+    def person_detected_in_field(self, field): 
+            print(f"Checking for person in field {field}")
+            if field == 'A':
+                if self.mmWaveFieldA.scan_for_people() and self.mmWaveFieldA.get_detection_distance() < 180:
+                    print("Person detected in field A")
+                    return True
+                else:
+                    print("No person detected in field A")
+                    return False
+            elif field == 'B':
+                if self.mmWaveFieldB.scan_for_people() and self.mmWaveFieldB.get_detection_distance() < 180:
+                    print("Person detected in field B")
+                    return True
+                else:
+                    print("No person detected in field B")
+                    return False
 
     def systemset (self):
         print("FIRST initialization")
