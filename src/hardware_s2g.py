@@ -118,6 +118,10 @@ class NEWPERSONDETECTOR:
     STATE_STATIONARY_TARGET = 2
     STATE_COMBINED_TARGET = 3
     TARGET_NAME = ["no_target", "moving_target", "stationary_target", "combined_target"]
+    
+    # Timer variables
+    standing_threshold = 7  # Threshold in seconds for determining if someone has been standing for too long
+    moving_threshold = 7  # Threshold in seconds for determining if someone has been moving for too long
 
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
         self.boardled = Pin(Pin.OUT)
@@ -129,12 +133,10 @@ class NEWPERSONDETECTOR:
             "stationary_distance": 0,
             "stationary_energy": 0,
             "detection_distance": 0 }
-
-        # Timer variables
+        
+        self.person_detected = False  # Variabele om de detectiestatus van een persoon bij te houden
         self.standing_timer = 0  # Timer to track how long someone has been standing
         self.moving_timer = 0  # Timer to track how long someone has been moving
-        self.standing_threshold = 7  # Threshold in seconds for determining if someone has been standing for too long
-        self.moving_threshold = 7  # Threshold in seconds for determining if someone has been moving for too long
 
     def print_bytes(self, data):
         if len(data) == 0:
@@ -264,25 +266,25 @@ class NEWPERSONDETECTOR:
             return self.meas["detection_distance"]
 
     def scan_for_people(self):      
-        self.read_serial_frame()
-        if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
-            print("Detected moving target")
-            self.standing_timer = 0  # Reset standing timer if someone is detected moving
-            if self.moving_timer < self.moving_threshold:
-                self.moving_timer += 1  # Increment moving timer if someone is detected moving
-                print(f"Moving timer: {self.moving_timer} seconds")
-                return False
-            else:
-                print("Threshold exceeded: Person has been MOVING for too long")
-                return True  # Indicate that someone has been moving for too long
-        elif self.meas['state'] == self.STATE_STATIONARY_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
-            if self.standing_timer < self.standing_threshold:
-                self.standing_timer += 1  # Increment standing timer if someone is detected stationary
-                print(f"Standing timer: {self.standing_timer} seconds")
-                return True
-            else:
-                print("Threshold exceeded: Person has been STANDING for too long")
-                return False  # Indicate that someone has been standing for too long
+            self.read_serial_frame()
+            if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
+                print("Detected moving target")
+                self.standing_timer = 0  # Reset standing timer if someone is detected moving
+                self.person_detected = True  # Zet de variabele op True wanneer een persoon wordt gedetecteerd
+                return self.person_detected
+            elif self.meas['state'] == self.STATE_STATIONARY_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
+                if self.standing_timer < self.standing_threshold:
+                    self.standing_timer += 1  # Increment standing timer if someone is detected stationary
+                    print(f"Standing timer: {self.standing_timer} seconds")
+                    return self.person_detected
+                if self.standing_timer >= self.standing_threshold:
+                    print("Threshold exceeded: Person has been standing for too long")
+                    self.person_detected = False  # Zet de variabele op False wanneer niemand wordt gedetecteerd
+                    return self.person_detected  # Indicate that someone has been standing for too long
+
+
+
+
 
 class SERVOMOTOR: # Servo motor 
     def __init__(self, pin_number):
