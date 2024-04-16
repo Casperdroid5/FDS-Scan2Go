@@ -10,7 +10,7 @@ class Timer: # Timer class to measure time in ms
     def get_time(self):
         if self.start_time is None:  # If timer is not started, return 0
             print("Timer not started")
-            return 0
+            return 1
         else:
             return time.ticks_ms() - self.start_time  # Return the time difference  
 

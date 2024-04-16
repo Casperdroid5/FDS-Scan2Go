@@ -160,7 +160,6 @@ class StateMachine:
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
                 print("USER_FIELD_A_RESPONSE_STATE")
-                print(Timer().get_time())
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                     self.door1.close_door()
                     if ferrometaldetected == True:
