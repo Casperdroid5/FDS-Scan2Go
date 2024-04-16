@@ -148,15 +148,14 @@ class StateMachine:
 
         while running: 
             if self.state == self.INITIALISATION_STATE:
-                print(self.FDStimer.get_time())
                 print("INITIALISATION_STATE")
                 # UARTCommunication.send_message(self.RPI5_uart_line, "System initialised")
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()
+                    ferrometaldetected = False
+                    self.state = self.USER_FIELD_A_RESPONSE_STATE
                     if self.system_initialised == False:
                         self.systemset()
-                ferrometaldetected = False
-                self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
                 print("USER_FIELD_A_RESPONSE_STATE")
