@@ -1,7 +1,6 @@
 from machine import Pin, PWM, UART
 import neopixel
 import time
-from system_utils import Timer
 
 class WS2812:
     def __init__(self, pin_number, num_leds, brightness):
@@ -265,39 +264,33 @@ class NEWPERSONDETECTOR:
 
     def get_detection_distance(self):
         return self.meas["detection_distance"]
-                    
+                
     def scan_for_people(self):      
         # Controleer de status van self.person_detected om de LED te beheren
         self.read_serial_frame()
-        current_time = time.time()  # Huidige tijd
-
         if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
             print("Detected moving target")
-            self.standing_timer_start_time = None  # Reset de timer voor stilstand
+            self.standing_timer = 0  
+            if self.moving_timer < self.moving_threshold:
+                self.moving_timer += 1
+                print(f"Moving timer: {self.moving_timer} seconds")
 
-            if self.moving_timer_start_time is None:
-                self.moving_timer_start_time = current_time  # Start de timer voor beweging
-
-            if current_time - self.moving_timer_start_time >= self.moving_threshold:
+            elif self.moving_timer >= self.moving_threshold:
                 print("Threshold exceeded: Person has been moving for too long")
                 self.person_detected = True  
-                self.moving_timer_start_time = None  # Reset de timer voor beweging
+                self.moving_timer = 0
                 return self.person_detected
 
         elif self.meas['state'] == self.STATE_STATIONARY_TARGET:
-            self.moving_timer_start_time = None  # Reset de timer voor beweging
-
-            if self.standing_timer_start_time is None:
-                self.standing_timer_start_time = current_time  # Start de timer voor stilstand
-
-            print(f"Standing timer: {current_time - self.standing_timer_start_time} seconds")
-
-            # Controleer of de persoon stilstaat gedurende een korte periode
-            if current_time - self.standing_timer_start_time >= self.standing_threshold:
-                print("No movement detected for a short period")
-                self.standing_timer_start_time = None  # Reset de timer voor stilstand
-                self.person_detected = False
-                return self.person_detected
+                self.standing_timer += 1
+                print(f"Standing timer: {self.standing_timer} seconds")
+                # Controleer of de persoon stilstaat gedurende een korte periode
+                if self.standing_timer >= self.standing_threshold:  # Korte periode 
+                    print("No movement detected for a short period")
+                    self.moving_timer = 0
+                    self.standing_timer = 0
+                    self.person_detected = False
+                    return self.person_detected
 
         return self.person_detected
 

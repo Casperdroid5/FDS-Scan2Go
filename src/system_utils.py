@@ -1,17 +1,3 @@
-import time
-
-class Timer:
-    def __init__(self):
-        self.start_time = None
-
-    def start(self):
-        self.start_time = time.time()
-
-    def elapsed_time(self):
-        if self.start_time is not None:
-            return time.time() - self.start_time
-        else:
-            return 0
 
 class ErrorHandler:
     def report_error(self, components):

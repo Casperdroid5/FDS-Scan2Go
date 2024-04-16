@@ -201,7 +201,7 @@ class StateMachine:
             else:
                 print("Invalid state, create emergency request")
                 self.freeze()
-            time.sleep(0.5) # to prevent the state machine from running too fast
+            time.sleep(0.1) # to prevent the state machine from running too fast
 
     def freeze(self):
         global running
