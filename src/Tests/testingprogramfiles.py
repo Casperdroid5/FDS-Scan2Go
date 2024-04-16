@@ -1,5 +1,6 @@
 from hardware_s2g import NEWPERSONDETECTOR, WS2812
-import time
+
+
 def test_person_detection_with_leds():
     # Initialisatie van de personendetectors
     mmWaveFieldA = NEWPERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
@@ -27,8 +28,6 @@ def test_person_detection_with_leds():
             led_fieldB.set_color("green")  # Groene LED brandt wanneer een persoon wordt gedetecteerd
         else:
             led_fieldB.set_color("red")  # Rode LED brandt wanneer geen persoon wordt gedetecteerd
-
-        time.sleep(0.1)  # Wacht 1 seconde tussen elke detectiepoging
 
 if __name__ == "__main__":
     test_person_detection_with_leds()
