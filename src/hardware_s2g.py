@@ -120,14 +120,11 @@ class NEWPERSONDETECTOR:
     STATE_COMBINED_TARGET = 3
     TARGET_NAME = ["no_target", "moving_target", "stationary_target", "combined_target"]
     
-    # Timer variables
-    mmWaveTimer = Timer()
-
-    standing_threshold = 40  # Threshold for determining if someone has been standing for too long (40 = 4 seconds somehow)
-    moving_threshold = 40  # Threshold for determining if someone has been moving for too long
+    standing_threshold = 15  # Threshold for determining if someone has been standing for too long (40 = 4 seconds somehow)
+    moving_threshold = 30  # Threshold for determining if someone has been moving for too long
 
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
-        self.boardled = Pin(Pin.OUT)
+
         self.ser = UART(uart_number, baudrate=baudrate, tx=Pin(tx_pin), rx=Pin(rx_pin), timeout=1)
         self.meas = {
             "state": self.STATE_NO_TARGET,
@@ -136,8 +133,9 @@ class NEWPERSONDETECTOR:
             "stationary_distance": 0,
             "stationary_energy": 0,
             "detection_distance": 0 }
-        
-        self.person_detected = False  # Variabele om de detectiestatus van een persoon bij te houden
+
+        self.mmWaveTimer = Timer()  # Initialize the Timer for mmWave sensor
+        self.person_detected = False  # Variable to track person detection status
         self.standing_timer = 0  # Timer to track how long someone has been standing
         self.moving_timer = 0  # Timer to track how long someone has been moving
 
@@ -268,30 +266,35 @@ class NEWPERSONDETECTOR:
         return self.meas["detection_distance"]
                 
     def scan_for_people(self):
-        # Controleer de status van self.person_detected om de LED te beheren
+        # Check for the presence of people using the sensor
         self.read_serial_frame()
+
         if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
             print("Detected moving target")
             self.standing_timer = 0
+
             if self.moving_timer < self.moving_threshold:
                 self.moving_timer += 1
                 print(f"Moving timer: {self.moving_timer} seconds")
 
             elif self.moving_timer >= self.moving_threshold:
-                print("Threshold exceeded: Person has been moving for too long")
+                print("Threshold exceeded: resetting moving timer")
                 self.person_detected = True
                 self.moving_timer = 0
+                self.mmWaveTimer.reset()  # Reset the timer
                 return self.person_detected
 
         elif self.meas['state'] == self.STATE_STATIONARY_TARGET:
             self.standing_timer += 1
             print(f"Standing timer: {self.standing_timer} seconds")
-            # Controleer of de persoon stilstaat gedurende een korte periode
-            if self.standing_timer >= self.standing_threshold:  # Korte periode
-                print("No movement detected for a short period")
+
+            # Check if a person has been standing still for too long
+            if self.standing_timer >= self.standing_threshold:
+                print("Threshold exceeded: resetting standing timer")
                 self.moving_timer = 0
                 self.standing_timer = 0
                 self.person_detected = False
+                self.mmWaveTimer.reset()  # Reset the timer
                 return self.person_detected
 
         return self.person_detected
