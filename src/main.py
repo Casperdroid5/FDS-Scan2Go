@@ -132,6 +132,8 @@ class StateMachine:
         self.ferro_leds.off() 
         self.door2.close_door()  
         self.door1.open_door()  
+        self.FDStimer.start_timer()
+        print(Timer().get_time())
         print("system initialised")
         # UARTCommunication.send_message(self.RPI5_uart_line, "RPI, you awake?")
         # if UARTCommunication.receive_message(self.RPI5_uart_line):
@@ -158,6 +160,7 @@ class StateMachine:
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
                 print("USER_FIELD_A_RESPONSE_STATE")
+                print(Timer().get_time())
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                     self.door1.close_door()
                     if ferrometaldetected == True:
@@ -203,7 +206,6 @@ class StateMachine:
             else:
                 print("Invalid state, create emergency request")
                 self.freeze()
-            time.sleep(0.1) # to prevent the state machine from running too fast
 
     def freeze(self):
         global running
