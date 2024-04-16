@@ -18,6 +18,7 @@ class StateMachine:
         self.system_initialised = False
         self.system_override_state_triggerd = False
         self.user_returned_from_mri = False
+        self.distance_threshold = 180 # distance threshold for person detection in cm
 
         # Define the initial state of the state machine
         self.state = None
@@ -108,14 +109,14 @@ class StateMachine:
     def person_detected_in_field(self, field): 
             print(f"Checking for person in field {field}")
             if field == 'A':
-                if self.mmWaveFieldA.scan_for_people() and self.mmWaveFieldA.get_detection_distance() < 180:
+                if self.mmWaveFieldA.scan_for_people() and self.mmWaveFieldA.get_detection_distance() < self.distance_threshold:
                     print("Person detected in field A")
                     return True
                 else:
                     print("No person detected in field A")
                     return False
             elif field == 'B':
-                if self.mmWaveFieldB.scan_for_people() and self.mmWaveFieldB.get_detection_distance() < 180:
+                if self.mmWaveFieldB.scan_for_people() and self.mmWaveFieldB.get_detection_distance() < self.distance_threshold:
                     print("Person detected in field B")
                     return True
                 else:

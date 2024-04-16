@@ -130,6 +130,12 @@ class NEWPERSONDETECTOR:
             "stationary_energy": 0,
             "detection_distance": 0 }
 
+        # Timer variables
+        self.standing_timer = 0  # Timer to track how long someone has been standing
+        self.moving_timer = 0  # Timer to track how long someone has been moving
+        self.standing_threshold = 7  # Threshold in seconds for determining if someone has been standing for too long
+        self.moving_threshold = 7  # Threshold in seconds for determining if someone has been moving for too long
+
     def print_bytes(self, data):
         if len(data) == 0:
             print("<no data>")
@@ -260,11 +266,23 @@ class NEWPERSONDETECTOR:
     def scan_for_people(self):      
         self.read_serial_frame()
         if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
-            print("detected moving target")
-            return True
+            print("Detected moving target")
+            self.standing_timer = 0  # Reset standing timer if someone is detected moving
+            if self.moving_timer < self.moving_threshold:
+                self.moving_timer += 1  # Increment moving timer if someone is detected moving
+                print(f"Moving timer: {self.moving_timer} seconds")
+                return False
+            else:
+                print("Threshold exceeded: Person has been MOVING for too long")
+                return True  # Indicate that someone has been moving for too long
         elif self.meas['state'] == self.STATE_STATIONARY_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
-            # print("detected stationary target")
-            return False        
+            if self.standing_timer < self.standing_threshold:
+                self.standing_timer += 1  # Increment standing timer if someone is detected stationary
+                print(f"Standing timer: {self.standing_timer} seconds")
+                return True
+            else:
+                print("Threshold exceeded: Person has been STANDING for too long")
+                return False  # Indicate that someone has been standing for too long
 
 class SERVOMOTOR: # Servo motor 
     def __init__(self, pin_number):
