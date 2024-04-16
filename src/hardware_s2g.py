@@ -263,26 +263,34 @@ class NEWPERSONDETECTOR:
         return response
 
     def get_detection_distance(self):
-            return self.meas["detection_distance"]
-
+        return self.meas["detection_distance"]
+                
     def scan_for_people(self):      
-            self.read_serial_frame()
-            if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
-                print("Detected moving target")
-                self.standing_timer = 0  # Reset standing timer if someone is detected moving
-                self.person_detected = True  # Zet de variabele op True wanneer een persoon wordt gedetecteerd
+        # Controleer de status van self.person_detected om de LED te beheren
+        self.read_serial_frame()
+        
+        if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
+            print("Detected moving target")
+            self.standing_timer = 0  
+
+            if self.moving_timer < self.moving_threshold:
+                self.moving_timer += 1
+                print(f"Moving timer: {self.moving_timer} seconds")
+
+            elif self.moving_timer >= self.moving_threshold:
+                print("Threshold exceeded: Person has been moving for too long")
+                self.person_detected = True  
+                self.moving_timer = 0
                 return self.person_detected
-            elif self.meas['state'] == self.STATE_STATIONARY_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
-                if self.standing_timer < self.standing_threshold:
-                    self.standing_timer += 1  # Increment standing timer if someone is detected stationary
-                    print(f"Standing timer: {self.standing_timer} seconds")
-                    return self.person_detected
-                if self.standing_timer >= self.standing_threshold:
-                    print("Threshold exceeded: Person has been standing for too long")
-                    self.person_detected = False  # Zet de variabele op False wanneer niemand wordt gedetecteerd
-                    return self.person_detected  # Indicate that someone has been standing for too long
 
+        # Als er geen beweging wordt gedetecteerd, reset de timers
+        else:
+            self.moving_timer = 0
+            self.standing_timer = 0
+            self.person_detected = False
+            print("No movement detected, resetting timers")
 
+        return self.person_detected
 
 
 
