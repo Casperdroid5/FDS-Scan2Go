@@ -76,5 +76,4 @@ class SystemInitCheck:
         # Check sensors
         if not check_sensors():
             failing_components.append("Sensors")
-
         return failing_components # Return the list of failing components

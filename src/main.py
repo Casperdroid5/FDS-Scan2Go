@@ -168,7 +168,8 @@ class StateMachine:
                         #print("No metal detected, please proceed to field B")
                         self.state = self.USER_FIELD_B_RESPONSE_STATE
                 elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
-                    print("Please position in field A, before the scanner")
+                    #print("Please position in field A, before the scanner")
+                    return 0
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
                 #print("USER_FIELD_B_RESPONSE_STATE")
@@ -176,6 +177,7 @@ class StateMachine:
                     self.door2.open_door()
                     self.ferro_leds.set_color("green")
                     self.state = self.USER_IN_MR_ROOM_STATE
+                    #print("No metal detected, please proceed to MR room")
                 elif ferrometaldetected == True:
                     self.door1.open_door()
                     self.ferro_leds.set_color("red")
