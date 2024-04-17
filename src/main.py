@@ -1,5 +1,5 @@
 from hardware_s2g import NEWPERSONDETECTOR, DOORWITHLED, WS2812
-from UARTCommunication import UARTCommunication
+from uart_communication import UARTCommunication
 from system_utils import SystemInitCheck, Timer
 from machine import Pin
 
@@ -58,7 +58,7 @@ class StateMachine:
         self.ferrometalscanner.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_ferrometal_detected)
 
         # Initialize UART-communication with RPI5
-        # self.RPI5_uart_line = UARTCommunication(uart_number=0, baudrate=115200, tx_pin=12, rx_pin=13)
+        self.RPI5_uart_line = UARTCommunication()
 
         # Initialize the timer
         self.FDStimer = Timer()  
@@ -76,7 +76,7 @@ class StateMachine:
 
     def IRQ_handler_emergencybutton_press(self, pin):
         print("Emergency button pressed")
-        # UARTCommunication.send_message(self.RPI5_uart_line, "Emergency button")
+        UARTCommunication.send_message(self.RPI5_uart_line, "Emergency button")
         self.door1.open_door()
         self.door2.open_door() 
         self.door1_leds.set_color("yellow")
@@ -90,7 +90,7 @@ class StateMachine:
 
     def IRQ_handler_overridebutton_press(self, pin):
         print("System override button pressed")
-        # UARTCommunication.send_message(self.RPI5_uart_line, "Override button pressed")
+        UARTCommunication.send_message(self.RPI5_uart_line, "Override button pressed")
         self.door1.open_door()
         self.door2.open_door()  
         self.door1_leds.set_color("white")
@@ -133,11 +133,11 @@ class StateMachine:
         self.door1.open_door()  
         print(self.FDStimer.get_time())
         print("system initialised")
-        # UARTCommunication.send_message(self.RPI5_uart_line, "RPI, you awake?")
-        # if UARTCommunication.receive_message(self.RPI5_uart_line):
-        #     self.system_initialised = True
-        #     print("System initialised")
-        #     return 0
+        UARTCommunication.send_message(self.RPI5_uart_line, "RPI, you awake?")
+        if UARTCommunication.receive_message(self.RPI5_uart_line):
+            self.system_initialised = True
+            print("System initialised")
+            return 0
 
 # State machine
     def run(self):
@@ -148,7 +148,7 @@ class StateMachine:
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 print("INITIALISATION_STATE")
-                # UARTCommunication.send_message(self.RPI5_uart_line, "System initialised")
+                UARTCommunication.send_message(self.RPI5_uart_line, "System initialised")
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()
                     ferrometaldetected = False
@@ -238,9 +238,9 @@ if __name__ == "__main__":
 
         except SystemExit:
             print("Systeeminit failed, shutting down...")
-            # UARTCommunication.send_message(FDS.RPI5_uart_line, "System failed to initialise")
+            UARTCommunication.send_message(FDS.RPI5_uart_line, "System failed to initialise")
         except Exception as e:
             print("unexpected error", e)
-            # UARTCommunication.send_message(FDS.RPI5_uart_line, "System encountered unexpected error")
+            UARTCommunication.send_message(FDS.RPI5_uart_line, "System encountered unexpected error")
 
 
