@@ -5,7 +5,7 @@ import sys
 import select
 import sys
 
-class UARTCommunication:
+class USBCommunication:
     def __init__(self):
         self.poll_obj = select.poll() # Initialize the poll object for monitoring input from stdin
         self.poll_obj.register(sys.stdin, select.POLLIN)
