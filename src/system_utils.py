@@ -2,19 +2,25 @@ import time
 import select
 import sys
 
+import select
+import sys
+
 class UARTCommunication:
     def __init__(self):
-        self.poll_obj = select.poll()
+        self.poll_obj = select.poll() # Initialize the poll object for monitoring input from stdin
         self.poll_obj.register(sys.stdin, select.POLLIN)
 
     def send_message(self, message):
-        print(message)
+        prefixed_message = "[UARTCommunication] " + message # Add a prefix to the message
+        print(prefixed_message)
 
     def receive_message(self):
-        poll_results = self.poll_obj.poll(1)  # wait for input on stdin for x seconds
+        poll_results = self.poll_obj.poll(1) # Poll for input on stdin for a certain duration
         if poll_results:
-            data = sys.stdin.readline().strip() # read data from stdin
-            return data
+            data = sys.stdin.readline().strip() # Read data from stdin
+            if data.startswith("[UARTCommunication]"): # Check if the message starts with the desired prefix
+                return data
+        return None  # Return None if no message with the prefix is received
 
 class Timer: # Timer class to measure time in ms
     def __init__(self):

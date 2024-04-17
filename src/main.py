@@ -1,5 +1,5 @@
-from hardware_s2g import LD2410PERSONDETECTOR, DOORWITHLED, WS2812, UARTCommunication
-from system_utils import SystemInitCheck, Timer
+from hardware_s2g import LD2410PERSONDETECTOR, DOORWITHLED, WS2812
+from system_utils import SystemInitCheck, Timer, UARTCommunication
 from machine import Pin
 
 global running   # system running global variable
