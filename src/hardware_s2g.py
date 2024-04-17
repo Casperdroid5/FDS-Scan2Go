@@ -44,6 +44,31 @@ class WS2812:
         self._np.write()
         return "off"
 
+class SERVOMOTOR: # Servo motor 
+    def __init__(self, pin_number):
+        self.pwm = PWM(pin_number)
+        self.pwm.freq(50)  # Set PWM frequency to 50 Hz for servo control
+        self.min_us = 600  # Minimum pulse width in microseconds for 0 degrees
+        self.max_us = 2400  # Maximum pulse width in microseconds for 180 degrees
+        self.current_angle = 0  # Initialize current angle to 0
+
+    def set_angle(self, angle):
+        pulse_width_us = self.min_us + (self.max_us - self.min_us) * angle / 180  # Convert angle to pulse width
+        duty_cycle = int(pulse_width_us / 20000 * 65535) # Convert pulse width from microseconds to duty cycle (0-65535) # 20000 microseconds = 20 milliseconds (period)
+        self.pwm.duty_u16(duty_cycle)  # Set duty cycle to control servo position
+        self.current_angle = angle  # Update current angle
+        self.wait_for_completion()  # Wait for servo to reach target position
+
+    def get_current_angle(self): 
+        return self.current_angle
+
+    def wait_for_completion(self):
+        # Wait until servo reaches target position
+        while True:
+            # Check if current angle matches target angle within a tolerance
+            if abs(self.current_angle - self.get_current_angle()) < 1:
+                break
+
 class DOOR: # Door motor and positionsensor
     def __init__(self, pin_number, angle_closed, angle_open, position_sensor_pin):
         self.servo = SERVOMOTOR(pin_number) 
@@ -274,15 +299,15 @@ class LD2410PERSONDETECTOR: # mmWave sensor
         self.read_serial_frame()
 
         if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
-            print("Detected moving target")
+            # print("Detected moving target")
             self.standing_timer = 0
 
             if self.moving_timer < self.moving_threshold:
                 self.moving_timer += 1
-                print(f"Moving timer: {self.moving_timer} seconds")
+                # print(f"Moving timer: {self.moving_timer} seconds")
 
             elif self.moving_timer >= self.moving_threshold:
-                print("Threshold exceeded: resetting moving timer")
+                # print("Threshold exceeded: resetting moving timer")
                 self.person_detected = True
                 self.moving_timer = 0
                 self.mmWaveTimer.reset()  # Reset the timer
@@ -290,43 +315,16 @@ class LD2410PERSONDETECTOR: # mmWave sensor
 
         elif self.meas['state'] == self.STATE_STATIONARY_TARGET:
             self.standing_timer += 1
-            print(f"Standing timer: {self.standing_timer} seconds")
+            # print(f"Standing timer: {self.standing_timer} seconds")
 
             # Check if a person has been standing still for too long
             if self.standing_timer >= self.standing_threshold:
-                print("Threshold exceeded: resetting standing timer")
+                # print("Threshold exceeded: resetting standing timer")
                 self.moving_timer = 0
                 self.standing_timer = 0
                 self.person_detected = False
                 self.mmWaveTimer.reset()  # Reset the timer
                 return self.person_detected
-
         return self.person_detected
 
-
-
-class SERVOMOTOR: # Servo motor 
-    def __init__(self, pin_number):
-        self.pwm = PWM(pin_number)
-        self.pwm.freq(50)  # Set PWM frequency to 50 Hz for servo control
-        self.min_us = 600  # Minimum pulse width in microseconds for 0 degrees
-        self.max_us = 2400  # Maximum pulse width in microseconds for 180 degrees
-        self.current_angle = 0  # Initialize current angle to 0
-
-    def set_angle(self, angle):
-        pulse_width_us = self.min_us + (self.max_us - self.min_us) * angle / 180  # Convert angle to pulse width
-        duty_cycle = int(pulse_width_us / 20000 * 65535) # Convert pulse width from microseconds to duty cycle (0-65535) # 20000 microseconds = 20 milliseconds (period)
-        self.pwm.duty_u16(duty_cycle)  # Set duty cycle to control servo position
-        self.current_angle = angle  # Update current angle
-        self.wait_for_completion()  # Wait for servo to reach target position
-
-    def get_current_angle(self): 
-        return self.current_angle
-
-    def wait_for_completion(self):
-        # Wait until servo reaches target position
-        while True:
-            # Check if current angle matches target angle within a tolerance
-            if abs(self.current_angle - self.get_current_angle()) < 1:
-                break
 
