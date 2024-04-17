@@ -57,7 +57,7 @@ class DOOR: # Door motor and positionsensor
         return f"DOOR at Pin {self.pin_number}, State: {self.door_state}"
 
     def open_door(self):
-        print(f"open_{self}")
+        #print(f"open_{self}")
         self.servo.set_angle(self.angle_open)
         if self.servo.get_current_angle() == self.angle_open and self.door_sensor.value() == 0:
             #print("New state: dooropened")
@@ -65,7 +65,7 @@ class DOOR: # Door motor and positionsensor
             return self.door_state
 
     def close_door(self):
-        print(f"close_{self}")
+        #print(f"close_{self}")
         self.servo.set_angle(self.angle_closed)
         if self.servo.get_current_angle() == self.angle_closed and self.door_sensor.value() == 1:
             #print("New state: doorclosed")
@@ -85,29 +85,33 @@ class DOORWITHLED(DOOR, WS2812):
         super().close_door()
         self.set_color("red")  # Set LED color to red when the door is closed
 
-# class PERSONDETECTOR: # mmWave sensor
-#     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
-#         self.uart_number = uart_number
-#         self.baudrate = baudrate
-#         self.tx_pin = tx_pin  
-#         self.rx_pin = rx_pin 
-#         self._uart_sensor = UART(uart_number, baudrate, tx_pin, rx_pin)
-#         self.humanpresence = "unknown"
+class SEEEDPERSONDETECTOR: # mmWave sensor
+    def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
+        self.uart_number = uart_number
+        self.baudrate = baudrate
+        self.tx_pin = tx_pin  
+        self.rx_pin = rx_pin 
+        self._uart_sensor = UART(uart_number, baudrate, tx_pin, rx_pin)
+        self.humanpresence = "unknown"
 
-#     def check_humanpresence(self):
-#         data = self._uart_sensor.read()
-#         if data:
-#             if b'\x02' in data:
-#                 self.humanpresence = "Somebodymoved"
-#             elif b'\x01' in data:
-#                 self.humanpresence = "Somebodystoppedmoving"
-#             elif b'\x03' in data:
-#                 self.humanpresence = "Somebodyisclose"
-#             elif b'\x04' in data:
-#                 self.humanpresence = "Somebodyisaway"
-#         return self.humanpresence 
+    def check_humanpresence(self):
+        data = self._uart_sensor.read()
+        if data:
+            if b'\x02' in data:
+                #self.humanpresence = "Somebodymoved"
+                self.humanpresence = True
+            elif b'\x01' in data:
+                #self.humanpresence = "Somebodystoppedmoving"
+                self.humanpresence = False
+            elif b'\x03' in data:
+                #self.humanpresence = "Somebodyisclose"
+                self.humanpresence = True
+            elif b'\x04' in data:
+                #self.humanpresence = "Somebodyisaway"
+                self.humanpresence = False
+        return self.humanpresence 
 
-class NEWPERSONDETECTOR:
+class LD2410PERSONDETECTOR: # mmWave sensor
     HEADER = bytes([0xfd, 0xfc, 0xfb, 0xfa])
     TERMINATOR = bytes([0x04, 0x03, 0x02, 0x01])
     NULLDATA = bytes([])
