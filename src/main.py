@@ -132,10 +132,10 @@ class StateMachine:
         self.door1.open_door()  
         #print(self.FDStimer.get_time())
         #print("system initialised")
-        USBCommunication.send_message(self.RPI5_USB_LINE, "RPI, you awake?")
-        if USBCommunication.receive_message(self.RPI5_USB_LINE):
+        self.RPI5_USB_LINE.send_message("RPI, are you awake?")
+        if self.RPI5_USB_LINE.receive_message() == "Yes":
             self.system_initialised = True
-            #print("System initialised")
+            self.RPI5_USB_LINE.send_message("System initialised")
             return 0
 
 # State machine
@@ -147,8 +147,8 @@ class StateMachine:
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 #print("INITIALISATION_STATE")
-                USBCommunication.send_message(self.RPI5_USB_LINE, "System initialised") # Send message to RPI5
-                USBCommunication.send_message(self.RPI5_USB_LINE, "show image 1") # Show image on RPI5
+                self.RPI5_USB_LINE.send_message("System initialised") # Send message to RPI5
+                self.RPI5_USB_LINE.send_message( "showimage1") # Show image on RPI5
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()
                     ferrometaldetected = False
