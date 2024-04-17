@@ -1,34 +1,20 @@
 import serial
-import gpiod
 
-# Seriele poortinstellingen
-ser = serial.Serial('/dev/ttyUSB0', baudrate=115200, timeout=1) # Open seriele poort
+def main():
+    # Open de seriele poort
+    s = serial.Serial(port="/dev/ttyACM0", baudrate=115200, timeout=1) 
 
-# GPIO instellingen
-LED_PIN = 17
-chip = gpiod.Chip('gpiochip0')
-led_line = chip.get_line(LED_PIN)
-led_line.request(consumer="LED", type=gpiod.LINE_REQ_DIR_OUT)
-
-def toggle_led():
-    led_line.set_value(not led_line.get_value())
-
-try:
     while True:
-        # Wacht op invoer van de gebruiker
-        user_input = input("Voer 'toggle' in om de LED te togglen: ")
+        # Typ een bericht om te verzenden
+        message = input("Typ een bericht om naar de Raspberry Pi Pico te sturen: ")
+        
+        # Stuur het bericht naar de Raspberry Pi Pico
+        s.write(message.encode() + b'\r')
 
-        # Verwerk de invoer en stuur deze via UART naar de Raspberry Pi Pico
-        ser.write(user_input.encode())
-        print("Invoer verzonden naar Pico:", user_input)
+        # Wacht op het antwoord van de Pico
+        response = s.readline().strip().decode()
+        print("Antwoord van de Pico:", response)
 
-        # Wacht op ontvangst van een bevestiging van de Raspberry Pi Pico
-        response = ser.readline().decode().strip()
-        print("Ontvangen van Pico:", response)
+if __name__ == "__main__":
+    main()
 
-except KeyboardInterrupt:
-    print("Programma afgebroken")
-
-finally:
-    ser.close()
-    led_line.release()

@@ -43,7 +43,6 @@ class StateMachine:
         self.mmWaveFieldA = NEWPERSONDETECTOR(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
         self.mmWaveFieldB = NEWPERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
 
-        
         # Initialize buttons
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)
         self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_emergencybutton_press)  # Emergency situation button
@@ -153,6 +152,7 @@ class StateMachine:
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()
                     ferrometaldetected = False
+                    self.ferro_leds.off()
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
                     if self.system_initialised == False:
                         self.systemset()
@@ -175,9 +175,11 @@ class StateMachine:
                 print("USER_FIELD_B_RESPONSE_STATE")
                 if self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False and ferrometaldetected == False:
                     self.door2.open_door()
+                    self.ferro_leds.set_color("green")
                     self.state = self.USER_IN_MR_ROOM_STATE
                 elif ferrometaldetected == True:
                     self.door1.open_door()
+                    self.ferro_leds.set_color("red")
                     print("Metal detected, please remove metal objects")
                     self.state = self.INITIALISATION_STATE
                 else:
