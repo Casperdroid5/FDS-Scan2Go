@@ -88,6 +88,9 @@ class StateMachine:
         self.mmWaveFieldALEDS.set_color("yellow")
         self.mmWaveFieldBLEDS.set_color("yellow")
         self.emergency_state_triggerd = True
+        global running
+        running = False # stop the state machine
+        self.freeze()
 
     def IRQ_handler_overridebutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Override button pressed")
@@ -101,7 +104,6 @@ class StateMachine:
         self.system_override_state_triggerd = not self.system_override_state_triggerd # toggle system override state
         running = not running # toggle statemachine running state
         self.freeze()
-        return 0
 
     def IRQ_handler_ferrometal_detected(self, pin):
         global ferrometaldetected
@@ -133,6 +135,7 @@ class StateMachine:
         self.system_initialised = True
         self.RPI5_USB_LINE.send_message("System initialised")
         self.RPI5_USB_LINE.send_message("playaudio 1") # system initialised audio
+        return 0
 
     def run(self):
         global ferrometaldetected
