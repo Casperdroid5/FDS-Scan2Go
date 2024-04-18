@@ -144,12 +144,14 @@ class StateMachine:
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 self.RPI5_USB_LINE.send_message("System initialised") 
-                self.RPI5_USB_LINE.send_message("closeimage") # close all images
                 self.RPI5_USB_LINE.send_message("playaudio 4") # remove all people from the system audio    
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
+                    self.RPI5_USB_LINE.send_message("closeimage") # close all images
                     self.door1.open_door()
                     ferrometaldetected = False
                     self.FerroDetectorLEDS.off()
+                    self.mmWaveFieldALEDS.off()
+                    self.mmWaveFieldBLEDS.off()
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
                     self.RPI5_USB_LINE.send_message("showimage 1")  # move to field A image
                     if self.system_initialised == False:
