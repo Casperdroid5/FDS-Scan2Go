@@ -176,6 +176,7 @@ class StateMachine:
                     self.FerroDetectorLEDS.set_color("green")
                     self.state = self.USER_IN_MR_ROOM_STATE
                 elif ferrometaldetected == True:
+                    self.RPI5_USB_LINE.send_message("showimage 4") # metal detected image
                     self.door1.open_door()
                     self.FerroDetectorLEDS.set_color("red")
                     self.state = self.INITIALISATION_STATE
