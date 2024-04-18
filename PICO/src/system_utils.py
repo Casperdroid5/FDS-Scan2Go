@@ -2,9 +2,6 @@ import time
 import select
 import sys
 
-import select
-import sys
-
 class USBCommunication:
     def __init__(self):
         self.poll_obj = select.poll() # Initialize the poll object for monitoring input from stdin

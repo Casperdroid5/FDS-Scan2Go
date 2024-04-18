@@ -80,7 +80,7 @@ class StateMachine:
                 self.door2.open_door()  
 
     def IRQ_handler_emergencybutton_press(self, pin):
-        self.RPI5_USB_LINE.send_message( "Emergency button")  # Pass the message parameter
+        self.RPI5_USB_LINE.send_message("Emergency button")  # Pass the message parameter
         self.show_image(7) # emergency situation image
         self.door1.open_door()
         self.door2.open_door() 
