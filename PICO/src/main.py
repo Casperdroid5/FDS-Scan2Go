@@ -171,11 +171,12 @@ class StateMachine:
                     ferrometaldetected = False
                     self.ferro_leds.off()
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
+                    self.show_image(1) 
                     if self.system_initialised == False:
                         self.systemset()
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
-                self.show_image(1) 
+                
                 self.play_audio(5) 
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                     self.door1.close_door()

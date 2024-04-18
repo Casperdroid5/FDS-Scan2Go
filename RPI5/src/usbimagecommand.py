@@ -3,10 +3,10 @@ import os
 
 def show_image(image_path):
     if os.path.exists(image_path):
-        print(f"Opening image: {image_path}")
-        os.system(f"feh {image_path} &")  # Open the image using feh in the background
+        print(f"Opening image fullscreen: {image_path}")
+        os.system(f"feh -F {image_path} &")  # Open de afbeelding fullscreen met feh
     else:
-        print("Image file not found:", image_path)
+        print("Afbeeldingsbestand niet gevonden:", image_path)
 
 def close_image():
     os.system("pkill feh")  # Close all instances of feh

@@ -150,7 +150,7 @@ class LD2410PERSONDETECTOR: # mmWave sensor
     TARGET_NAME = ["no_target", "moving_target", "stationary_target", "combined_target"]
     
     standing_threshold = 15  # Threshold for determining if someone has been standing for too long (40 = 4 seconds somehow)
-    moving_threshold = 30  # Threshold for determining if someone has been moving for too long
+    moving_threshold = 25  # Threshold for determining if someone has been moving for too long
 
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
 
