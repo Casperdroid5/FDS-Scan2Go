@@ -63,6 +63,12 @@ class StateMachine:
         self.FDStimer = Timer()  
         self.FDStimer.start_timer() # Start the timer 
 
+        # Variable to track if an image is currently open
+        self.image_opened = False
+
+        # Variable to track if audio is currently playing
+        self.audio_playing = False
+
     def IRQ_handler_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
             if self.door1.door_state == "closed": # check if door is open
@@ -74,7 +80,6 @@ class StateMachine:
                 self.door2.open_door()  
 
     def IRQ_handler_emergencybutton_press(self, pin):
-        #print("Emergency button pressed")
         self.RPI5_USB_LINE.send_message( "Emergency button")  # Pass the message parameter
         self.door1.open_door()
         self.door2.open_door() 
@@ -88,7 +93,6 @@ class StateMachine:
         return 0
 
     def IRQ_handler_overridebutton_press(self, pin):
-        #print("System override button pressed")
         self.RPI5_USB_LINE.send_message("Override button pressed")
         self.door1.open_door()
         self.door2.open_door()  
@@ -103,51 +107,65 @@ class StateMachine:
 
     def IRQ_handler_ferrometal_detected(self, pin):
         global ferrometaldetected
-        #print("Ferrometalscanner detected metal")
+        self.RPI5_USB_LINE.send_message("Ferrometalscanner detected metal")
         ferrometaldetected = True
 
-    def person_detected_in_field(self, field): 
-            #print(f"Checking for person in field {field}")
-            if field == 'A':
-                if self.mmWaveFieldA.scan_for_people() and self.mmWaveFieldA.get_detection_distance() < self.sensor_to_object_distance_threshold:
-                    #print("Person detected in field A")
-                    return True
-                else:
-                    #print("No person detected in field A")
-                    return False
-            elif field == 'B':
-                if self.mmWaveFieldB.scan_for_people() and self.mmWaveFieldB.get_detection_distance() < self.sensor_to_object_distance_threshold:
-                    ##print("Person detected in field B")
-                    return True
-                else:
-                    #print("No person detected in field B")
-                    return False
+    def show_image(self, image_number):
+        if not self.image_opened:
+            self.RPI5_USB_LINE.send_message(f"showimage {image_number}")
+            self.image_opened = True
+        else:
+            self.close_image()
+            self.show_image(image_number)  
 
-    def systemset (self):
-        #print("FIRST initialization")
+    def close_image(self):
+        if self.image_opened:
+            self.RPI5_USB_LINE.send_message("closeimage")
+            self.image_opened = False
+
+    def play_audio(self, audio_number):
+        if not self.audio_playing:
+            self.RPI5_USB_LINE.send_message(f"playaudio {audio_number}")
+            self.audio_playing = True
+        else:
+            self.stop_audio() 
+            self.play_audio(audio_number)
+
+    def stop_audio(self):
+        if self.audio_playing:
+            self.RPI5_USB_LINE.send_message("stopaudio")
+            self.audio_playing = False
+
+    def person_detected_in_field(self, field): 
+        if field == 'A':
+            if self.mmWaveFieldA.scan_for_people() and self.mmWaveFieldA.get_detection_distance() < self.sensor_to_object_distance_threshold:
+                return True
+            else:
+                return False
+        elif field == 'B':
+            if self.mmWaveFieldB.scan_for_people() and self.mmWaveFieldB.get_detection_distance() < self.sensor_to_object_distance_threshold:
+                return True
+            else:
+                return False
+
+    def systemset(self):
         self.door1_leds.off()
         self.door2_leds.off()
         self.ferro_leds.off() 
         self.door2.close_door()  
         self.door1.open_door()  
-        #print(self.FDStimer.get_time())
-        #print("system initialised")
         self.system_initialised = True
         self.RPI5_USB_LINE.send_message("System initialised")
-        self.RPI5_USB_LINE.send_message("playaudio 1") # Play playaudio on RPI5
-        return 0
+        self.play_audio(1)
 
-# State machine
     def run(self):
-        
         global ferrometaldetected
         global running 
 
         while running: 
             if self.state == self.INITIALISATION_STATE:
-                #print("INITIALISATION_STATE")
-                self.RPI5_USB_LINE.send_message("System initialised") # Send message to RPI5
-                self.RPI5_USB_LINE.send_message("playaudio 4") # Play playaudio on RPI5
+                self.RPI5_USB_LINE.send_message("System initialised") 
+                self.play_audio(4)
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()
                     ferrometaldetected = False
@@ -157,102 +175,81 @@ class StateMachine:
                         self.systemset()
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
-                #print("USER_FIELD_A_RESPONSE_STATE")
-                self.RPI5_USB_LINE.send_message("showimage 1") # enter field A showimage
-                self.RPI5_USB_LINE.send_message("playaudio 5") # Play playaudio on RPI5
+                self.show_image(1) 
+                self.play_audio(5) 
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                     self.door1.close_door()
-                    self.RPI5_USB_LINE.send_message("showimage 2") # move to field B showimage
-                    self.RPI5_USB_LINE.send_message("playaudio 6") # Play playaudio on RPI5
+                    self.show_image(2)
+                    self.play_audio(6)
                     if ferrometaldetected == True:
-                        self.RPI5_USB_LINE.send_message("showimage 4") # metal detected showimage
-                        self.RPI5_USB_LINE.send_message("playaudio 9") # Play playaudio on RPI5
+                        self.show_image(4)
+                        self.play_audio(9)
                         self.door1.open_door()
-                        #print("Metal detected, please remove metal objects")
                         self.state = self.INITIALISATION_STATE
                     elif ferrometaldetected == False:
-                        #print("No metal detected, please proceed to field B")
                         self.state = self.USER_FIELD_B_RESPONSE_STATE
                 elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
-                    #print("Please position in field A, before the scanner")
                     return 0
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
-                #print("USER_FIELD_B_RESPONSE_STATE")
                 if self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False and ferrometaldetected == False:
-                    self.RPI5_USB_LINE.send_message("showimage 3") # proceed to MRI-room showimage
-                    self.RPI5_USB_LINE.send_message("playaudio 8") # Play playaudio on RPI5
+                    self.show_image(3)
+                    self.play_audio(8)
                     self.door2.open_door()
                     self.ferro_leds.set_color("green")
                     self.state = self.USER_IN_MR_ROOM_STATE
-                    #print("No metal detected, please proceed to MR room")
                 elif ferrometaldetected == True:
                     self.door1.open_door()
                     self.ferro_leds.set_color("red")
-                    #print("Metal detected, please remove metal objects")
                     self.state = self.INITIALISATION_STATE
                 else:
                     self.ferro_leds.set_color("yellow")
-                    #print("person in field A and B detected, please remove person from field A")
 
             elif self.state == self.USER_IN_MR_ROOM_STATE:
-                #print("USER_IN_MR_ROOM_STATE")
                 if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == False:
                     self.state = self.USER_RETURNS_FROM_MR_ROOM_STATE
 
             elif self.state == self.USER_RETURNS_FROM_MR_ROOM_STATE:
-                #print("USER_RETURNS_FROM_MR_ROOM_STATE")
                 if self.person_detected_in_field('B') == True or self.person_detected_in_field('A') == True:
-                    self.RPI5_USB_LINE.send_message("showimage 5") # return to changing room showimage
-                    self.RPI5_USB_LINE.send_message("playaudio 10") # Play playaudio on RPI5        
+                    self.show_image(5)
+                    self.play_audio(10)     
                     self.door2.close_door()
                     self.state = self.USER_EXITS_FDS_STATE
             
             elif self.state == self.USER_EXITS_FDS_STATE:
-                #print("USER_EXITS_FDS_STATE")
                 if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == True: 
                     self.door1.open_door()
                     self.state = self.INITIALISATION_STATE
 
             else:
-                #print("Invalid state, create emergency request")
                 self.freeze()
 
     def freeze(self):
         global running
         if running == True:
             self.system_initialised = False
-            #print("SYSTEM IS NO LONGER FROZEN")
-            #print("Enter text to continue")
             self.state = self.INITIALISATION_STATE
             return 0
-        elif running == False and self.system_override_state_triggerd == True: # System override for emergency button (reset)
-            #print("SYSTEM IS FROZEN")
+        elif running == False and self.system_override_state_triggerd == True:
             self.emergency_state_triggerd = False
             self.system_override_state_triggerd = False
             self.state = self.INITIALISATION_STATE
             return 0
 
 if __name__ == "__main__":
+    running = True
 
-        running = True
+    try:
+        system_check = SystemInitCheck()  
+        FDS = StateMachine()
+        FDS.state = FDS.INITIALISATION_STATE
+        while True:
+            if running:  
+                FDS.run()
+            else:
+                FDS.freeze() 
 
-        try:
-            system_check = SystemInitCheck()  
-            FDS = StateMachine()
-            FDS.state = FDS.INITIALISATION_STATE
-            while True:
-                if running:  
-                    FDS.run()
-                else:
-                    FDS.freeze() 
-
-        except SystemExit:
-            #print("Systeeminit failed, shutting down...")
-            USBCommunication.send_message(FDS.RPI5_USB_LINE, "System failed to initialise")
-        except Exception as e:
-            #print("unexpected error", e)
-            USBCommunication.send_message(FDS.RPI5_USB_LINE, "System encountered unexpected error")
-
-
-
+    except SystemExit:
+        USBCommunication.send_message(FDS.RPI5_USB_LINE, "System failed to initialise")
+    except Exception as e:
+        USBCommunication.send_message(FDS.RPI5_USB_LINE, "System encountered unexpected error")
