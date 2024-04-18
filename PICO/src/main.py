@@ -81,6 +81,7 @@ class StateMachine:
 
     def IRQ_handler_emergencybutton_press(self, pin):
         self.RPI5_USB_LINE.send_message( "Emergency button")  # Pass the message parameter
+        self.show_image(7) # emergency situation image
         self.door1.open_door()
         self.door2.open_door() 
         self.FerroDetectorLEDS.set_color("yellow")
@@ -92,6 +93,7 @@ class StateMachine:
 
     def IRQ_handler_overridebutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Override button pressed")
+        self.show_image(8) # system override image
         self.door1.open_door()
         self.door2.open_door()  
         self.mmWaveFieldALEDS.set_color("white")
