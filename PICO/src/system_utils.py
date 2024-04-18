@@ -11,14 +11,14 @@ class USBCommunication:
         self.poll_obj.register(sys.stdin, select.POLLIN)
 
     def send_message(self, message):
-        prefixed_message = "[UARTCommunication] " + message # Add a prefix to the message
+        prefixed_message = "[USBCommunication] " + message # Add a prefix to the message
         print(prefixed_message)
 
     def receive_message(self):
         poll_results = self.poll_obj.poll(1) # Poll for input on stdin for a certain duration
         if poll_results:
             data = sys.stdin.readline().strip() # Read data from stdin
-            if data.startswith("[UARTCommunication]"): # Check if the message starts with the desired prefix
+            if data.startswith("[USBCommunication]"): # Check if the message starts with the desired prefix
                 return data
         return None  # Return None if no message with the prefix is received
 
