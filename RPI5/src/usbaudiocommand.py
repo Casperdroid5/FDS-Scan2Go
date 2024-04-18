@@ -20,9 +20,6 @@ def main():
             # Read a message from the serial port
             received_message = s.readline().decode().strip()
             print(received_message)
-            
-            # Clear serial buffer
-            s.reset_input_buffer()
 
             # Check if the received message is for playing audio
             if received_message.startswith("[USBCommunication] playaudio"):

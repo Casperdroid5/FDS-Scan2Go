@@ -81,10 +81,12 @@ class StateMachine:
 
     def IRQ_handler_emergencybutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Emergency button")  # Pass the message parameter
-        self.show_image(7) # emergency situation image
         self.door1.open_door()
         self.door2.open_door() 
         self.FerroDetectorLEDS.set_color("yellow")
+        self.mmWaveFieldALEDS.set_color("yellow")
+        self.mmWaveFieldBLEDS.set_color("yellow")
+        self.show_image(7) # emergency situation image
         self.emergency_state_triggerd = True
         global running
         running = False # stop the state machine

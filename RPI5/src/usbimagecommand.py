@@ -21,9 +21,6 @@ def main():
             received_message = s.readline().decode().strip()
             print(received_message)
             
-            # Clear the serial buffer
-            s.reset_input_buffer()
-
             # Check if the received message is for showing an image
             if received_message.startswith("[USBCommunication] showimage"):
                 print("Showing image")
