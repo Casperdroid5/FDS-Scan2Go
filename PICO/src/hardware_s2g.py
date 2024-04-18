@@ -3,6 +3,7 @@ import neopixel
 from system_utils import Timer
 import time
 
+
 class WS2812:
     def __init__(self, pin_number, num_leds, brightness):
         self._np = neopixel.NeoPixel(Pin(pin_number), num_leds, bpp=3, timing=1)
@@ -149,8 +150,8 @@ class LD2410PERSONDETECTOR: # mmWave sensor
     STATE_COMBINED_TARGET = 3
     TARGET_NAME = ["no_target", "moving_target", "stationary_target", "combined_target"]
     
-    standing_threshold = 15  # Threshold for determining if someone has been standing for too long (40 = 4 seconds somehow)
-    moving_threshold = 25  # Threshold for determining if someone has been moving for too long
+    standing_threshold = 10  # Threshold for determining if someone has been standing for too long (40 = 4 seconds somehow)
+    moving_threshold = 20  # Threshold for determining if someone has been moving for too long
 
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
 

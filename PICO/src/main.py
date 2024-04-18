@@ -86,7 +86,7 @@ class StateMachine:
         self.FerroDetectorLEDS.set_color("yellow")
         self.mmWaveFieldALEDS.set_color("yellow")
         self.mmWaveFieldBLEDS.set_color("yellow")
-        self.show_image(7) # emergency situation image
+        self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
         self.emergency_state_triggerd = True
         global running
         running = False # stop the state machine
@@ -95,7 +95,7 @@ class StateMachine:
 
     def IRQ_handler_overridebutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Override button pressed")
-        self.show_image(8) # system override image
+        self.RPI5_USB_LINE.send_message("showimage 8") # system override image
         self.door1.open_door()
         self.door2.open_door()  
         self.mmWaveFieldALEDS.set_color("white")
@@ -111,32 +111,6 @@ class StateMachine:
         global ferrometaldetected
         self.RPI5_USB_LINE.send_message("Ferrometalscanner detected metal")
         ferrometaldetected = True
-
-    def show_image(self, image_number):
-        if not self.image_opened:
-            self.RPI5_USB_LINE.send_message(f"showimage {image_number}")
-            self.image_opened = True
-        else:
-            self.close_image()
-            self.show_image(image_number)  
-
-    def close_image(self):
-        if self.image_opened:
-            self.RPI5_USB_LINE.send_message("closeimage")
-            self.image_opened = False
-
-    def play_audio(self, audio_number):
-        if not self.audio_playing:
-            self.RPI5_USB_LINE.send_message(f"playaudio {audio_number}")
-            self.audio_playing = True
-        else:
-            self.stop_audio() 
-            self.play_audio(audio_number)
-
-    def stop_audio(self):
-        if self.audio_playing:
-            self.RPI5_USB_LINE.send_message("stopaudio")
-            self.audio_playing = False
 
     def person_detected_in_field(self, field): 
         if field == 'A':
@@ -162,7 +136,7 @@ class StateMachine:
         self.door1.open_door()  
         self.system_initialised = True
         self.RPI5_USB_LINE.send_message("System initialised")
-        self.play_audio(1) # system initialised audio
+        self.RPI5_USB_LINE.send_message("playaudio 1") # system initialised audio
 
     def run(self):
         global ferrometaldetected
@@ -171,26 +145,26 @@ class StateMachine:
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 self.RPI5_USB_LINE.send_message("System initialised") 
-                self.play_audio(4) # remove all people from the system audio    
+                self.RPI5_USB_LINE.send_message("playaudio 4") # remove all people from the system audio    
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.door1.open_door()
                     ferrometaldetected = False
                     self.FerroDetectorLEDS.off()
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
-                    self.show_image(1)  # move to field A image
+                    self.RPI5_USB_LINE.send_message("showimage 1")  # move to field A image
                     if self.system_initialised == False:
                         self.systemset()
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
                 
-                self.play_audio(5) # move to field A audio 
+                self.RPI5_USB_LINE.send_message("playaudio 5") # move to field A audio 
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                     self.door1.close_door()
-                    self.show_image(2) # move to field B image
-                    self.play_audio(6) # move to field B audio
+                    self.RPI5_USB_LINE.send_message("showimage 2") # move to field B image
+                    self.RPI5_USB_LINE.send_message("playaudio 6") # move to field B audio
                     if ferrometaldetected == True:
-                        self.show_image(4) # metal detected image
-                        self.play_audio(9) # metal detected audio
+                        self.RPI5_USB_LINE.send_message("showimage 4") # metal detected image
+                        self.RPI5_USB_LINE.send_message("playaudio 9") # metal detected audio
                         self.door1.open_door()
                         self.state = self.INITIALISATION_STATE
                     elif ferrometaldetected == False:
@@ -200,8 +174,8 @@ class StateMachine:
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
                 if self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False and ferrometaldetected == False:
-                    self.show_image(3) # move to MR room image
-                    self.play_audio(8) # you may proceed to MR room audio
+                    self.RPI5_USB_LINE.send_message("showimage 3") # move to MR room image
+                    self.RPI5_USB_LINE.send_message("playaudio 8") # you may proceed to MR room audio
                     self.door2.open_door()
                     self.FerroDetectorLEDS.set_color("green")
                     self.state = self.USER_IN_MR_ROOM_STATE
@@ -214,13 +188,13 @@ class StateMachine:
 
             elif self.state == self.USER_IN_MR_ROOM_STATE:
                 if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == False:
-                    self.show_image(5) # wait for return from MR room image
+                    self.RPI5_USB_LINE.send_message("showimage 5") # wait for return from MR room image
                     self.state = self.USER_RETURNS_FROM_MR_ROOM_STATE
 
             elif self.state == self.USER_RETURNS_FROM_MR_ROOM_STATE:
                 if self.person_detected_in_field('B') == True or self.person_detected_in_field('A') == True:
-                    self.show_image(6) # exit to change room image
-                    self.play_audio(10) # exit to change room audio      
+                    self.RPI5_USB_LINE.send_message("showimage 6") # exit to change room image
+                    self.RPI5_USB_LINE.send_message("playaudio 10") # exit to change room audio      
                     self.door2.close_door()
                     self.state = self.USER_EXITS_FDS_STATE
             
@@ -231,6 +205,7 @@ class StateMachine:
 
             else:
                 self.freeze()
+
 
     def freeze(self):
         global running
