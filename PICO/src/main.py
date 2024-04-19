@@ -18,7 +18,7 @@ class StateMachine:
         self.system_override_state_triggerd = False
         self.user_returned_from_mri = False
         self.sensor_to_object_distance_threshold = 180 # distance threshold for person detection in cm
-        self.audio_playing = False
+        self.audio_played = False  # Flag to track whether the audio has been played
         self.image_opened = False
 
         # Define the initial state of the state machine
@@ -71,18 +71,6 @@ class StateMachine:
 
         # Variable to track if audio is currently playing
         self.audio_playing = False
-
-    # Method to play audio
-    def play_audio(self, audio_number):
-        if not self.audio_playing:
-            self.RPI5_USB_LINE.send_message(f"playaudio {audio_number}")
-            self.audio_playing = True
-
-    # Method to show image
-    def show_image(self, image_number):
-        if not self.image_opened:
-            self.RPI5_USB_LINE.send_message(f"showimage {image_number}")
-            self.image_opened = True
 
     def IRQ_handler_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
@@ -157,9 +145,12 @@ class StateMachine:
 
         while running: 
             if self.state == self.INITIALISATION_STATE:
-                self.RPI5_USB_LINE.send_message("System initialised") 
+                if not self.image_opened:
+                    self.RPI5_USB_LINE.send_message("showimage 0")
+                    self.image_opened = True
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.audio_played = False 
+                    self.image_opened = False
                     if not self.audio_played :
                         self.RPI5_USB_LINE.send_message("playaudio 4")  
                         self.audio_played = True  # Set the flag to indicate that audio has been played   
