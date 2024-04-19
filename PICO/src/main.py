@@ -89,7 +89,6 @@ class StateMachine:
             self.state = self.SYSTEM_OVERRIDE_STATE
         else:
             self.state = self.INITIALISATION_STATE
-        
 
     def IRQ_handler_ferrometal_detected(self, pin):
         global ferrometaldetected
@@ -218,6 +217,9 @@ class StateMachine:
                 if not self.image_opened:
                     self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
                     self.image_opened = True
+                if not self.audio_played:
+                    self.RPI5_USB_LINE.send_message("playaudio 11") # emergency situation audio
+                    self.audio_played = True
                 self.door1.open_door()
                 self.door2.open_door() 
                 self.FerroDetectorLEDS.set_color("yellow")
@@ -226,8 +228,11 @@ class StateMachine:
 
             elif self.state == self.SYSTEM_OVERRIDE_STATE:
                 if not self.image_opened:
-                    self.RPI5_USB_LINE.send_message("showimage 8")
+                    self.RPI5_USB_LINE.send_message("showimage 8") # system override image
                     self.image_opened = True
+                if not self.audio_played:
+                    self.RPI5_USB_LINE.send_message("playaudio 12") # system override audio
+                    self.audio_played = True
                 self.door1.open_door()
                 self.door2.open_door()
                 self.FerroDetectorLEDS.set_color("white")
