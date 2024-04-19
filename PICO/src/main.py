@@ -31,8 +31,6 @@ class StateMachine:
         self.USER_IN_MR_ROOM_STATE = 3
         self.USER_RETURNS_FROM_MR_ROOM_STATE = 4
         self.USER_EXITS_FDS_STATE = 5
-        self.EMERGENCY_STATE = 6
-        self.SYSTEM_OVERRIDE_STATE = 7
 
         # Initialize indicator lights
         self.mmWaveFieldALEDS = WS2812(pin_number=2, num_leds=2, brightness=0.0005)  # brigness is a value between 0.0001 and 1
@@ -80,13 +78,29 @@ class StateMachine:
 
     def IRQ_handler_emergencybutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Emergency button")  # Pass the message parameter
-        self.emergency_state_triggerd = not self.emergency_state_triggerd  # Toggle system override state
-        return self.emergency_state_triggerd
+        self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
+        self.door1.open_door()
+        self.door2.open_door() 
+        self.FerroDetectorLEDS.set_color("yellow")
+        self.mmWaveFieldALEDS.set_color("yellow")
+        self.mmWaveFieldBLEDS.set_color("yellow")
+        self.emergency_state_triggerd = True
+        global running
+        running = False # stop the state machine
+        self.freeze()
 
     def IRQ_handler_overridebutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Override button pressed")
-        self.system_override_state_triggerd = not self.system_override_state_triggerd  # Toggle system override state
-        return self.system_override_state_triggerd
+        self.RPI5_USB_LINE.send_message("showimage 8") # system override image
+        self.door1.open_door()
+        self.door2.open_door()  
+        self.mmWaveFieldALEDS.set_color("white")
+        self.mmWaveFieldBLEDS.set_color("white")
+        self.FerroDetectorLEDS.set_color("white")
+        global running
+        self.system_override_state_triggerd = not self.system_override_state_triggerd # toggle system override state
+        running = not running # toggle statemachine running state
+        self.freeze()
 
     def IRQ_handler_ferrometal_detected(self, pin):
         global ferrometaldetected
@@ -211,40 +225,18 @@ class StateMachine:
                     self.door1.open_door()
                     self.state = self.INITIALISATION_STATE
 
-            elif self.state == self.EMERGENCY_STATE: 
-                if not self.image_opened:
-                    self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
-                    self.image_opened = True
-                if not self.audio_played:
-                    self.RPI5_USB_LINE.send_message("playaudio 11") # emergency situation audio
-                    self.audio_played = True
-                self.door1.open_door()
-                self.door2.open_door() 
-                self.FerroDetectorLEDS.set_color("yellow")
-                self.mmWaveFieldALEDS.set_color("yellow")
-                self.mmWaveFieldBLEDS.set_color("yellow")
-                if self.emergency_state_triggerd == True:
-                    #do nothing
-                    pass
+            else:
+                self.freeze()
 
-            elif self.state == self.SYSTEM_OVERRIDE_STATE:
-                if not self.image_opened:
-                    self.RPI5_USB_LINE.send_message("showimage 8") # system override image
-                    self.image_opened = True
-                if not self.audio_played:
-                    self.RPI5_USB_LINE.send_message("playaudio 12") # system override audio
-                    self.audio_played = True
-                self.door1.open_door()
-                self.door2.open_door()
-                self.FerroDetectorLEDS.set_color("white")
-                self.mmWaveFieldALEDS.set_color("white")
-                self.mmWaveFieldBLEDS.set_color("white")
-                if self.system_override_state_triggerd == True:
-                    #do nothing
-                    pass
-                else :
-                    self.state = self.INITIALISATION_STATE
-
+    def freeze(self):
+        global running
+        if running == True:
+            self.system_initialised = False
+            self.state = self.INITIALISATION_STATE
+        elif running == False and self.system_override_state_triggerd == True:
+            self.emergency_state_triggerd = False
+            self.system_override_state_triggerd = False
+            self.state = self.INITIALISATION_STATE
 
 if __name__ == "__main__":
     running = True
@@ -253,7 +245,11 @@ if __name__ == "__main__":
         system_check = SystemInitCheck()  
         FDS = StateMachine()
         FDS.state = FDS.INITIALISATION_STATE
-        FDS.run()
+        while True:
+            if running:  
+                FDS.run()
+            else:
+                FDS.freeze() 
 
     except SystemExit:
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System failed to initialise")
