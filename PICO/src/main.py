@@ -2,6 +2,7 @@ from hardware_s2g import LD2410PERSONDETECTOR, DOOR, WS2812
 from system_utils import SystemInitCheck, Timer, USBCommunication
 from machine import Pin
 
+
 global running   # system running global variable
 running = False  # wait for system to be initialised before starting the state machine
 global ferrometaldetected
@@ -17,7 +18,8 @@ class StateMachine:
         self.system_override_state_triggerd = False
         self.user_returned_from_mri = False
         self.sensor_to_object_distance_threshold = 180 # distance threshold for person detection in cm
-        self.audio_played = False  # Flag to track whether the audio has been played
+        self.audio_playing = False
+        self.image_opened = False
 
         # Define the initial state of the state machine
         self.state = None
@@ -69,6 +71,18 @@ class StateMachine:
 
         # Variable to track if audio is currently playing
         self.audio_playing = False
+
+    # Method to play audio
+    def play_audio(self, audio_number):
+        if not self.audio_playing:
+            self.RPI5_USB_LINE.send_message(f"playaudio {audio_number}")
+            self.audio_playing = True
+
+    # Method to show image
+    def show_image(self, image_number):
+        if not self.image_opened:
+            self.RPI5_USB_LINE.send_message(f"showimage {image_number}")
+            self.image_opened = True
 
     def IRQ_handler_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
@@ -144,11 +158,11 @@ class StateMachine:
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 self.RPI5_USB_LINE.send_message("System initialised") 
-                if not self.audio_played:
-                    self.RPI5_USB_LINE.send_message("playaudio 4")  # Play audio only if not already played
-                    self.audio_played = True  # Set the flag to indicate that audio has been played   
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.audio_played = False 
+                    if not self.audio_played :
+                        self.RPI5_USB_LINE.send_message("playaudio 4")  
+                        self.audio_played = True  # Set the flag to indicate that audio has been played   
                     self.RPI5_USB_LINE.send_message("closeimage") # close all images
                     self.door1.open_door()
                     ferrometaldetected = False
@@ -170,12 +184,14 @@ class StateMachine:
                     self.RPI5_USB_LINE.send_message("showimage 2") # move to field B image
                     self.RPI5_USB_LINE.send_message("playaudio 6") # move to field B audio
                     if ferrometaldetected == True:
-                        self.audio_played = False 
-                        self.RPI5_USB_LINE.send_message("showimage 4") # metal detected image
-                        self.RPI5_USB_LINE.send_message("playaudio 9") # metal detected audio
-                        self.audio_played = False 
+                        if not self.image_opened:
+                            self.RPI5_USB_LINE.send_message("showimage 4") # metal detected image
+                            self.image_opened = True
+                        if not self.audio_played:
+                            self.RPI5_USB_LINE.send_message("playaudio 9")  
+                            self.audio_played = True  # Set the flag to indicate that audio has been played   
                         self.door1.open_door()
-                    if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
+                    if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == False and ferrometaldetected == True:
                         self.state = self.INITIALISATION_STATE
                     elif ferrometaldetected == False:
                         self.state = self.USER_FIELD_B_RESPONSE_STATE
@@ -191,10 +207,16 @@ class StateMachine:
                     self.FerroDetectorLEDS.set_color("green")
                     self.state = self.USER_IN_MR_ROOM_STATE
                 elif ferrometaldetected == True:
-                    self.RPI5_USB_LINE.send_message("showimage 4") # metal detected image
+                    if not self.image_opened:
+                        self.RPI5_USB_LINE.send_message("showimage 4") # metal detected image
+                        self.image_opened = True
                     self.door1.open_door()
                     self.FerroDetectorLEDS.set_color("red")
-                    self.state = self.INITIALISATION_STATE
+                    if not self.audio_played :
+                        self.RPI5_USB_LINE.send_message("playaudio 9")  
+                        self.audio_played = True  # Set the flag to indicate that audio has been played   
+                    if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == False and ferrometaldetected == True:
+                        self.state = self.INITIALISATION_STATE
                 else:
                     self.FerroDetectorLEDS.set_color("yellow")
 
