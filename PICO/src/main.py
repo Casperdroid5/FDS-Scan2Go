@@ -79,42 +79,14 @@ class StateMachine:
                 self.door2.open_door()  
 
     def IRQ_handler_emergencybutton_press(self, pin):
-        if not self.image_opened:
-            self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
-            self.image_opened = True
-        if not self.audio_played:
-            self.RPI5_USB_LINE.send_message("playaudio 11") # emergency situation audio
-            self.audio_played = True
-        self.door1.open_door()
-        self.door2.open_door() 
-        self.FerroDetectorLEDS.set_color("yellow")
-        self.mmWaveFieldALEDS.set_color("yellow")
-        self.mmWaveFieldBLEDS.set_color("yellow")
         self.RPI5_USB_LINE.send_message("Emergency button")  # Pass the message parameter
-        self.state = self.EMERGENCY_STATE
-        return self.state
+        self.emergency_state_triggerd = not self.emergency_state_triggerd  # Toggle system override state
+        return self.emergency_state_triggerd
 
     def IRQ_handler_overridebutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Override button pressed")
-        if not self.image_opened:
-            self.RPI5_USB_LINE.send_message("showimage 8") # system override image
-            self.image_opened = True
-        if not self.audio_played:
-            self.RPI5_USB_LINE.send_message("playaudio 12") # system override audio
-            self.audio_played = True
-        self.door1.open_door()
-        self.door2.open_door()
-        self.FerroDetectorLEDS.set_color("white")
-        self.mmWaveFieldALEDS.set_color("white")
-        self.mmWaveFieldBLEDS.set_color("white")
         self.system_override_state_triggerd = not self.system_override_state_triggerd  # Toggle system override state
-        if self.system_override_state_triggerd:
-            self.RPI5_USB_LINE.send_message("System override state activated")
-            self.state = self.SYSTEM_OVERRIDE_STATE
-        else:
-            self.RPI5_USB_LINE.send_message("System override state deactivated")
-            self.state = self.INITIALISATION_STATE
-        return self.state
+        return self.system_override_state_triggerd
 
     def IRQ_handler_ferrometal_detected(self, pin):
         global ferrometaldetected
@@ -239,12 +211,39 @@ class StateMachine:
                     self.door1.open_door()
                     self.state = self.INITIALISATION_STATE
 
-            elif self.state == self.EMERGENCY_STATE:
-                return 0
+            elif self.state == self.EMERGENCY_STATE: 
+                if not self.image_opened:
+                    self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
+                    self.image_opened = True
+                if not self.audio_played:
+                    self.RPI5_USB_LINE.send_message("playaudio 11") # emergency situation audio
+                    self.audio_played = True
+                self.door1.open_door()
+                self.door2.open_door() 
+                self.FerroDetectorLEDS.set_color("yellow")
+                self.mmWaveFieldALEDS.set_color("yellow")
+                self.mmWaveFieldBLEDS.set_color("yellow")
+                if self.emergency_state_triggerd == True:
+                    #do nothing
+                    pass
 
-            elif self.state == self.SYSTEM_OVERRIDE_STATE: 
-                return 0
-
+            elif self.state == self.SYSTEM_OVERRIDE_STATE:
+                if not self.image_opened:
+                    self.RPI5_USB_LINE.send_message("showimage 8") # system override image
+                    self.image_opened = True
+                if not self.audio_played:
+                    self.RPI5_USB_LINE.send_message("playaudio 12") # system override audio
+                    self.audio_played = True
+                self.door1.open_door()
+                self.door2.open_door()
+                self.FerroDetectorLEDS.set_color("white")
+                self.mmWaveFieldALEDS.set_color("white")
+                self.mmWaveFieldBLEDS.set_color("white")
+                if self.system_override_state_triggerd == True:
+                    #do nothing
+                    pass
+                else :
+                    self.state = self.INITIALISATION_STATE
 
 
 if __name__ == "__main__":
