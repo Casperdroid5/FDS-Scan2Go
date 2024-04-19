@@ -31,6 +31,8 @@ class StateMachine:
         self.USER_IN_MR_ROOM_STATE = 3
         self.USER_RETURNS_FROM_MR_ROOM_STATE = 4
         self.USER_EXITS_FDS_STATE = 5
+        self.EMERGENCY_STATE = 6
+        self.SYSTEM_OVERRIDE_STATE = 7
 
         # Initialize indicator lights
         self.mmWaveFieldALEDS = WS2812(pin_number=2, num_leds=2, brightness=0.0005)  # brigness is a value between 0.0001 and 1
@@ -78,29 +80,16 @@ class StateMachine:
 
     def IRQ_handler_emergencybutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Emergency button")  # Pass the message parameter
-        self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
-        self.door1.open_door()
-        self.door2.open_door() 
-        self.FerroDetectorLEDS.set_color("yellow")
-        self.mmWaveFieldALEDS.set_color("yellow")
-        self.mmWaveFieldBLEDS.set_color("yellow")
-        self.emergency_state_triggerd = True
-        global running
-        running = False # stop the state machine
-        self.freeze()
+        self.state = self.EMERGENCY_STATE
 
     def IRQ_handler_overridebutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Override button pressed")
-        self.RPI5_USB_LINE.send_message("showimage 8") # system override image
-        self.door1.open_door()
-        self.door2.open_door()  
-        self.mmWaveFieldALEDS.set_color("white")
-        self.mmWaveFieldBLEDS.set_color("white")
-        self.FerroDetectorLEDS.set_color("white")
-        global running
-        self.system_override_state_triggerd = not self.system_override_state_triggerd # toggle system override state
-        running = not running # toggle statemachine running state
-        self.freeze()
+        self.system_override_state_triggerd = not self.system_override_state_triggerd  # Toggle system override state
+        if self.system_override_state_triggerd:
+            self.state = self.SYSTEM_OVERRIDE_STATE
+        else:
+            self.state = self.INITIALISATION_STATE
+        
 
     def IRQ_handler_ferrometal_detected(self, pin):
         global ferrometaldetected
@@ -225,20 +214,27 @@ class StateMachine:
                     self.door1.open_door()
                     self.state = self.INITIALISATION_STATE
 
-            else:
-                self.freeze()
+            elif self.state == self.EMERGENCY_STATE: 
+                if not self.image_opened:
+                    self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
+                    self.image_opened = True
+                self.door1.open_door()
+                self.door2.open_door() 
+                self.FerroDetectorLEDS.set_color("yellow")
+                self.mmWaveFieldALEDS.set_color("yellow")
+                self.mmWaveFieldBLEDS.set_color("yellow")
 
-    def freeze(self):
-        global running
-        if running == True:
-            self.system_initialised = False
-            self.state = self.INITIALISATION_STATE
-            return 0
-        elif running == False and self.system_override_state_triggerd == True:
-            self.emergency_state_triggerd = False
-            self.system_override_state_triggerd = False
-            self.state = self.INITIALISATION_STATE
-            return 0
+            elif self.state == self.SYSTEM_OVERRIDE_STATE:
+                if not self.image_opened:
+                    self.RPI5_USB_LINE.send_message("showimage 8")
+                    self.image_opened = True
+                self.door1.open_door()
+                self.door2.open_door()
+                self.FerroDetectorLEDS.set_color("white")
+                self.mmWaveFieldALEDS.set_color("white")
+                self.mmWaveFieldBLEDS.set_color("white")
+
+
 
 if __name__ == "__main__":
     running = True
@@ -247,11 +243,7 @@ if __name__ == "__main__":
         system_check = SystemInitCheck()  
         FDS = StateMachine()
         FDS.state = FDS.INITIALISATION_STATE
-        while True:
-            if running:  
-                FDS.run()
-            else:
-                FDS.freeze() 
+        FDS.run()
 
     except SystemExit:
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System failed to initialise")
