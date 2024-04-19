@@ -170,8 +170,10 @@ class StateMachine:
                     self.RPI5_USB_LINE.send_message("showimage 2") # move to field B image
                     self.RPI5_USB_LINE.send_message("playaudio 6") # move to field B audio
                     if ferrometaldetected == True:
+                        self.audio_played = False 
                         self.RPI5_USB_LINE.send_message("showimage 4") # metal detected image
                         self.RPI5_USB_LINE.send_message("playaudio 9") # metal detected audio
+                        self.audio_played = False 
                         self.door1.open_door()
                     if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                         self.state = self.INITIALISATION_STATE
