@@ -111,6 +111,31 @@ class DOORWITHLED(DOOR, WS2812):
         super().close_door()
         self.set_color("red")  # Set LED color to red when the door is closed
 
+class MAX9744:
+    def __init__(self, i2c, address=0x4B):
+        self.i2c = i2c
+        self.address = address
+        self.volume = 63
+    
+    def set_volume(self, volume):
+        # Volume can't be higher than 63 or lower than 0
+        self.volume = max(0, min(63, volume))
+        try:
+            self.i2c.writeto(self.address, bytes([self.volume]))
+            print("Volume set to:", self.volume)
+            return True
+        except OSError:
+            print("Failed to set volume, MAX9744 not found!")
+            return False
+
+class VolumeController:
+    def __init__(self, max9744):
+        self.max9744 = max9744
+    
+    def adjust_volume(self, change):
+        self.max9744.volume += change
+        self.max9744.set_volume(self.max9744.volume)
+
 class SEEEDPERSONDETECTOR: # mmWave sensor
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
         self.uart_number = uart_number
