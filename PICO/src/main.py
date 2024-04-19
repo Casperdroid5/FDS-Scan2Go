@@ -66,12 +66,6 @@ class StateMachine:
         self.FDStimer = Timer()  
         self.FDStimer.start_timer() # Start the timer 
 
-        # Variable to track if an image is currently open
-        self.image_opened = False
-
-        # Variable to track if audio is currently playing
-        self.audio_playing = False
-
     def IRQ_handler_door1_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
             if self.door1.door_state == "closed": # check if door is open
@@ -183,8 +177,10 @@ class StateMachine:
                             self.audio_played = True  # Set the flag to indicate that audio has been played   
                         self.door1.open_door()
                     if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == False and ferrometaldetected == True:
+                        self.image_opened = False
                         self.state = self.INITIALISATION_STATE
                     elif ferrometaldetected == False:
+                        self.image_opened = False
                         self.state = self.USER_FIELD_B_RESPONSE_STATE
                 elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
                     # Wait for user to move to field A
@@ -207,6 +203,7 @@ class StateMachine:
                         self.RPI5_USB_LINE.send_message("playaudio 9")  
                         self.audio_played = True  # Set the flag to indicate that audio has been played   
                     if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == False and ferrometaldetected == True:
+                        self.image_opened = False
                         self.state = self.INITIALISATION_STATE
                 else:
                     self.FerroDetectorLEDS.set_color("yellow")
@@ -230,7 +227,6 @@ class StateMachine:
 
             else:
                 self.freeze()
-
 
     def freeze(self):
         global running
