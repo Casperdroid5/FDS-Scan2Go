@@ -173,6 +173,7 @@ class StateMachine:
                         self.RPI5_USB_LINE.send_message("showimage 4") # metal detected image
                         self.RPI5_USB_LINE.send_message("playaudio 9") # metal detected audio
                         self.door1.open_door()
+                    if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                         self.state = self.INITIALISATION_STATE
                     elif ferrometaldetected == False:
                         self.state = self.USER_FIELD_B_RESPONSE_STATE
