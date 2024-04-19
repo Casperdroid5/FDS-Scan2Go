@@ -142,13 +142,13 @@ class StateMachine:
                 if not self.image_opened:
                     self.RPI5_USB_LINE.send_message("showimage 0")
                     self.image_opened = True
+                if not self.audio_played :
+                    self.RPI5_USB_LINE.send_message("playaudio 4")  
+                    self.audio_played = True   
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
+                    self.RPI5_USB_LINE.send_message("closeimage") # close all images
                     self.audio_played = False 
                     self.image_opened = False
-                    if not self.audio_played :
-                        self.RPI5_USB_LINE.send_message("playaudio 4")  
-                        self.audio_played = True  # Set the flag to indicate that audio has been played   
-                    self.RPI5_USB_LINE.send_message("closeimage") # close all images
                     self.door1.open_door()
                     ferrometaldetected = False
                     self.FerroDetectorLEDS.off()
