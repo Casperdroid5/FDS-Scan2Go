@@ -135,7 +135,6 @@ class StateMachine:
         self.system_initialised = True
         self.RPI5_USB_LINE.send_message("System initialised")
         self.RPI5_USB_LINE.send_message("playaudio 1") # system initialised audio
-        return 0
 
     def run(self):
         global ferrometaldetected
