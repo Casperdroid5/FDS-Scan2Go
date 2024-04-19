@@ -92,6 +92,7 @@ class StateMachine:
         self.mmWaveFieldBLEDS.set_color("yellow")
         self.RPI5_USB_LINE.send_message("Emergency button")  # Pass the message parameter
         self.state = self.EMERGENCY_STATE
+        return self.state
 
     def IRQ_handler_overridebutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Override button pressed")
@@ -108,9 +109,12 @@ class StateMachine:
         self.mmWaveFieldBLEDS.set_color("white")
         self.system_override_state_triggerd = not self.system_override_state_triggerd  # Toggle system override state
         if self.system_override_state_triggerd:
+            self.RPI5_USB_LINE.send_message("System override state activated")
             self.state = self.SYSTEM_OVERRIDE_STATE
         else:
+            self.RPI5_USB_LINE.send_message("System override state deactivated")
             self.state = self.INITIALISATION_STATE
+        return self.state
 
     def IRQ_handler_ferrometal_detected(self, pin):
         global ferrometaldetected
@@ -235,11 +239,12 @@ class StateMachine:
                     self.door1.open_door()
                     self.state = self.INITIALISATION_STATE
 
-            elif self.state == self.EMERGENCY_STATE: 
+            elif self.state == self.EMERGENCY_STATE:
                 return 0
 
-            elif self.state == self.SYSTEM_OVERRIDE_STATE:
+            elif self.state == self.SYSTEM_OVERRIDE_STATE: 
                 return 0
+
 
 
 if __name__ == "__main__":
