@@ -17,6 +17,7 @@ class StateMachine:
         self.system_override_state_triggerd = False
         self.user_returned_from_mri = False
         self.sensor_to_object_distance_threshold = 180 # distance threshold for person detection in cm
+        self.audio_played = False  # Flag to track whether the audio has been played
 
         # Define the initial state of the state machine
         self.state = None
@@ -143,8 +144,11 @@ class StateMachine:
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 self.RPI5_USB_LINE.send_message("System initialised") 
-                self.RPI5_USB_LINE.send_message("playaudio 4") # remove all people from the system audio    
+                if not self.audio_played:
+                    self.RPI5_USB_LINE.send_message("playaudio 4")  # Play audio only if not already played
+                    self.audio_played = True  # Set the flag to indicate that audio has been played   
                 if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
+                    self.audio_played = False 
                     self.RPI5_USB_LINE.send_message("closeimage") # close all images
                     self.door1.open_door()
                     ferrometaldetected = False
@@ -157,9 +161,11 @@ class StateMachine:
                         self.systemset()
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
-                
-                self.RPI5_USB_LINE.send_message("playaudio 5") # move to field A audio 
+                if not self.audio_played:
+                    self.RPI5_USB_LINE.send_message("playaudio 5") # move to field A audio 
+                    self.audio_played = True  # Set the flag to indicate that audio has been played  
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
+                    self.audio_played = False 
                     self.door1.close_door()
                     self.RPI5_USB_LINE.send_message("showimage 2") # move to field B image
                     self.RPI5_USB_LINE.send_message("playaudio 6") # move to field B audio
@@ -171,6 +177,7 @@ class StateMachine:
                     elif ferrometaldetected == False:
                         self.state = self.USER_FIELD_B_RESPONSE_STATE
                 elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
+                    # Wait for user to move to field A
                     return 0
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:

@@ -1,7 +1,7 @@
-from machine import Pin, PWM, UART
+import time
+from machine import Pin, PWM, I2C, UART
 import neopixel
 from system_utils import Timer
-import time
 
 
 class WS2812:
@@ -112,21 +112,23 @@ class DOORWITHLED(DOOR, WS2812):
         self.set_color("red")  # Set LED color to red when the door is closed
 
 class MAX9744:
-    def __init__(self, i2c, address=0x4B):
-        self.i2c = i2c
-        self.address = address
-        self.volume = 63
-    
-    def set_volume(self, volume):
-        # Volume can't be higher than 63 or lower than 0
-        self.volume = max(0, min(63, volume))
-        try:
-            self.i2c.writeto(self.address, bytes([self.volume]))
-            print("Volume set to:", self.volume)
-            return True
-        except OSError:
-            print("Failed to set volume, MAX9744 not found!")
-            return False
+    class MAX9744:
+        def __init__(self, i2c_port, address=0x4B):
+            self.i2c = I2C(i2c_port)
+            self.address = address
+            self.volume = 63
+        
+        def set_volume(self, volume):
+            # Volume can't be higher than 63 or lower than 0
+            self.volume = max(0, min(63, volume))
+            try:
+                self.i2c.writeto(self.address, bytes([self.volume]))
+                print("Volume set to:", self.volume)
+                return True
+            except OSError:
+                print("Failed to set volume, MAX9744 not found!")
+                return False
+
 
 class VolumeController:
     def __init__(self, max9744):
@@ -161,6 +163,10 @@ class SEEEDPERSONDETECTOR: # mmWave sensor
                 #self.humanpresence = "Somebodyisaway"
                 self.humanpresence = False
         return self.humanpresence 
+    
+    def get_detection_distance(self):
+        # to be implemented now sending dummy value (pass)
+        return 180 # dummy value
 
 class LD2410PERSONDETECTOR: # mmWave sensor
     HEADER = bytes([0xfd, 0xfc, 0xfb, 0xfa])

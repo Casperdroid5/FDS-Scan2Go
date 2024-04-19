@@ -38,7 +38,6 @@ class Timer: # Timer class to measure time in ms
     def reset(self):
         self.start_time = None  # Reset the timer
 
-
 class ErrorHandler:
     def report_error(self, components):
         for component in components:
