@@ -47,12 +47,15 @@ class StateMachine:
         # Initialize buttons
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)  # Emergency situation button
         self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_emergencybutton_press)
-        self.button_system_override = Pin(16, Pin.IN, Pin.PULL_UP)  # System override button
-        self.button_system_override.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_overridebutton_press)
-        self.button_door1 = Pin(21, Pin.IN, Pin.PULL_UP)  # Door 1 button (open door)
-        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door1_button_press)
-        self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)  # Door 2 button (open door)
-        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door2_button_press)
+        self.button_system_bypass = Pin(16, Pin.IN, Pin.PULL_UP)  # System override button
+        self.button_system_bypass.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_bypassbutton_press)
+        self.button_system_reset = Pin(17, Pin.IN, Pin.PULL_UP) # System bypass button
+        self.button_system_reset.irq(trigger=Pin.IRQ_FALLING, handler= self.IRQ_handler_button_system_reset)
+        #self.button_door1 = Pin(X, Pin.IN, Pin.PULL_UP)  # Door 1 button (open door)
+        #self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door1_button_press)
+        #self.button_door2 = Pin(X, Pin.IN, Pin.PULL_UP)  # Door 2 button (open door)
+        #self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door2_button_press)
+
 
         # Initialize ferrometal scanner
         self.ferrometalscanner = Pin(18, Pin.IN, Pin.PULL_UP)
@@ -81,16 +84,22 @@ class StateMachine:
         self.emergency_state_triggerd = True
         global running
         running = False # stop the state machine
-        self.freeze()
 
-    def IRQ_handler_overridebutton_press(self, pin):
+    def IRQ_handler_button_system_reset(self, pin):
+        self.RPI5_USB_LINE.send_message("System reset button")  # Pass the message parameter
+        self.system_initialised = False
+        self.system_override_state_triggerd = False
+        self.emergency_state_triggerd = False
+        global running 
+        running = True # start the state machine
+
+    def IRQ_handler_bypassbutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Override button pressed")
         self.RPI5_USB_LINE.send_message("showimage 8") # system override image 
-        global running
         self.emergency_state_triggerd = False
         self.system_override_state_triggerd = not self.system_override_state_triggerd # toggle system override state
-        running = not running # toggle statemachine running state
-        self.freeze()
+        global running
+        running = False # toggle statemachine running state
 
     def IRQ_handler_ferrometal_detected(self, pin):
         global ferrometaldetected
@@ -126,16 +135,19 @@ class StateMachine:
     def run(self):
         global ferrometaldetected
         global running 
-
+        self.state = self.INITIALISATION_STATE
+        # print("Loop restarted")
         while running: 
             if self.state == self.INITIALISATION_STATE:
-                if not self.image_opened:
+                if self.system_initialised == False:
+                    self.systemset()
+                elif not self.image_opened:
                     self.RPI5_USB_LINE.send_message("showimage 0")
                     self.image_opened = True
-                if not self.audio_played :
+                elif not self.audio_played :
                     self.RPI5_USB_LINE.send_message("playaudio 4")  
                     self.audio_played = True   
-                if self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
+                elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.RPI5_USB_LINE.send_message("closeimage") # close all images
                     self.audio_played = False 
                     self.image_opened = False
@@ -146,8 +158,6 @@ class StateMachine:
                     self.mmWaveFieldBLEDS.off()
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
                     self.RPI5_USB_LINE.send_message("showimage 1")  # move to field A image
-                    if self.system_initialised == False:
-                        self.systemset()
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
                 if not self.audio_played:
@@ -220,7 +230,7 @@ class StateMachine:
 
     def freeze(self):
         global running
-        if running == False and self.system_override_state_triggerd == True and self.emergency_state_triggerd == False : # override system
+        if running == False and self.system_override_state_triggerd == True: # override system
             #print("System is bypassed")
             self.FerroDetectorLEDS.set_color("white")
             self.mmWaveFieldALEDS.set_color("white")
@@ -228,20 +238,14 @@ class StateMachine:
             self.door1.open_door()
             self.door2.open_door() 
             self.emergency_state_triggerd = False
-        elif running == False and self.emergency_state_triggerd == True: # emergency system
+        elif running == False and self.emergency_state_triggerd == True and self.system_override_state_triggerd == False: # emergency system
             #print("Emergency triggerd")
             self.FerroDetectorLEDS.set_color("yellow")
             self.mmWaveFieldALEDS.set_color("yellow")
             self.mmWaveFieldBLEDS.set_color("yellow")
             self.door1.open_door()
             self.door2.open_door() 
-        elif running == True and self.system_override_state_triggerd == False and self.emergency_state_triggerd == False: # reset system
-            #print("System will reset")   
-            self.FerroDetectorLEDS.off()
-            self.mmWaveFieldALEDS.off()
-            self.mmWaveFieldBLEDS.off()
-            self.state = self.INITIALISATION_STATE
-            self.system_initialised = False
+
 
 if __name__ == "__main__":
     running = True
@@ -249,7 +253,6 @@ if __name__ == "__main__":
     try:
         system_check = SystemInitCheck()  
         FDS = StateMachine()
-        FDS.state = FDS.INITIALISATION_STATE
         while True:
             if running:  
                 FDS.run()
