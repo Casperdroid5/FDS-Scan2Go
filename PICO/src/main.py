@@ -90,6 +90,7 @@ class StateMachine:
         self.system_initialised = False
         self.system_override_state_triggerd = False
         self.emergency_state_triggerd = False
+        self.state = self.INITIALISATION_STATE
         global running 
         running = True # start the state machine
 
@@ -135,7 +136,7 @@ class StateMachine:
     def run(self):
         global ferrometaldetected
         global running 
-        self.state = self.INITIALISATION_STATE
+        self.state = self.INITIALISATION_STATE # default state when statemachine is started
         # print("Loop restarted")
         while running: 
             if self.state == self.INITIALISATION_STATE:
