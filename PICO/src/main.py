@@ -76,9 +76,7 @@ class StateMachine:
         self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
         self.door1.open_door()
         self.door2.open_door() 
-        self.FerroDetectorLEDS.set_color("yellow")
-        self.mmWaveFieldALEDS.set_color("yellow")
-        self.mmWaveFieldBLEDS.set_color("yellow")
+        self.FerroDetectorLEDS.pulse(color="yellow", interval=500)  # Pulse red LED
         self.emergency_state_triggerd = True
         global running
         running = False # stop the state machine
@@ -89,8 +87,8 @@ class StateMachine:
         self.RPI5_USB_LINE.send_message("showimage 8") # system override image
         self.door1.open_door()
         self.door2.open_door()  
-        self.mmWaveFieldALEDS.set_color("white")
-        self.mmWaveFieldBLEDS.set_color("white")
+        # self.mmWaveFieldALEDS.set_color("white")
+        # self.mmWaveFieldBLEDS.set_color("white")
         self.FerroDetectorLEDS.set_color("white")
         global running
         self.system_override_state_triggerd = not self.system_override_state_triggerd # toggle system override state

@@ -25,6 +25,10 @@ class WS2812:
         self._np = neopixel.NeoPixel(Pin(pin_number), num_leds, bpp=3, timing=1)
         self._num_leds = num_leds
         self._brightness = brightness
+        self._pulse_interval = 500  # interval for pulsing in milliseconds
+        self._pulse_color = (65535, 65535, 65535)  # default pulse color is white
+        self._pulse_timer = Timer(0)
+        self._pulse_state = False
 
         # Kleuren dictionary
         self._COLORS = {
@@ -50,7 +54,26 @@ class WS2812:
             return "Color not found"
 
     def set_brightness(self, brightness):
-        self._brightness = brightness # Update de helderheid
+        self._brightness = brightness  # Update de helderheid
+
+    def _pulse_callback(self, timer):
+        if self._pulse_state:
+            for i in range(self._num_leds):
+                self._np[i] = (0, 0, 0)
+            self._np.write()
+            self._pulse_state = False
+        else:
+            for i in range(self._num_leds):
+                self._np[i] = self._pulse_color
+            self._np.write()
+            self._pulse_state = True
+
+    def pulse(self, color=None, interval=None):
+        if color:
+            self._pulse_color = self._COLORS.get(color.lower(), (65535, 65535, 65535))
+        if interval:
+            self._pulse_interval = interval
+        self._pulse_timer.init(period=self._pulse_interval, mode=Timer.PERIODIC, callback=self._pulse_callback)
 
     def on(self):
         return self.set_color("white")
@@ -60,6 +83,8 @@ class WS2812:
             self._np[i] = (0, 0, 0)
         self._np.write()
         return "off"
+
+
 
 class SERVOMOTOR: # Servo motor 
     def __init__(self, pin_number):
