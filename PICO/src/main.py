@@ -79,12 +79,14 @@ class StateMachine:
     def IRQ_handler_emergencybutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Emergency button")  # Pass the message parameter
         self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
+        systemlog.log_message("Emergency button pressed")
         self.emergency_state_triggerd = True
         global running
         running = False # stop the state machine
 
     def IRQ_handler_button_system_reset(self, pin):
         self.RPI5_USB_LINE.send_message("System reset button")  # Pass the message parameter
+        systemlog.log_message("System reset button pressed")
         self.system_initialised = False
         self.system_override_state_triggerd = False
         self.emergency_state_triggerd = False
@@ -95,6 +97,7 @@ class StateMachine:
     def IRQ_handler_bypassbutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Override button pressed")
         self.RPI5_USB_LINE.send_message("showimage 8") # system override image 
+        systemlog.log_message("System override button pressed")
         self.emergency_state_triggerd = False
         self.system_override_state_triggerd = not self.system_override_state_triggerd # toggle system override state
         global running
@@ -103,6 +106,7 @@ class StateMachine:
     def IRQ_handler_ferrometal_detected(self, pin):
         global ferrometaldetected
         self.RPI5_USB_LINE.send_message("Ferrometalscanner detected metal")
+        systemlog.log_message("Ferrometalscanner detected metal")
         ferrometaldetected = True
 
     def person_detected_in_field(self, field): 
