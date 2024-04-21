@@ -3,6 +3,22 @@ import neopixel
 from machine import Pin, PWM, I2C, UART
 from system_utils import Timer
 
+class DEBOUNCEDBUTTON:
+    def __init__(self, pin, callback):
+        self.pin = pin
+        self.callback = callback
+        self.last_state = self.pin.value()
+        self.debounce_ms = 50  # Debounce time in milliseconds
+        self.last_change = 0
+
+    def update(self):
+        current_time = time.ticks_ms()
+        if current_time - self.last_change >= self.debounce_ms:
+            current_state = self.pin.value()
+            if current_state != self.last_state:
+                self.callback(self.pin)
+                self.last_state = current_state
+                self.last_change = current_time
 
 class WS2812:
     def __init__(self, pin_number, num_leds, brightness):
