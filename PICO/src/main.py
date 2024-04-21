@@ -78,9 +78,6 @@ class StateMachine:
     def IRQ_handler_emergencybutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Emergency button")  # Pass the message parameter
         self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
-        self.FerroDetectorLEDS.off()
-        self.mmWaveFieldALEDS.off()
-        self.mmWaveFieldBLEDS.off()
         self.emergency_state_triggerd = True
         global running
         running = False # stop the state machine
@@ -88,16 +85,9 @@ class StateMachine:
 
     def IRQ_handler_overridebutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Override button pressed")
-        self.RPI5_USB_LINE.send_message("showimage 8") # system override image
-        self.door1.open_door()
-        self.door2.open_door()  
-        self.FerroDetectorLEDS.off()
-        self.mmWaveFieldALEDS.off()
-        self.mmWaveFieldBLEDS.off()
-        self.mmWaveFieldALEDS.set_color("white")
-        self.mmWaveFieldBLEDS.set_color("white")
-        self.FerroDetectorLEDS.set_color("white")
+        self.RPI5_USB_LINE.send_message("showimage 8") # system override image 
         global running
+        self.emergency_state_triggerd = False
         self.system_override_state_triggerd = not self.system_override_state_triggerd # toggle system override state
         running = not running # toggle statemachine running state
         self.freeze()
@@ -230,24 +220,23 @@ class StateMachine:
 
     def freeze(self):
         global running
-        if running == False and self.system_override_state_triggerd == True: # override system
-            print("System is bypassed")
+        if running == False and self.system_override_state_triggerd == True and self.emergency_state_triggerd == False : # override system
+            #print("System is bypassed")
             self.FerroDetectorLEDS.set_color("white")
             self.mmWaveFieldALEDS.set_color("white")
             self.mmWaveFieldBLEDS.set_color("white")
             self.door1.open_door()
             self.door2.open_door() 
             self.emergency_state_triggerd = False
-            self.system_override_state_triggerd = False
         elif running == False and self.emergency_state_triggerd == True: # emergency system
-            print("Emergency triggerd")
+            #print("Emergency triggerd")
             self.FerroDetectorLEDS.set_color("yellow")
             self.mmWaveFieldALEDS.set_color("yellow")
             self.mmWaveFieldBLEDS.set_color("yellow")
             self.door1.open_door()
             self.door2.open_door() 
         elif running == True and self.system_override_state_triggerd == False and self.emergency_state_triggerd == False: # reset system
-            print("System will reset")   
+            #print("System will reset")   
             self.FerroDetectorLEDS.off()
             self.mmWaveFieldALEDS.off()
             self.mmWaveFieldBLEDS.off()
