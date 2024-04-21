@@ -1,4 +1,4 @@
-from hardware_s2g import LD2410PERSONDETECTOR, DOOR, WS2812, DEBOUNCEDBUTTON
+from hardware_s2g import LD2410PERSONDETECTOR, DOOR, WS2812
 from system_utils import SystemInitCheck, Timer, USBCommunication
 from machine import Pin
 
@@ -44,11 +44,15 @@ class StateMachine:
         self.door1 = DOOR(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19)
         self.door2 = DOOR(pin_number=15, angle_closed=90, angle_open=185, position_sensor_pin=20)
 
-        # Initialize buttons with debounce
-        self.button_emergency = DEBOUNCEDBUTTON(Pin(10, Pin.IN, Pin.PULL_UP), self.IRQ_handler_emergencybutton_press)  # Emergency situation button
-        self.button_system_override = DEBOUNCEDBUTTON(Pin(16, Pin.IN, Pin.PULL_UP), self.IRQ_handler_overridebutton_press)  # System override button
-        self.button_door1 = DEBOUNCEDBUTTON(Pin(21, Pin.IN, Pin.PULL_UP), self.IRQ_handler_door1_button_press)  # Door 1 button (open door)
-        self.button_door2 = DEBOUNCEDBUTTON(Pin(17, Pin.IN, Pin.PULL_UP), self.IRQ_handler_door2_button_press)  # Door 2 button (open door)
+        # Initialize buttons
+        self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)  # Emergency situation button
+        self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_emergencybutton_press)
+        self.button_system_override = Pin(16, Pin.IN, Pin.PULL_UP)  # System override button
+        self.button_system_override.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_overridebutton_press)
+        self.button_door1 = Pin(21, Pin.IN, Pin.PULL_UP)  # Door 1 button (open door)
+        self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door1_button_press)
+        self.button_door2 = Pin(17, Pin.IN, Pin.PULL_UP)  # Door 2 button (open door)
+        self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door2_button_press)
 
         # Initialize ferrometal scanner
         self.ferrometalscanner = Pin(18, Pin.IN, Pin.PULL_UP)
@@ -76,7 +80,12 @@ class StateMachine:
         self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
         self.door1.open_door()
         self.door2.open_door() 
-        self.FerroDetectorLEDS.pulse(color="yellow", interval=500)  # Pulse red LED
+        self.FerroDetectorLEDS.off()
+        self.mmWaveFieldALEDS.off()
+        self.mmWaveFieldBLEDS.off()
+        self.FerroDetectorLEDS.set_color("yellow")
+        self.mmWaveFieldALEDS.set_color("yellow")
+        self.mmWaveFieldBLEDS.set_color("yellow")
         self.emergency_state_triggerd = True
         global running
         running = False # stop the state machine
@@ -87,8 +96,11 @@ class StateMachine:
         self.RPI5_USB_LINE.send_message("showimage 8") # system override image
         self.door1.open_door()
         self.door2.open_door()  
-        # self.mmWaveFieldALEDS.set_color("white")
-        # self.mmWaveFieldBLEDS.set_color("white")
+        self.FerroDetectorLEDS.off()
+        self.mmWaveFieldALEDS.off()
+        self.mmWaveFieldBLEDS.off()
+        self.mmWaveFieldALEDS.set_color("white")
+        self.mmWaveFieldBLEDS.set_color("white")
         self.FerroDetectorLEDS.set_color("white")
         global running
         self.system_override_state_triggerd = not self.system_override_state_triggerd # toggle system override state
@@ -225,11 +237,14 @@ class StateMachine:
         global running
         if running == True:
             self.system_initialised = False
-            self.state = self.INITIALISATION_STATE
-        elif running == False and self.system_override_state_triggerd == True:
+            self.FerroDetectorLEDS.off()
+            self.mmWaveFieldALEDS.off()
+            self.mmWaveFieldBLEDS.off()
             self.emergency_state_triggerd = False
             self.system_override_state_triggerd = False
+        elif running == True and self.system_override_state_triggerd == False:
             self.state = self.INITIALISATION_STATE
+            
 
 if __name__ == "__main__":
     running = True
@@ -241,10 +256,6 @@ if __name__ == "__main__":
         while True:
             if running:  
                 FDS.run()
-                FDS.button_emergency.update()
-                FDS.button_system_override.update()
-                FDS.button_door1.update()
-                FDS.button_door2.update()
             else:
                 FDS.freeze() 
 
