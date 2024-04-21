@@ -11,6 +11,7 @@ class StateMachine:
     def __init__(self):
 
         # StatemachineVariables
+        self.state = None
         self.user_in_mri = False
         self.emergency_state_triggerd = False
         self.system_initialised = False
@@ -19,9 +20,6 @@ class StateMachine:
         self.sensor_to_object_distance_threshold = 180 # distance threshold for person detection in cm
         self.audio_played = False  # Flag to track whether the audio has been played
         self.image_opened = False
-
-        # Define the initial state of the state machine
-        self.state = None
 
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
@@ -32,9 +30,9 @@ class StateMachine:
         self.USER_EXITS_FDS_STATE = 5
 
         # Initialize indicator lights
-        self.mmWaveFieldALEDS = WS2812(pin_number=2, num_leds=2, brightness=0.0005)  # brigness is a value between 0.0001 and 1
-        self.mmWaveFieldBLEDS = WS2812(pin_number=3, num_leds=2, brightness=0.0005)
-        self.FerroDetectorLEDS = WS2812(pin_number=6, num_leds=2, brightness=0.0005)
+        self.mmWaveFieldALEDS = WS2812(pin_number=2, num_leds=2, brightness=1)  # brigness is a value between 0.0001 and 1
+        self.mmWaveFieldBLEDS = WS2812(pin_number=3, num_leds=2, brightness=1)
+        self.FerroDetectorLEDS = WS2812(pin_number=6, num_leds=2, brightness=1)
 
         # Initialize persondetectors
         self.mmWaveFieldA = LD2410PERSONDETECTOR(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
@@ -154,9 +152,6 @@ class StateMachine:
                     self.image_opened = False
                     self.door1.open_door()
                     ferrometaldetected = False
-                    self.FerroDetectorLEDS.off()
-                    self.mmWaveFieldALEDS.off()
-                    self.mmWaveFieldBLEDS.off()
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
                     self.RPI5_USB_LINE.send_message("showimage 1")  # move to field A image
 
