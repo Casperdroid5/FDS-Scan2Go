@@ -1,6 +1,6 @@
 import time
-from machine import Pin, PWM, I2C, UART
 import neopixel
+from machine import Pin, PWM, I2C, UART
 from system_utils import Timer
 
 
@@ -129,7 +129,6 @@ class MAX9744:
                 print("Failed to set volume, MAX9744 not found!")
                 return False
 
-
 class VolumeController:
     def __init__(self, max9744):
         self.max9744 = max9744
@@ -145,24 +144,24 @@ class SEEEDPERSONDETECTOR: # mmWave sensor
         self.tx_pin = tx_pin  
         self.rx_pin = rx_pin 
         self._uart_sensor = UART(uart_number, baudrate, tx_pin, rx_pin)
-        self.humanpresence = "unknown"
+        self.person_detected = "unknown"
 
-    def check_humanpresence(self):
+    def scan_for_people(self):
         data = self._uart_sensor.read()
         if data:
             if b'\x02' in data:
-                #self.humanpresence = "Somebodymoved"
-                self.humanpresence = True
+                #self.person_detected = "Somebodymoved"
+                self.person_detected = True
             elif b'\x01' in data:
-                #self.humanpresence = "Somebodystoppedmoving"
-                self.humanpresence = False
+                #self.person_detected = "Somebodystoppedmoving"
+                self.person_detected = False
             elif b'\x03' in data:
-                #self.humanpresence = "Somebodyisclose"
-                self.humanpresence = True
+                #self.person_detected = "Somebodyisclose"
+                self.person_detected = True
             elif b'\x04' in data:
-                #self.humanpresence = "Somebodyisaway"
-                self.humanpresence = False
-        return self.humanpresence 
+                #self.person_detected = "Somebodyisaway"
+                self.person_detected = False
+        return self.person_detected 
     
     def get_detection_distance(self):
         # to be implemented now sending dummy value (pass)

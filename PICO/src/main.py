@@ -2,7 +2,6 @@ from hardware_s2g import LD2410PERSONDETECTOR, DOOR, WS2812
 from system_utils import SystemInitCheck, Timer, USBCommunication
 from machine import Pin
 
-
 global running   # system running global variable
 running = False  # wait for system to be initialised before starting the state machine
 global ferrometaldetected
