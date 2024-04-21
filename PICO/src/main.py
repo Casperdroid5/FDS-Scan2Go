@@ -1,5 +1,5 @@
 from hardware_s2g import LD2410PERSONDETECTOR, DOOR, WS2812
-from system_utils import SystemInitCheck, Timer, USBCommunication
+from system_utils import SystemInitCheck, Timer, USBCommunication, Log
 from machine import Pin
 
 global running   # system running global variable
@@ -30,9 +30,9 @@ class StateMachine:
         self.USER_EXITS_FDS_STATE = 5
 
         # Initialize indicator lights
-        self.mmWaveFieldALEDS = WS2812(pin_number=2, num_leds=2, brightness=1)  # brigness is a value between 0.0001 and 1
-        self.mmWaveFieldBLEDS = WS2812(pin_number=3, num_leds=2, brightness=1)
-        self.FerroDetectorLEDS = WS2812(pin_number=6, num_leds=2, brightness=1)
+        self.mmWaveFieldALEDS = WS2812(pin_number=2, num_leds=2, brightness=50)  # brigness is a value between 1 and 100
+        self.mmWaveFieldBLEDS = WS2812(pin_number=3, num_leds=2, brightness=50)
+        self.FerroDetectorLEDS = WS2812(pin_number=6, num_leds=2, brightness=50)
 
         # Initialize persondetectors
         self.mmWaveFieldA = LD2410PERSONDETECTOR(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
@@ -245,9 +245,11 @@ class StateMachine:
 
 if __name__ == "__main__":
     running = True
-
+    systemlog = Log()
+    systemlog.open_log()
     try:
         system_check = SystemInitCheck()  
+        systemlog.log_message("System check completed successfully")
         FDS = StateMachine()
         while True:
             if running:  
@@ -257,5 +259,9 @@ if __name__ == "__main__":
 
     except SystemExit:
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System failed to initialise")
+        systemlog.log_message("System failed to initialise")
+        systemlog.close_log()
     except Exception as e:
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System encountered unexpected error")
+        systemlog.log_message("System encountered unexpected error")
+        systemlog.close_log()

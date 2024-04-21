@@ -3,34 +3,12 @@ import neopixel
 from machine import Pin, PWM, I2C, UART
 from system_utils import Timer
 
-class DEBOUNCEDBUTTON:
-    def __init__(self, pin, callback):
-        self.pin = pin
-        self.callback = callback
-        self.last_state = self.pin.value()
-        self.debounce_ms = 50  # Debounce time in milliseconds
-        self.last_change = 0
-
-    def update(self):
-        current_time = time.ticks_ms()
-        if current_time - self.last_change >= self.debounce_ms:
-            current_state = self.pin.value()
-            if current_state != self.last_state:
-                self.callback(self.pin)
-                self.last_state = current_state
-                self.last_change = current_time
-
 class WS2812:
     def __init__(self, pin_number, num_leds, brightness):
         self._np = neopixel.NeoPixel(Pin(pin_number), num_leds, bpp=3, timing=1)
         self._num_leds = num_leds
-        self._brightness = brightness
-        self._pulse_interval = 500  # interval for pulsing in milliseconds
-        self._pulse_color = (65535, 65535, 65535)  # default pulse color is white
-        self._pulse_timer = Timer(0)
-        self._pulse_state = False
+        self._brightness = brightness / 10000  
 
-        # Kleuren dictionary
         self._COLORS = {
             "red": (65535, 0, 0),
             "green": (0, 65535, 0),
@@ -45,7 +23,6 @@ class WS2812:
         color_values = self._COLORS.get(color.lower())
         if color_values:
             for i in range(self._num_leds):
-                # Pas helderheid toe op kleuren
                 adjusted_color = tuple(int(val * self._brightness) for val in color_values)
                 self._np[i] = adjusted_color
             self._np.write()
@@ -54,26 +31,7 @@ class WS2812:
             return "Color not found"
 
     def set_brightness(self, brightness):
-        self._brightness = brightness  # Update de helderheid
-
-    def _pulse_callback(self, timer):
-        if self._pulse_state:
-            for i in range(self._num_leds):
-                self._np[i] = (0, 0, 0)
-            self._np.write()
-            self._pulse_state = False
-        else:
-            for i in range(self._num_leds):
-                self._np[i] = self._pulse_color
-            self._np.write()
-            self._pulse_state = True
-
-    def pulse(self, color=None, interval=None):
-        if color:
-            self._pulse_color = self._COLORS.get(color.lower(), (65535, 65535, 65535))
-        if interval:
-            self._pulse_interval = interval
-        self._pulse_timer.init(period=self._pulse_interval, mode=Timer.PERIODIC, callback=self._pulse_callback)
+        self._brightness = brightness  
 
     def on(self):
         return self.set_color("white")
@@ -83,8 +41,6 @@ class WS2812:
             self._np[i] = (0, 0, 0)
         self._np.write()
         return "off"
-
-
 
 class SERVOMOTOR: # Servo motor 
     def __init__(self, pin_number):
@@ -398,5 +354,6 @@ class LD2410PERSONDETECTOR: # mmWave sensor
                 self.mmWaveTimer.reset()  # Reset the timer
                 return self.person_detected
         return self.person_detected
+
 
 

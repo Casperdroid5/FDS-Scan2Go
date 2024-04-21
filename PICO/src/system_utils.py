@@ -1,7 +1,35 @@
+from machine import RTC
 import time
 import select
 import sys
 
+
+class Log:
+    def __init__(self, filename="log.txt"):
+        self.filename = filename
+        self.file = None
+        self.rtc = RTC()  # Initialize RTC
+
+    def open_log(self):
+        self.file = open(self.filename, "a")  # Open the file in append mode
+
+    def log_message(self, message):
+        if self.file:
+            timestamp = self.get_timestamp()
+            log_entry = f"{timestamp},{message}\n"
+            print("Logging:", log_entry)
+            self.file.write(log_entry)
+            self.file.flush()
+
+    def get_timestamp(self):
+        timestamp = self.rtc.datetime()
+        timestring = "%04d-%02d-%02d %02d:%02d:%02d.%03d" % timestamp[:7]
+        return timestring
+
+    def close_log(self):
+        if self.file:
+            self.file.close()
+            self.file = None
 
 class USBCommunication:
     def __init__(self):
