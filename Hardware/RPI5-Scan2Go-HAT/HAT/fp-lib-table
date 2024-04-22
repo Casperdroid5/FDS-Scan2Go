@@ -2,4 +2,5 @@
   (version 7)
   (lib (name "HATLIB")(type "KiCad")(uri "${KIPRJMOD}/HATLIB.pretty")(options "")(descr ""))
   (lib (name "MCU_RaspberryPi_and_Boards")(type "KiCad")(uri "${KIPRJMOD}/Footprints/KiCadLibraries/MCU_RaspberryPi_and_Boards.pretty")(options "")(descr ""))
+  (lib (name "Library")(type "KiCad")(uri "${KIPRJMOD}/Footprints/Library.pretty")(options "")(descr ""))
 )
