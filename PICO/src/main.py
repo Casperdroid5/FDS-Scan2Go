@@ -35,9 +35,9 @@ class StateMachine:
         self.FerroDetectorLEDS = WS2812(pin_number=6, num_leds=2, brightness=50)
 
         # Initialize persondetectors
-        self.mmWaveFieldA = LD2410PERSONDETECTOR(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
-        self.mmWaveFieldB = LD2410PERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
-        
+        self.mmWaveFieldA = LD2410PERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
+        self.mmWaveFieldB = LD2410PERSONDETECTOR(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
+
         # Initialize doors
         self.door1 = DOOR(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19)
         self.door2 = DOOR(pin_number=15, angle_closed=90, angle_open=185, position_sensor_pin=20)
