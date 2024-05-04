@@ -3,6 +3,7 @@ import neopixel
 from machine import Pin, PWM, I2C, UART
 from system_utils import Timer
 
+
 class WS2812:
     def __init__(self, pin_number, num_leds, brightness):
         self._np = neopixel.NeoPixel(Pin(pin_number), num_leds, bpp=3, timing=1)
