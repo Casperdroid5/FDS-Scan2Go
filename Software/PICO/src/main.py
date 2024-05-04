@@ -8,7 +8,14 @@ global ferrometaldetected
 ferrometaldetected = False  # Global variable to check if metal is detected
 
 class StateMachine:
+    """
+    Class representing the state machine controlling the field detection system.
+    """
+
     def __init__(self):
+        """
+        Initializes the state machine.
+        """
 
         # StatemachineVariables
         self.state = None
@@ -49,11 +56,6 @@ class StateMachine:
         self.button_system_bypass.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_bypassbutton_press)
         self.button_system_reset = Pin(17, Pin.IN, Pin.PULL_UP) # System bypass button
         self.button_system_reset.irq(trigger=Pin.IRQ_FALLING, handler= self.IRQ_handler_button_system_reset)
-        #self.button_door1 = Pin(X, Pin.IN, Pin.PULL_UP)  # Door 1 button (open door)
-        #self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door1_button_press)
-        #self.button_door2 = Pin(X, Pin.IN, Pin.PULL_UP)  # Door 2 button (open door)
-        #self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door2_button_press)
-
 
         # Initialize ferrometal scanner
         self.ferrometalscanner = Pin(18, Pin.IN, Pin.PULL_UP)
@@ -67,16 +69,25 @@ class StateMachine:
         self.FDStimer.start_timer() # Start the timer 
 
     def IRQ_handler_door1_button_press(self, pin):
+        """
+        Interrupt handler for door 1 button press.
+        """
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
             if self.door1.door_state == "closed": # check if door is open
                 self.door1.open_door() 
 
     def IRQ_handler_door2_button_press(self, pin):
+        """
+        Interrupt handler for door 2 button press.
+        """
         if self.state == self.USER_IN_MR_ROOM_STATE or (ferrometaldetected == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
             if self.door2.door_state == "closed":
                 self.door2.open_door()  
 
     def IRQ_handler_emergencybutton_press(self, pin):
+        """
+        Interrupt handler for emergency button press.
+        """
         self.RPI5_USB_LINE.send_message("Emergency button")  # Pass the message parameter
         self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
         systemlog.log_message("Emergency button pressed")
@@ -85,6 +96,9 @@ class StateMachine:
         running = False # stop the state machine
 
     def IRQ_handler_button_system_reset(self, pin):
+        """
+        Interrupt handler for system reset button press.
+        """
         self.RPI5_USB_LINE.send_message("System reset button")  # Pass the message parameter
         systemlog.log_message("System reset button pressed")
         self.system_initialised = False
@@ -95,6 +109,9 @@ class StateMachine:
         running = True # start the state machine
 
     def IRQ_handler_bypassbutton_press(self, pin):
+        """
+        Interrupt handler for system override button press.
+        """
         self.RPI5_USB_LINE.send_message("Override button pressed")
         self.RPI5_USB_LINE.send_message("showimage 8") # system override image 
         systemlog.log_message("System override button pressed")
@@ -104,12 +121,18 @@ class StateMachine:
         running = False # toggle statemachine running state
 
     def IRQ_handler_ferrometal_detected(self, pin):
+        """
+        Interrupt handler for ferrometal detection.
+        """
         global ferrometaldetected
         self.RPI5_USB_LINE.send_message("Ferrometalscanner detected metal")
         systemlog.log_message("Ferrometalscanner detected metal")
         ferrometaldetected = True
 
     def person_detected_in_field(self, field): 
+        """
+        Check if a person is detected in a given field.
+        """
         if field == 'A':
             if self.mmWaveFieldA.scan_for_people() and self.mmWaveFieldA.get_detection_distance() < self.sensor_to_object_distance_threshold:
                 self.mmWaveFieldALEDS.set_color("green")
@@ -126,6 +149,9 @@ class StateMachine:
                 return False
 
     def systemset(self):
+        """
+        Initialize the system.
+        """
         self.mmWaveFieldALEDS.off()
         self.mmWaveFieldBLEDS.off()
         self.FerroDetectorLEDS.off() 
@@ -136,6 +162,9 @@ class StateMachine:
         self.RPI5_USB_LINE.send_message("playaudio 1") # system initialised audio
 
     def run(self):
+        """
+        Run the state machine.
+        """
         global ferrometaldetected
         global running 
         self.state = self.INITIALISATION_STATE # default state when statemachine is started
@@ -229,6 +258,9 @@ class StateMachine:
                 self.freeze()
 
     def freeze(self):
+        """
+        Freeze the system in case of emergency or override.
+        """
         global running
         if running == False and self.system_override_state_triggerd == True: # override system
             #print("System is bypassed")
