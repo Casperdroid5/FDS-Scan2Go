@@ -262,8 +262,8 @@ if __name__ == "__main__":
 
     except SystemExit as s:
         running = False
-        USBCommunication.send_message(FDS.RPI5_USB_LINE, "System failed to initialise")
-        systemlog.log_message("System failed to initialise")
+        USBCommunication.send_message(FDS.RPI5_USB_LINE, "System Exiting")
+        systemlog.log_message("System Exiting")
         systemlog.close_log()
 
     except Exception as e:
