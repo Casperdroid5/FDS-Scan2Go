@@ -3,8 +3,8 @@ import os
 import subprocess
 
 # Paths for audio and image files. Comment out to use current folder.
-audio_path = "/home/PIons3/FDS-Scan2GO/Software/FDS media/Soundfiles FDS"
-image_path = "/home/PIons3/FDS-Scan2GO/Software/FDS media/Displayimages FDS"
+audio_path = "/home/PIons3/FDS-Scan2GO/Software/FDS_media/Soundfiles_FDS"
+image_path = "/home/PIons3/FDS-Scan2GO/Software/FDS_media/Displayimages_FDS"
 
 # Variable to keep track of the current audio process
 current_audio_process = None
