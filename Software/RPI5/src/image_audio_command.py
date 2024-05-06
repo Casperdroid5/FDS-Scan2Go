@@ -3,8 +3,8 @@ import os
 import subprocess
 
 # Paths for audio and image files. Comment out to use current folder.
-audio_path = "/home/PIons3/FDS-Scan2GO/Software/FDS_media/Soundfiles_FDS"
-image_path = "/home/PIons3/FDS-Scan2GO/Software/FDS_media/Displayimages_FDS"
+audio_path = "/home/PIons3/FDS-Scan2GO/Software/FDS_media/Soundfiles_FDS/" # change to the path of the audio files
+image_path = "/home/PIons3/FDS-Scan2GO/Software/FDS_media/Displayimages_FDS/" # change to the path of the image files
 
 # Variable to keep track of the current audio process
 current_audio_process = None
@@ -42,8 +42,9 @@ def show_image(image_path):
 
 def close_image():
     os.system("pkill feh")  # Close all instances of feh
-
 def main():
+    global image_path
+
     # Open the serial port
     s = serial.Serial(port="/dev/ttyACM0", baudrate=115200, timeout=1) 
 
@@ -58,9 +59,9 @@ def main():
                 # Extract the audio file number from the message
                 audio_number = received_message.split(" ")[-1]
                 # Construct the audio file path
-                audio_path = f"{audio_number}.m4a"
+                audio_file = f"{audio_number}.m4a"
                 # Play the audio
-                play_audio(audio_path)
+                play_audio(os.path.join(audio_path, audio_file))
             elif received_message == "[USBCommunication] stopaudio":
                 # Stop the audio
                 stop_audio()
@@ -71,9 +72,9 @@ def main():
                 # Extract the image number from the message
                 image_number = received_message.split(" ")[-1]
                 # Construct the image file path
-                image_path = f"{image_number}.png"
+                image_file = f"{image_number}.png"
                 # Show the image
-                show_image(image_path)
+                show_image(os.path.join(image_path, image_file))
             elif received_message == "[USBCommunication] closeimage":
                 print(received_message)
                 # Close the image
@@ -82,6 +83,8 @@ def main():
     except Exception as e:
         print(f"An error occurred: {e}")
 
+
 if __name__ == "__main__":
     main()
+
 
