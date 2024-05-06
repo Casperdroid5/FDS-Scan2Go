@@ -127,14 +127,6 @@ class MAX9744:
                 print("Failed to set volume, MAX9744 not found!")
                 return False
 
-class VolumeController:
-    def __init__(self, max9744):
-        self.max9744 = max9744
-    
-    def adjust_volume(self, change):
-        self.max9744.volume += change
-        self.max9744.set_volume(self.max9744.volume)
-
 class SEEEDPERSONDETECTOR: # mmWave sensor
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
         self.uart_number = uart_number
