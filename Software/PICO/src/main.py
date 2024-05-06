@@ -251,21 +251,23 @@ if __name__ == "__main__":
     running = True
     systemlog = Log()
     systemlog.open_log()
+    FDS = StateMachine()
     try:
-        system_check = SystemInitCheck()  
-        systemlog.log_message("System check completed successfully")
-        FDS = StateMachine()
+        SystemInitCheck().systemcheck()
         while True:
             if running:  
                 FDS.run()
             else:
                 FDS.freeze() 
 
-    except SystemExit:
+    except SystemExit as s:
+        running = False
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System failed to initialise")
         systemlog.log_message("System failed to initialise")
         systemlog.close_log()
+
     except Exception as e:
+        running = False
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System encountered unexpected error")
         systemlog.log_message("System encountered unexpected error")
         systemlog.close_log()
