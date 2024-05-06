@@ -77,7 +77,7 @@ class ErrorHandler:
         print(f"Error in component: {component}")
 
 def check_sensors():     # Check if sensors are connected and working
-    _SensorFunctional = False  # for testing purposes this is set to...
+    _SensorFunctional = True  # for testing purposes this is set to...
     if _SensorFunctional == True:
         print("Sensors are functional")
     return _SensorFunctional

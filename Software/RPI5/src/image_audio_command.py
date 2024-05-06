@@ -2,6 +2,10 @@ import serial
 import os
 import subprocess
 
+# Paths for audio and image files. Comment out to use current folder.
+audio_path = "/home/PIons3/FDS-Scan2GO/Software/FDS media/Soundfiles FDS"
+image_path = "/home/PIons3/FDS-Scan2GO/Software/FDS media/Displayimages FDS"
+
 # Variable to keep track of the current audio process
 current_audio_process = None
 
@@ -80,3 +84,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
