@@ -4,7 +4,7 @@ import select
 import sys
 
 
-class Log:
+class Log: # Log class to log messages to a file
     def __init__(self, filename="log.txt"):
         self.filename = filename
         self.file = None
@@ -31,7 +31,7 @@ class Log:
             self.file.close()
             self.file = None
 
-class USBCommunication:
+class USBCommunication: # USBCommunication class to send and receive messages from the host
     def __init__(self):
         self.poll_obj = select.poll() # Initialize the poll object for monitoring input from stdin
         self.poll_obj.register(sys.stdin, select.POLLIN)
@@ -65,26 +65,22 @@ class Timer: # Timer class to measure time in ms
     def reset(self):
         self.start_time = None  # Reset the timer
 
-class ErrorHandler:
+class ErrorHandler: 
     def report_error(self, components):
         for component in components:
             self.display_error(component)
-            # log error potential to a file or send it to a server
+            Log().log_message(f"Error in component: {component}") # log error potential to a file or send it to a server
 
     def display_error(self, component):
         print(f"Error in component: {component}")
 
-def check_sensors():
-    # Check if sensors are connected and working
+def check_sensors():     # Check if sensors are connected and working
     _SensorFunctional = True  # for testing purposes this is set to...
+    if _SensorFunctional == True:
+        print("Sensors are functional")
     return _SensorFunctional
 
-def check_mmWave():
-    # Check if mmWave sensors are connected and working
-    _mmWaveFunctional = True  # for testing purposes this is set to...
-    return _mmWaveFunctional
-
-class SystemInitCheck:
+class SystemInitCheck: 
     def __init__(self):
         print("System is starting up, running system check")
         failing_components = self.systemcheck()

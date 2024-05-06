@@ -222,11 +222,11 @@ class LD2410PERSONDETECTOR: # mmWave sensor
             return
         self.print_bytes(response)
 
-    def enable_engineering(self):
+    def enable_engineering(self): # Enable engineering mode outputs
         response = self.send_command(bytes([0x62, 0x00]))
         self.print_bytes(response)
 
-    def end_engineering(self):
+    def end_engineering(self): # Disable engineering mode outputs
         response = self.send_command(bytes([0x63, 0x00]))
         self.print_bytes(response)
 
@@ -235,7 +235,7 @@ class LD2410PERSONDETECTOR: # mmWave sensor
         self.print_bytes(response)
         return response
 
-    def print_meas(self):
+    def print_meas(self): # Print the sensor data
         print(f"state: {self.TARGET_NAME[self.meas['state']]}")
         print(f"moving distance: {self.meas['moving_distance']}")
         print(f"moving energy: {self.meas['moving_energy']}")
@@ -243,7 +243,7 @@ class LD2410PERSONDETECTOR: # mmWave sensor
         print(f"stationary energy: {self.meas['stationary_energy']}")
         print(f"detection distance: {self.meas['detection_distance']}")
 
-    def parse_report(self, data):
+    def parse_report(self, data): # Parse the sensor data
         # sanity checks
         if len(data) < 23:
             print(f"error, frame length {data} is too short")
@@ -270,7 +270,7 @@ class LD2410PERSONDETECTOR: # mmWave sensor
         # print the data
         # self.print_meas()
 
-    def read_serial_until(self, identifier):
+    def read_serial_until(self, identifier): # Read serial data until a specific identifier is found
         content = bytes([])
         while len(identifier) > 0:
             v = self.ser.read(1)
@@ -285,11 +285,11 @@ class LD2410PERSONDETECTOR: # mmWave sensor
                 content = bytes([])
         return content
 
-    def serial_flush(self):
+    def serial_flush(self): # Flush the serial buffer
         dummy = self.ser.read()
         return dummy
 
-    def read_serial_frame(self):
+    def read_serial_frame(self): # Read the serial data frame
         # dummy read to flush out the read buffer:
         self.serial_flush()
         time.sleep(0.05)
@@ -312,10 +312,10 @@ class LD2410PERSONDETECTOR: # mmWave sensor
         self.parse_report(response)
         return response
 
-    def get_detection_distance(self):
+    def get_detection_distance(self): 
         return self.meas["detection_distance"]
                 
-    def scan_for_people(self):
+    def scan_for_people(self): # Scan for people using the sensor and determine if they are moving or stationary
         # Check for the presence of people using the sensor
         self.read_serial_frame()
 
