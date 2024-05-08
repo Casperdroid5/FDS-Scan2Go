@@ -3,9 +3,20 @@ import neopixel
 from machine import Pin, PWM, I2C, UART
 from system_utils import Timer
 
-
 class WS2812:
+    """Class for controlling WS2812 LED strip."""
     def __init__(self, pin_number, num_leds, brightness):
+        """
+        Initialize WS2812 LED strip.
+
+        Args:
+            pin_number (int): Pin number to which the LED strip is connected.
+            num_leds (int): Number of LEDs in the strip.
+            brightness (int): Brightness level of the LEDs (0-100).
+
+        Returns:
+            None
+        """
         self._np = neopixel.NeoPixel(Pin(pin_number), num_leds, bpp=3, timing=1)
         self._num_leds = num_leds
         self._brightness = brightness / 10000  
@@ -21,6 +32,15 @@ class WS2812:
         }
 
     def set_color(self, color):
+        """
+        Set the color of the LED strip.
+
+        Args:
+            color (str): Color name.
+
+        Returns:
+            str: Color name if successful, "Color not found" otherwise.
+        """
         color_values = self._COLORS.get(color.lower())
         if color_values:
             for i in range(self._num_leds):
@@ -32,19 +52,50 @@ class WS2812:
             return "Color not found"
 
     def set_brightness(self, brightness):
+        """
+        Set the brightness of the LED strip.
+
+        Args:
+            brightness (int): Brightness level (0-100).
+
+        Returns:
+            None
+        """
         self._brightness = brightness  
 
     def on(self):
+        """
+        Turn on the LED strip with white color.
+
+        Returns:
+            str: "white"
+        """
         return self.set_color("white")
 
     def off(self):
+        """
+        Turn off all LEDs in the strip.
+
+        Returns:
+            str: "off"
+        """
         for i in range(self._num_leds):
             self._np[i] = (0, 0, 0)
         self._np.write()
         return "off"
 
-class SERVOMOTOR: # Servo motor 
+class SERVOMOTOR:
+    """Class for controlling a servo motor."""
     def __init__(self, pin_number):
+        """
+        Initialize servo motor.
+
+        Args:
+            pin_number (int): Pin number to which the servo motor is connected.
+
+        Returns:
+            None
+        """
         self.pwm = PWM(pin_number)
         self.pwm.freq(50)  # Set PWM frequency to 50 Hz for servo control
         self.min_us = 600  # Minimum pulse width in microseconds for 0 degrees
@@ -52,71 +103,165 @@ class SERVOMOTOR: # Servo motor
         self.current_angle = 0  # Initialize current angle to 0
 
     def set_angle(self, angle):
+        """
+        Set the angle of the servo motor.
+
+        Args:
+            angle (float): Angle in degrees (0-180).
+
+        Returns:
+            None
+        """
         pulse_width_us = self.min_us + (self.max_us - self.min_us) * angle / 180  # Convert angle to pulse width
-        duty_cycle = int(pulse_width_us / 20000 * 65535) # Convert pulse width from microseconds to duty cycle (0-65535) # 20000 microseconds = 20 milliseconds (period)
+        duty_cycle = int(pulse_width_us / 20000 * 65535) # Convert pulse width from microseconds to duty cycle (0-65535)
         self.pwm.duty_u16(duty_cycle)  # Set duty cycle to control servo position
         self.current_angle = angle  # Update current angle
-        self.wait_for_completion()  # Wait for servo to reach target position
 
-    def get_current_angle(self): 
+    def get_current_angle(self):
+        """
+        Get the current angle of the servo motor.
+
+        Returns:
+            float: Current angle in degrees.
+        """
         return self.current_angle
 
     def wait_for_completion(self):
-        # Wait until servo reaches target position
+        """
+        Wait until the servo reaches the target position.
+
+        Returns:
+            None
+        """
         while True:
             # Check if current angle matches target angle within a tolerance
             if abs(self.current_angle - self.get_current_angle()) < 1:
                 break
 
-class DOOR: # Door motor and positionsensor
+class DOOR:
+    """Class for controlling a door motor and position sensor."""
     def __init__(self, pin_number, angle_closed, angle_open, position_sensor_pin):
+        """
+        Initialize door motor and position sensor.
+
+        Args:
+            pin_number (int): Pin number to which the door motor is connected.
+            angle_closed (float): Maximum closing angle of the door.
+            angle_open (float): Maximum opening angle of the door.
+            position_sensor_pin (int): Pin number of the position sensor.
+
+        Returns:
+            None
+        """
         self.servo = SERVOMOTOR(pin_number) 
         self.pin_number = pin_number 
-        self.angle_open = angle_open # maximum opening angle
-        self.angle_closed = angle_closed # maximum closing angle
+        self.angle_open = angle_open  # Maximum opening angle
+        self.angle_closed = angle_closed  # Maximum closing angle
         self.door_sensor = Pin(position_sensor_pin, Pin.IN, Pin.PULL_UP)
         self.door_state = "closed"  # Initialize door state
 
     def __repr__(self):
+        """
+        Return string representation of the DOOR object.
+
+        Returns:
+            str: String representation.
+        """
         return f"DOOR at Pin {self.pin_number}, State: {self.door_state}"
 
     def open_door(self):
-        #print(f"open_{self}")
+        """
+        Open the door.
+
+        Returns:
+            str: Current door state.
+        """
         self.servo.set_angle(self.angle_open)
         if self.servo.get_current_angle() == self.angle_open and self.door_sensor.value() == 0:
-            #print("New state: dooropened")
             self.door_state = "open"
             return self.door_state
 
     def close_door(self):
-        #print(f"close_{self}")
+        """
+        Close the door.
+
+        Returns:
+            str: Current door state.
+        """
         self.servo.set_angle(self.angle_closed)
         if self.servo.get_current_angle() == self.angle_closed and self.door_sensor.value() == 1:
-            #print("New state: doorclosed")
             self.door_state = "closed"
             return self.door_state
 
 class DOORWITHLED(DOOR, WS2812):
+    """Class for controlling a door with an integrated LED strip."""
     def __init__(self, door_pin_number, door_angle_closed, door_angle_open, door_position_sensor_pin, led_pin_number, num_leds, brightness):
+        """
+        Initialize door with integrated LED strip.
+
+        Args:
+            door_pin_number (int): Pin number to which the door motor is connected.
+            door_angle_closed (float): Maximum closing angle of the door.
+            door_angle_open (float): Maximum opening angle of the door.
+            door_position_sensor_pin (int): Pin number of the position sensor.
+            led_pin_number (int): Pin number to which the LED strip is connected.
+            num_leds (int): Number of LEDs in the strip.
+            brightness (int): Brightness level of the LEDs (0-100).
+
+        Returns:
+            None
+        """
         DOOR.__init__(self, door_pin_number, door_angle_closed, door_angle_open, door_position_sensor_pin)
         WS2812.__init__(self, led_pin_number, num_leds, brightness)
 
     def open_door(self):
+        """
+        Open the door and set LED color to green.
+
+        Returns:
+            str: Current door state.
+        """
         super().open_door()
         self.set_color("green")  # Set LED color to green when the door is opened
 
     def close_door(self):
+        """
+        Close the door and set LED color to red.
+
+        Returns:
+            str: Current door state.
+        """
         super().close_door()
         self.set_color("red")  # Set LED color to red when the door is closed
 
 class MAX9744:
+    """Class for controlling MAX9744 audio amplifier."""
     class MAX9744:
         def __init__(self, i2c_port, address=0x4B):
+            """
+            Initialize MAX9744 audio amplifier.
+
+            Args:
+                i2c_port (int): I2C port number.
+                address (int): I2C address of the MAX9744 (default is 0x4B).
+
+            Returns:
+                None
+            """
             self.i2c = I2C(i2c_port)
             self.address = address
             self.volume = 63
         
         def set_volume(self, volume):
+            """
+            Set the volume of the audio amplifier.
+
+            Args:
+                volume (int): Volume level (0-63).
+
+            Returns:
+                bool: True if successful, False otherwise.
+            """
             # Volume can't be higher than 63 or lower than 0
             self.volume = max(0, min(63, volume))
             try:
@@ -127,8 +272,21 @@ class MAX9744:
                 print("Failed to set volume, MAX9744 not found!")
                 return False
 
-class SEEEDPERSONDETECTOR: # mmWave sensor
+class SEEEDPERSONDETECTOR:
+    """Class for controlling Seeed Studio mmWave sensor."""
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
+        """
+        Initialize Seeed Studio mmWave sensor.
+
+        Args:
+            uart_number (int): UART number.
+            baudrate (int): Baud rate of the UART communication.
+            tx_pin (int): Transmit pin number.
+            rx_pin (int): Receive pin number.
+
+        Returns:
+            None
+        """
         self.uart_number = uart_number
         self.baudrate = baudrate
         self.tx_pin = tx_pin  
@@ -137,27 +295,36 @@ class SEEEDPERSONDETECTOR: # mmWave sensor
         self.person_detected = "unknown"
 
     def scan_for_people(self):
+        """
+        Scan for people using the sensor and determine if they are moving or stationary.
+
+        Returns:
+            bool: True if person detected, False otherwise.
+        """
         data = self._uart_sensor.read()
         if data:
             if b'\x02' in data:
-                #self.person_detected = "Somebodymoved"
                 self.person_detected = True
             elif b'\x01' in data:
-                #self.person_detected = "Somebodystoppedmoving"
                 self.person_detected = False
             elif b'\x03' in data:
-                #self.person_detected = "Somebodyisclose"
                 self.person_detected = True
             elif b'\x04' in data:
-                #self.person_detected = "Somebodyisaway"
                 self.person_detected = False
         return self.person_detected 
     
     def get_detection_distance(self):
-        # to be implemented now sending dummy value (pass)
-        return 180 # dummy value
+        """
+        Get the detection distance from the sensor.
 
-class LD2410PERSONDETECTOR: # mmWave sensor
+        Returns:
+            int: Detection distance.
+        """
+        # To be implemented, currently returning a dummy value
+        return 180  # Dummy value
+
+class LD2410PERSONDETECTOR:
+    """Class for controlling LD2410 mmWave sensor."""
     HEADER = bytes([0xfd, 0xfc, 0xfb, 0xfa])
     TERMINATOR = bytes([0x04, 0x03, 0x02, 0x01])
     NULLDATA = bytes([])
@@ -174,7 +341,18 @@ class LD2410PERSONDETECTOR: # mmWave sensor
     moving_threshold = 40  # Threshold for determining if someone has been moving for too long
 
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
+        """
+        Initialize LD2410 mmWave sensor.
 
+        Args:
+            uart_number (int): UART number.
+            baudrate (int): Baud rate of the UART communication.
+            tx_pin (int): Transmit pin number.
+            rx_pin (int): Receive pin number.
+
+        Returns:
+            None
+        """
         self.ser = UART(uart_number, baudrate=baudrate, tx=Pin(tx_pin), rx=Pin(rx_pin), timeout=1)
         self.meas = {
             "state": self.STATE_NO_TARGET,
@@ -182,14 +360,23 @@ class LD2410PERSONDETECTOR: # mmWave sensor
             "moving_energy": 0,
             "stationary_distance": 0,
             "stationary_energy": 0,
-            "detection_distance": 0 }
-
+            "detection_distance": 0 
+        }
         self.mmWaveTimer = Timer()  # Initialize the Timer for mmWave sensor
         self.person_detected = False  # Variable to track person detection status
         self.standing_timer = 0  # Timer to track how long someone has been standing
         self.moving_timer = 0  # Timer to track how long someone has been moving
 
     def print_bytes(self, data):
+        """
+        Print byte data in hexadecimal format.
+
+        Args:
+            data (bytes): Byte data to be printed.
+
+        Returns:
+            None
+        """
         if len(data) == 0:
             print("<no data>")
             return
@@ -199,6 +386,17 @@ class LD2410PERSONDETECTOR: # mmWave sensor
         print(text)
 
     def send_command(self, cmd, data=NULLDATA, response_expected=True):
+        """
+        Send a command to the sensor.
+
+        Args:
+            cmd (bytes): Command bytes.
+            data (bytes): Data bytes to be sent with the command.
+            response_expected (bool): Whether to expect a response from the sensor.
+
+        Returns:
+            bytes: Response from the sensor, if expected.
+        """
         cmd_data_len = bytes([len(cmd) + len(data), 0x00])
         frame = self.HEADER + cmd_data_len + cmd + data + self.TERMINATOR
         self.ser.write(frame)
@@ -209,33 +407,75 @@ class LD2410PERSONDETECTOR: # mmWave sensor
         return response
 
     def enable_config(self):
+        """
+        Enable configuration mode for the sensor.
+
+        Returns:
+            None
+        """
         response = self.send_command(bytes([0xff, 0x00]), bytes([0x01, 0x00]))
         self.print_bytes(response)
 
     def end_config(self):
+        """
+        End configuration mode for the sensor.
+
+        Returns:
+            None
+        """
         response = self.send_command(bytes([0xfe, 0x00]), response_expected=False)
 
     def read_firmware_version(self):
+        """
+        Read the firmware version of the sensor.
+
+        Returns:
+            None
+        """
         response = self.ser.read()
         if response is None:
             print("Error: No response from serial.")
             return
         self.print_bytes(response)
 
-    def enable_engineering(self): # Enable engineering mode outputs
+    def enable_engineering(self):
+        """
+        Enable engineering mode outputs for the sensor.
+
+        Returns:
+            None
+        """
         response = self.send_command(bytes([0x62, 0x00]))
         self.print_bytes(response)
 
-    def end_engineering(self): # Disable engineering mode outputs
+    def end_engineering(self):
+        """
+        End engineering mode outputs for the sensor.
+
+        Returns:
+            None
+        """
         response = self.send_command(bytes([0x63, 0x00]))
         self.print_bytes(response)
 
     def read_serial_buffer(self):
+        """
+        Read the serial buffer.
+
+        Returns:
+            bytes: Data read from the serial buffer.
+        """
         response = self.ser.read()
         self.print_bytes(response)
         return response
 
-    def print_meas(self): # Print the sensor data
+    def print_meas(self):
+        """
+        Print the sensor measurement data.
+
+        Returns:
+            None
+        """
         print(f"state: {self.TARGET_NAME[self.meas['state']]}")
         print(f"moving distance: {self.meas['moving_distance']}")
         print(f"moving energy: {self.meas['moving_energy']}")
@@ -243,8 +483,17 @@ class LD2410PERSONDETECTOR: # mmWave sensor
         print(f"stationary energy: {self.meas['stationary_energy']}")
         print(f"detection distance: {self.meas['detection_distance']}")
 
-    def parse_report(self, data): # Parse the sensor data
-        # sanity checks
+    def parse_report(self, data):
+        """
+        Parse the sensor report data.
+
+        Args:
+            data (bytes): Data received from the sensor.
+
+        Returns:
+            None
+        """
+        # Sanity checks
         if len(data) < 23:
             print(f"error, frame length {data} is too short")
             return
@@ -256,26 +505,33 @@ class LD2410PERSONDETECTOR: # mmWave sensor
         if data[4] != 0x0d and data[4] != 0x23:
             print(f"error, frame length is incorrect")
             return
-        # data[7] must be report 'head' value 0xaa
+        # Data[7] must be report 'head' value 0xaa
         if data[7] != 0xaa:
             print(f"error, frame report head value is incorrect")
             return
-        # sanity checks passed. Store the sensor data in meas
+        # Sanity checks passed. Store the sensor data in meas
         self.meas["state"] = data[8]
         self.meas["moving_distance"] = data[9] + (data[10] << 8)
         self.meas["moving_energy"] = data[11]
         self.meas["stationary_distance"] = data[12] + (data[13] << 8)
         self.meas["stationary_energy"] = data[14]
         self.meas["detection_distance"] = data[15] + (data[16] << 8)
-        # print the data
-        # self.print_meas()
 
-    def read_serial_until(self, identifier): # Read serial data until a specific identifier is found
+    def read_serial_until(self, identifier):
+        """
+        Read serial data until a specific identifier is found.
+
+        Args:
+            identifier (bytes): Identifier to search for.
+
+        Returns:
+            bytes: Data read until the identifier is found.
+        """
         content = bytes([])
         while len(identifier) > 0:
             v = self.ser.read(1)
             if v == None:
-                # timeout
+                # Timeout
                 return None
                 break
             if v[0] == identifier[0]:
@@ -285,50 +541,66 @@ class LD2410PERSONDETECTOR: # mmWave sensor
                 content = bytes([])
         return content
 
-    def serial_flush(self): # Flush the serial buffer
+    def serial_flush(self):
+        """
+        Flush the serial buffer.
+
+        Returns:
+            bytes: Data read from the serial buffer.
+        """
         dummy = self.ser.read()
         return dummy
 
-    def read_serial_frame(self): # Read the serial data frame
-        # dummy read to flush out the read buffer:
+    def read_serial_frame(self):
+        """
+        Read the serial data frame.
+
+        Returns:
+            bytes: Data read from the serial buffer.
+        """
+        # Dummy read to flush out the read buffer
         self.serial_flush()
         time.sleep(0.05)
-        # keep reading to see a header arrive:
+        # Keep reading to see a header arrive
         header = self.read_serial_until(self.REPORT_HEADER)
         if header == None:
-            # print("error, frame header not found")
             return None
-        # read the rest of the frame:
+        # Read the rest of the frame
         response = self.ser.read(23-4)
         if response == None:
-            # print("error, frame length is too short")
             return None
         response = header + response
         if response[-4:] != self.REPORT_TERMINATOR:
-            # error, packet seems incorrect
-            # print("error, frame terminator is incorrect")
             return None
-        # self.print_bytes(response)
         self.parse_report(response)
         return response
 
-    def get_detection_distance(self): 
+    def get_detection_distance(self):
+        """
+        Get the detection distance from the sensor.
+
+        Returns:
+            int: Detection distance.
+        """
         return self.meas["detection_distance"]
                 
-    def scan_for_people(self): # Scan for people using the sensor and determine if they are moving or stationary
+    def scan_for_people(self):
+        """
+        Scan for people using the sensor and determine if they are moving or stationary.
+
+        Returns:
+            bool: True if person detected, False otherwise.
+        """
         # Check for the presence of people using the sensor
         self.read_serial_frame()
 
         if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
-            # print("Detected moving target")
             self.standing_timer = 0
 
             if self.moving_timer < self.moving_threshold:
                 self.moving_timer += 1
-                # print(f"Moving timer: {self.moving_timer} seconds")
 
             elif self.moving_timer >= self.moving_threshold:
-                # print("Threshold exceeded: resetting moving timer")
                 self.person_detected = True
                 self.moving_timer = 0
                 self.mmWaveTimer.reset()  # Reset the timer
@@ -336,17 +608,12 @@ class LD2410PERSONDETECTOR: # mmWave sensor
 
         elif self.meas['state'] == self.STATE_STATIONARY_TARGET:
             self.standing_timer += 1
-            # print(f"Standing timer: {self.standing_timer} seconds")
 
             # Check if a person has been standing still for too long
             if self.standing_timer >= self.standing_threshold:
-                # print("Threshold exceeded: resetting standing timer")
                 self.moving_timer = 0
                 self.standing_timer = 0
                 self.person_detected = False
                 self.mmWaveTimer.reset()  # Reset the timer
                 return self.person_detected
         return self.person_detected
-
-
-
