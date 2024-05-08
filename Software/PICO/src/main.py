@@ -31,17 +31,17 @@ class StateMachine:
         self.USER_EXITS_FDS_STATE = 5
 
         # Initialize indicator lights
-        self.mmWaveFieldALEDS = WS2812(pin_number=2, num_leds=2, brightness=50)  # brigness is a value between 1 and 100
-        self.mmWaveFieldBLEDS = WS2812(pin_number=3, num_leds=2, brightness=50)
-        self.FerroDetectorLEDS = WS2812(pin_number=6, num_leds=2, brightness=50)
+        self.LEDStrip_fieldA = WS2812(pin_number=2, num_leds=2, brightness=50)  # brigness is a value between 1 and 100
+        self.LEDStrip_fieldB = WS2812(pin_number=3, num_leds=2, brightness=50)
+        self.LEDStrip_FerrometalDetector = WS2812(pin_number=6, num_leds=2, brightness=50)
 
         # Initialize persondetectors
-        self.mmWaveFieldA = LD2410PERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
-        self.mmWaveFieldB = LD2410PERSONDETECTOR(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
+        self.mmWave_fieldA = LD2410PERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
+        self.mmWave_fieldB = LD2410PERSONDETECTOR(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
 
         # Initialize doors
-        self.door1 = DOOR(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19)
-        self.door2 = DOOR(pin_number=15, angle_closed=90, angle_open=185, position_sensor_pin=20)
+        self.door_changeroom = DOOR(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19)
+        self.door_mri_room = DOOR(pin_number=15, angle_closed=90, angle_open=185, position_sensor_pin=20)
 
         # Initialize buttons
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)  # Emergency situation button
@@ -50,10 +50,10 @@ class StateMachine:
         self.button_system_bypass.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_bypassbutton_press)
         self.button_system_reset = Pin(17, Pin.IN, Pin.PULL_UP) # System bypass button
         self.button_system_reset.irq(trigger=Pin.IRQ_FALLING, handler= self.IRQ_handler_button_system_reset)
-        #self.button_door1 = Pin(X, Pin.IN, Pin.PULL_UP)  # Door 1 button (open door)
-        #self.button_door1.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door1_button_press)
-        #self.button_door2 = Pin(X, Pin.IN, Pin.PULL_UP)  # Door 2 button (open door)
-        #self.button_door2.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door2_button_press)
+        #self.button_door_changeroom = Pin(X, Pin.IN, Pin.PULL_UP)  # Door 1 button (open door)
+        #self.button_door_changeroom.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door_changeroom_button_press)
+        #self.button_door_mri_room = Pin(X, Pin.IN, Pin.PULL_UP)  # Door 2 button (open door)
+        #self.button_door_mri_room.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door_mri_room_button_press)
 
         # Initialize ferrometal scanner
         self.ferrometalscanner = Pin(18, Pin.IN, Pin.PULL_UP)
@@ -66,15 +66,15 @@ class StateMachine:
         self.FDStimer = Timer()  
         self.FDStimer.start_timer() # Start the timer 
 
-    def IRQ_handler_door1_button_press(self, pin):
+    def IRQ_handler_door_changeroom_button_press(self, pin):
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
-            if self.door1.door_state == "closed": # check if door is open
-                self.door1.open_door() 
+            if self.door_changeroom.door_state == "closed": # check if door is open
+                self.door_changeroom.open_door() 
 
-    def IRQ_handler_door2_button_press(self, pin):
+    def IRQ_handler_door_mri_room_button_press(self, pin):
         if self.state == self.USER_IN_MR_ROOM_STATE or (ferrometaldetected == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
-            if self.door2.door_state == "closed":
-                self.door2.open_door()  
+            if self.door_mri_room.door_state == "closed":
+                self.door_mri_room.open_door()  
 
     def IRQ_handler_emergencybutton_press(self, pin):
         self.RPI5_USB_LINE.send_message("Emergency button")  # Pass the message parameter
@@ -111,35 +111,35 @@ class StateMachine:
 
     def person_detected_in_field(self, field): 
         if field == 'A':
-            if self.mmWaveFieldA.scan_for_people() and self.mmWaveFieldA.get_detection_distance() < self.sensor_to_object_distance_threshold:
-                self.mmWaveFieldALEDS.set_color("green")
+            if self.mmWave_fieldA.scan_for_people() and self.mmWave_fieldA.get_detection_distance() < self.sensor_to_object_distance_threshold:
+                self.LEDStrip_fieldA.set_color("green")
                 return True
             else:
-                self.mmWaveFieldALEDS.set_color("red")
+                self.LEDStrip_fieldA.set_color("red")
                 return False
         elif field == 'B':
-            if self.mmWaveFieldB.scan_for_people() and self.mmWaveFieldB.get_detection_distance() < self.sensor_to_object_distance_threshold:
-                self.mmWaveFieldBLEDS.set_color("green")
+            if self.mmWave_fieldB.scan_for_people() and self.mmWave_fieldB.get_detection_distance() < self.sensor_to_object_distance_threshold:
+                self.LEDStrip_fieldB.set_color("green")
                 return True
             else:
-                self.mmWaveFieldBLEDS.set_color("red")
+                self.LEDStrip_fieldB.set_color("red")
                 return False
 
     def systemset(self):
-        self.mmWaveFieldALEDS.off()
-        self.mmWaveFieldBLEDS.off()
-        self.FerroDetectorLEDS.off() 
-        self.door2.close_door()  
-        self.door1.open_door()  
+        self.LEDStrip_fieldA.off()
+        self.LEDStrip_fieldB.off()
+        self.LEDStrip_FerrometalDetector.off() 
+        self.door_mri_room.close_door()  
+        self.door_changeroom.open_door()  
         self.system_initialised = True
         self.RPI5_USB_LINE.send_message("System initialised")
         self.RPI5_USB_LINE.send_message("playaudio 1") # system initialised audio
 
-    def run(self):
+    def run(self): # State machine logic
         global ferrometaldetected
         global running 
         self.state = self.INITIALISATION_STATE # default state when statemachine is started
-        # print("Loop restarted")
+
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 if self.system_initialised == False:
@@ -154,7 +154,7 @@ class StateMachine:
                     self.RPI5_USB_LINE.send_message("closeimage") # close all images
                     self.audio_played = False 
                     self.image_opened = False
-                    self.door1.open_door()
+                    self.door_changeroom.open_door()
                     ferrometaldetected = False
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
                     self.RPI5_USB_LINE.send_message("showimage 1")  # move to field A image
@@ -165,7 +165,7 @@ class StateMachine:
                     self.audio_played = True  # Set the flag to indicate that audio has been played  
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                     self.audio_played = False 
-                    self.door1.close_door()
+                    self.door_changeroom.close_door()
                     self.RPI5_USB_LINE.send_message("showimage 2") # move to field B image
                     self.RPI5_USB_LINE.send_message("playaudio 6") # move to field B audio
                     if ferrometaldetected == True:
@@ -175,7 +175,7 @@ class StateMachine:
                         if not self.audio_played:
                             self.RPI5_USB_LINE.send_message("playaudio 9")  
                             self.audio_played = True  # Set the flag to indicate that audio has been played   
-                        self.door1.open_door()
+                        self.door_changeroom.open_door()
                     if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == False and ferrometaldetected == True:
                         self.image_opened = False
                         self.state = self.INITIALISATION_STATE
@@ -190,15 +190,15 @@ class StateMachine:
                 if self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False and ferrometaldetected == False:
                     self.RPI5_USB_LINE.send_message("showimage 3") # move to MR room image
                     self.RPI5_USB_LINE.send_message("playaudio 8") # you may proceed to MR room audio
-                    self.door2.open_door()
-                    self.FerroDetectorLEDS.set_color("green")
+                    self.door_mri_room.open_door()
+                    self.LEDStrip_FerrometalDetector.set_color("green")
                     self.state = self.USER_IN_MR_ROOM_STATE
                 elif ferrometaldetected == True:
                     if not self.image_opened:
                         self.RPI5_USB_LINE.send_message("showimage 4") # metal detected image
                         self.image_opened = True
-                    self.door1.open_door()
-                    self.FerroDetectorLEDS.set_color("red")
+                    self.door_changeroom.open_door()
+                    self.LEDStrip_FerrometalDetector.set_color("red")
                     if not self.audio_played :
                         self.RPI5_USB_LINE.send_message("playaudio 9")  
                         self.audio_played = True  # Set the flag to indicate that audio has been played   
@@ -206,7 +206,7 @@ class StateMachine:
                         self.image_opened = False
                         self.state = self.INITIALISATION_STATE
                 else:
-                    self.FerroDetectorLEDS.set_color("yellow")
+                    self.LEDStrip_FerrometalDetector.set_color("yellow")
 
             elif self.state == self.USER_IN_MR_ROOM_STATE:
                 if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == False:
@@ -217,12 +217,12 @@ class StateMachine:
                 if self.person_detected_in_field('B') == True or self.person_detected_in_field('A') == True:
                     self.RPI5_USB_LINE.send_message("showimage 6") # exit to change room image
                     self.RPI5_USB_LINE.send_message("playaudio 10") # exit to change room audio      
-                    self.door2.close_door()
+                    self.door_mri_room.close_door()
                     self.state = self.USER_EXITS_FDS_STATE
             
             elif self.state == self.USER_EXITS_FDS_STATE:
                 if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == True: 
-                    self.door1.open_door()
+                    self.door_changeroom.open_door()
                     self.state = self.INITIALISATION_STATE
 
             else:
@@ -232,19 +232,19 @@ class StateMachine:
         global running
         if running == False and self.system_override_state_triggerd == True: # override system
             #print("System is bypassed")
-            self.FerroDetectorLEDS.set_color("white")
-            self.mmWaveFieldALEDS.set_color("white")
-            self.mmWaveFieldBLEDS.set_color("white")
-            self.door1.open_door()
-            self.door2.open_door() 
+            self.LEDStrip_FerrometalDetector.set_color("white")
+            self.LEDStrip_fieldA.set_color("white")
+            self.LEDStrip_fieldB.set_color("white")
+            self.door_changeroom.open_door()
+            self.door_mri_room.open_door() 
             self.emergency_state_triggerd = False
         elif running == False and self.emergency_state_triggerd == True and self.system_override_state_triggerd == False: # emergency system
             #print("Emergency triggerd")
-            self.FerroDetectorLEDS.set_color("yellow")
-            self.mmWaveFieldALEDS.set_color("yellow")
-            self.mmWaveFieldBLEDS.set_color("yellow")
-            self.door1.open_door()
-            self.door2.open_door() 
+            self.LEDStrip_FerrometalDetector.set_color("yellow")
+            self.LEDStrip_fieldA.set_color("yellow")
+            self.LEDStrip_fieldB.set_color("yellow")
+            self.door_changeroom.open_door()
+            self.door_mri_room.open_door() 
 
 
 if __name__ == "__main__":
