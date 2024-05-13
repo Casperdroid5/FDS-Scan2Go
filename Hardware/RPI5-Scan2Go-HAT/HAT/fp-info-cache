@@ -1,4 +1,4 @@
-23348218319770109
+23408472400156115
 Audio_Module
 Reverb_BTDR-1H
 Digital Reverberation Unit, http://www.belton.co.kr/inc/downfile.php?seq=17&file=pdf (footprint from http://www.uk-electronic.de/PDF/BTDR-1.pdf)
@@ -87674,6 +87674,258 @@ rotary encoder illuminated switch vertical
 0
 9
 8
+SamacSys_Parts
+2X2X0.9MMLGA
+2 x 2 x 0.9 mm LGA
+Accelerometer
+0
+12
+12
+SamacSys_Parts
+1778780
+1778780
+Connector
+0
+8
+8
+SamacSys_Parts
+1808190
+1808190
+Connector
+0
+4
+4
+SamacSys_Parts
+BATHLD007SMTTR
+BAT-HLD-007-SMT-TR-2
+Battery
+0
+3
+3
+SamacSys_Parts
+BC847215
+BC847,215-1
+Transistor BJT NPN
+0
+3
+3
+SamacSys_Parts
+CMT752580SMTTR
+CMT-7525-80-SMT-TR-3
+Loudspeaker or Buzzer
+0
+4
+4
+SamacSys_Parts
+DIOM5025X220N
+SMA (DO-214AC)
+Schottky Diode
+0
+2
+2
+SamacSys_Parts
+DIOM5436X261N
+DO-214AA (SMB J-Bend)
+TVS Diode (Uni-directional)
+0
+2
+2
+SamacSys_Parts
+DIP781W56P254L950H533Q8N
+MCP6541-I/P PDIP
+Integrated Circuit
+0
+8
+8
+SamacSys_Parts
+ESP32-C3-DEVKITC-02
+
+
+0
+30
+30
+SamacSys_Parts
+IRF2804STRLPBF
+D2PAK 
+MOSFET (N-Channel)
+0
+3
+3
+SamacSys_Parts
+IRL540SPBF
+TO-263 (D2PAK )
+MOSFET (N-Channel)
+0
+3
+3
+SamacSys_Parts
+JS202011SCQN
+JS202011SCQN
+Switch
+0
+6
+6
+SamacSys_Parts
+LSSM12PVTR
+LSSM12-P-V-T/R-3
+Switch
+0
+3
+3
+SamacSys_Parts
+MODULE_TMC2208_SILENTSTEPSTICK
+
+
+0
+19
+19
+SamacSys_Parts
+MSS120004
+MSS120004-1
+Switch
+0
+7
+7
+SamacSys_Parts
+NE555DR
+D (R-PDSO-G8)
+Integrated Circuit
+0
+8
+8
+SamacSys_Parts
+NSR20F20NXT5G
+NSR20F20NXT5G-3
+Schottky Diode
+0
+2
+2
+SamacSys_Parts
+OVLEW1CB9
+OVLEW1CB9-3
+LED
+0
+2
+2
+SamacSys_Parts
+QFN50P400X400X80-21N-D
+MLF 20M1
+Integrated Circuit
+0
+21
+21
+SamacSys_Parts
+SM04BHCHKTBLFSN
+SM04B-HCHK-TB (LF)(SN)-1
+Connector
+0
+6
+6
+SamacSys_Parts
+SMTU2032LF
+SMTU2032-LF
+Undefined or Miscellaneous
+0
+2
+2
+SamacSys_Parts
+SOD2512X110N
+SOD-323
+TVS Diode (Uni-directional)
+0
+2
+2
+SamacSys_Parts
+SOIC127P600X175-8N
+SOIC 8, 150 mils CASE 751BD−01 ISSUE O
+Integrated Circuit
+0
+8
+8
+SamacSys_Parts
+SON50P200X200X80-9N
+DSG(S-PWSON-N8)
+Power Supply
+0
+9
+9
+SamacSys_Parts
+SOP254P960X420-4N
+SMT Gullwing
+Integrated Circuit
+0
+4
+4
+SamacSys_Parts
+SOT95P275X110-6N
+SOT457_2022
+Transistor BJT PNP
+0
+6
+6
+SamacSys_Parts
+SOT95P280X145-5N
+5-Lead Plastic Small Outline Transistor (OT) [SOT23]
+Integrated Circuit
+0
+5
+5
+SamacSys_Parts
+SOT95P280X145-6N
+DBV (R-PDSO-G6)
+Integrated Circuit
+0
+6
+6
+SamacSys_Parts
+SOT95P285X140-6N
+SOT-26_3
+Integrated Circuit
+0
+6
+6
+SamacSys_Parts
+SOT96P240X110-3N
+SOT-23_
+MOSFET (P-Channel)
+0
+3
+3
+SamacSys_Parts
+SOT96P240X115-3N
+DMG2305UX-7
+MOSFET (P-Channel)
+0
+3
+3
+SamacSys_Parts
+SOT96P240X120-3N
+2N7002-1
+MOSFET (N-Channel)
+0
+3
+3
+SamacSys_Parts
+SOT230P700X180-4N
+DCY (R-PDSO-G4)
+Integrated Circuit
+0
+4
+4
+SamacSys_Parts
+SRF4532220Y
+SRF4532-220Y-2
+Filter
+0
+4
+4
+SamacSys_Parts
+TSL25911FN
+TSL25911FN
+Integrated Circuit
+0
+6
+6
 Sensor
 ASAIR_AM2302_P2.54mm_Lead2.75mm_TabDown
 Temperature and humidity module, http://akizukidenshi.com/download/ds/aosong/AM2302.pdf
