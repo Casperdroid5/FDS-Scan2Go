@@ -419,7 +419,7 @@
 	(footprint "Connector_JST:JST_EH_B3B-EH-A_1x03_P2.50mm_Vertical"
 		(layer "F.Cu")
 		(uuid "1b0bfaff-e1f2-4d29-b507-bff1ae3cc88b")
-		(at 166.4354 145.4704)
+		(at 156.4354 145.4704)
 		(descr "JST EH series connector, B3B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J6"
@@ -795,11 +795,11 @@
 	(footprint "Connector_JST:JST_EH_B5B-EH-A_1x05_P2.50mm_Vertical"
 		(layer "F.Cu")
 		(uuid "1bf60a88-592c-4ed5-ae2b-1fb93d0f5972")
-		(at 122.8852 130.1496)
+		(at 122.8166 130.6068)
 		(descr "JST EH series connector, B5B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J20"
-			(at 5 -2.8 360)
+			(at 5 -2.8 0)
 			(layer "F.SilkS")
 			(uuid "a1e5c037-326b-4cbf-a080-e187416e13c2")
 			(effects
@@ -810,7 +810,7 @@
 			)
 		)
 		(property "Value" "Conn_01x05_Socket"
-			(at 5 3.4 360)
+			(at 5 3.4 0)
 			(layer "F.Fab")
 			(uuid "2646071a-40e3-4dda-8122-1c970a2b3228")
 			(effects
@@ -1112,7 +1112,7 @@
 			(uuid "3d6c915a-bca4-4fa4-b9a0-b9d3be01f82a")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 5 1.5 360)
+			(at 5 1.5 0)
 			(layer "F.Fab")
 			(uuid "abd270b7-fb58-4239-99e0-e4164821d2eb")
 			(effects
@@ -1754,11 +1754,11 @@
 	(footprint "Connector_JST:JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical"
 		(layer "F.Cu")
 		(uuid "1f0fe467-f7d6-4e8e-85d7-980fc73a692a")
-		(at 124.3514 123.5202)
+		(at 124.1352 123.5202)
 		(descr "JST EH series connector, B4B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J2"
-			(at 3.75 -2.8 360)
+			(at 3.7157 -2.3876 0)
 			(layer "F.SilkS")
 			(uuid "9ef66a98-0063-402d-bde7-752af0ead06b")
 			(effects
@@ -1769,7 +1769,7 @@
 			)
 		)
 		(property "Value" "Conn_01x04_Socket"
-			(at 17.5676 3.2476 360)
+			(at 17.5676 3.2476 0)
 			(layer "F.Fab")
 			(uuid "b94e665b-23cc-4f0c-9d65-f4393e7d73a1")
 			(effects
@@ -2071,7 +2071,7 @@
 			(uuid "213712cb-b08b-49fa-9754-66fc2656e128")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 3.75 1.5 360)
+			(at 3.75 1.5 0)
 			(layer "F.Fab")
 			(uuid "afc4507e-0cdd-4ea3-b471-cfe4acc155e9")
 			(effects
@@ -2871,11 +2871,11 @@
 	(footprint "Connector_JST:JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical"
 		(layer "F.Cu")
 		(uuid "311706a6-64a8-4d8c-85f3-dee6957a6f9a")
-		(at 140.1718 137.0076)
+		(at 140.649 137.241)
 		(descr "JST EH series connector, B4B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J23"
-			(at 3.75 -2.8 360)
+			(at 3.75 -2.8 0)
 			(layer "F.SilkS")
 			(uuid "2d427f04-0a6b-4fb6-8836-f158d96e9293")
 			(effects
@@ -2886,7 +2886,7 @@
 			)
 		)
 		(property "Value" "Conn_01x04_Socket"
-			(at 3.75 3.4 360)
+			(at 3.75 3.4 0)
 			(layer "F.Fab")
 			(uuid "b06afa3e-fea5-4618-b7ea-d3a805a6a992")
 			(effects
@@ -3188,7 +3188,7 @@
 			(uuid "e2dd4678-dd54-4fd9-bdc3-9957f03f4dfe")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 3.75 1.5 360)
+			(at 3.75 1.5 0)
 			(layer "F.Fab")
 			(uuid "5226cc9c-265f-44b1-b8f6-fdbceecc6bb8")
 			(effects
@@ -3405,7 +3405,7 @@
 		(descr "Wuerth electronics barrel jack connector (5.5mm outher diameter, inner diameter 2.05mm or 2.55mm depending on exact order number), See: http://katalog.we-online.de/em/datasheet/6941xx301002.pdf")
 		(tags "connector barrel jack")
 		(property "Reference" "J15"
-			(at 0 -2.5 360)
+			(at 0 -2.5 0)
 			(layer "F.SilkS")
 			(uuid "5a5de33d-8156-44fa-8b2f-a063da2ffcc5")
 			(effects
@@ -3416,7 +3416,7 @@
 			)
 		)
 		(property "Value" "Jack-DC 5V"
-			(at 0 15.5 360)
+			(at 0 15.5 0)
 			(layer "F.Fab")
 			(uuid "3f752c80-ce54-47b1-8d35-7cde05698b19")
 			(effects
@@ -3704,7 +3704,7 @@
 			(uuid "64b5d529-3830-4f54-a084-7eca72807faa")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 7.5 360)
+			(at 0 7.5 0)
 			(layer "F.Fab")
 			(uuid "da014687-5d75-4bee-b9f8-d4a726c71788")
 			(effects
@@ -3759,7 +3759,7 @@
 	(footprint "Connector_JST:JST_EH_B3B-EH-A_1x03_P2.50mm_Vertical"
 		(layer "F.Cu")
 		(uuid "448a56e0-3308-4733-8c4c-5e16ae04c089")
-		(at 142.3454 145.4704)
+		(at 132.3454 145.4704)
 		(descr "JST EH series connector, B3B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J4"
@@ -4139,7 +4139,7 @@
 		(descr "Capacitor SMD 1206 (3216 Metric), square (rectangular) end terminal, IPC_7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor handsolder")
 		(property "Reference" "C1"
-			(at 0 -1.85 270)
+			(at 0 -1.85 -90)
 			(layer "F.SilkS")
 			(uuid "31cec2a8-8968-4694-90cf-4e63c7925d6b")
 			(effects
@@ -4150,7 +4150,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 0 1.85 270)
+			(at 0 1.85 -90)
 			(layer "F.Fab")
 			(uuid "4bdf14ed-5924-470a-8eea-7f3208ca3bb6")
 			(effects
@@ -4302,7 +4302,7 @@
 			(uuid "c90e900f-5522-455a-81b5-07ec2b275577")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 270)
+			(at 0 0 -90)
 			(layer "F.Fab")
 			(uuid "4f00994f-7357-4f30-8694-7e3aeb76648a")
 			(effects
@@ -6317,7 +6317,7 @@
 		(descr "SMD Solder Jumper, 1x1.5mm Triangular Pads, 0.3mm gap, open")
 		(tags "solder jumper open")
 		(property "Reference" "JP2"
-			(at 0 -1.8 360)
+			(at 0 -1.8 0)
 			(layer "F.SilkS")
 			(uuid "c93faab8-c0ed-49a2-aef7-61fb611b870a")
 			(effects
@@ -6328,7 +6328,7 @@
 			)
 		)
 		(property "Value" "Jumper_2_Open"
-			(at 0 1.9 360)
+			(at 0 1.9 0)
 			(layer "F.Fab")
 			(uuid "e2033b7d-308d-475c-84f3-2e61eae0ff66")
 			(effects
@@ -6659,7 +6659,7 @@
 		(descr "SMD Solder Jumper, 1x1.5mm Triangular Pads, 0.3mm gap, open")
 		(tags "solder jumper open")
 		(property "Reference" "JP1"
-			(at 0 -1.8 360)
+			(at 0 -1.8 0)
 			(layer "F.SilkS")
 			(uuid "f424bfc1-83c0-45e1-82dd-de118ee47211")
 			(effects
@@ -6670,7 +6670,7 @@
 			)
 		)
 		(property "Value" "Jumper_2_Open"
-			(at 0 1.9 360)
+			(at 0 1.9 0)
 			(layer "F.Fab")
 			(uuid "0d7086b8-c84a-40f2-9f44-5d62fb327309")
 			(effects
@@ -6854,11 +6854,11 @@
 	(footprint "Connector_JST:JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical"
 		(layer "F.Cu")
 		(uuid "94018ec0-4979-4f32-936c-43aafb91413e")
-		(at 140.1572 131.4402)
+		(at 140.6182 130.6068)
 		(descr "JST EH series connector, B4B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J7"
-			(at 3.75 -2.8 360)
+			(at 3.75 -2.8 0)
 			(layer "F.SilkS")
 			(uuid "8aaad775-4eb9-4024-8efd-6139a8e7a1e2")
 			(effects
@@ -6869,7 +6869,7 @@
 			)
 		)
 		(property "Value" "Conn_01x04_Socket"
-			(at 3.75 3.4 360)
+			(at 3.75 3.4 0)
 			(layer "F.Fab")
 			(uuid "0dc86df2-4ea7-4c89-b2f9-e7839f746b79")
 			(effects
@@ -7171,7 +7171,7 @@
 			(uuid "a65e645e-8432-4aea-bd31-cc44cd2e1cc4")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 3.75 1.5 360)
+			(at 3.75 1.5 0)
 			(layer "F.Fab")
 			(uuid "06942a11-6e53-4c87-a411-0ba284f7aba7")
 			(effects
@@ -7464,11 +7464,11 @@
 	(footprint "Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical"
 		(layer "F.Cu")
 		(uuid "9ee0d71c-1be1-4d6b-864f-86b9a9e8c491")
-		(at 142.28 123.2408)
+		(at 143.1718 123.2408)
 		(descr "JST EH series connector, B2B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J18"
-			(at 1.25 -2.8 360)
+			(at 1.25 -2.8 0)
 			(layer "F.SilkS")
 			(uuid "efe9b1d9-c836-411a-b47a-bea39e0313c0")
 			(effects
@@ -7479,7 +7479,7 @@
 			)
 		)
 		(property "Value" "Conn_01x02_Socket"
-			(at 1.25 3.4 360)
+			(at 1.25 3.4 0)
 			(layer "F.Fab")
 			(uuid "e8bbf0ff-59de-4ccc-90d8-6de9a7597f67")
 			(effects
@@ -7781,7 +7781,7 @@
 			(uuid "77e34d87-56e4-4bc1-8c43-a055ca8edb33")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 1.25 1.5 360)
+			(at 1.25 1.5 0)
 			(layer "F.Fab")
 			(uuid "8068770b-cdc9-4bf7-8723-7b958f1f9f1e")
 			(effects
@@ -10695,11 +10695,11 @@
 	(footprint "Connector_JST:JST_EH_B5B-EH-A_1x05_P2.50mm_Vertical"
 		(layer "F.Cu")
 		(uuid "d6f8d8cf-555b-44ae-a74a-b0b76bb606d6")
-		(at 122.889 137.3172)
+		(at 122.8852 137.241)
 		(descr "JST EH series connector, B5B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J21"
-			(at 5 -2.8 360)
+			(at 5 -2.8 0)
 			(layer "F.SilkS")
 			(uuid "cd742bf7-2d20-43f3-81cd-1ddde7069e55")
 			(effects
@@ -10710,7 +10710,7 @@
 			)
 		)
 		(property "Value" "Conn_01x05_Socket"
-			(at 5 3.4 360)
+			(at 5 3.4 0)
 			(layer "F.Fab")
 			(uuid "73712895-1b6d-4df8-9089-c2883ae74e48")
 			(effects
@@ -11012,7 +11012,7 @@
 			(uuid "ee5fe291-7c12-47e1-9afe-70ff55daa44b")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 5 1.5 360)
+			(at 5 1.5 0)
 			(layer "F.Fab")
 			(uuid "077d03cb-cfa3-42ca-9ccd-7baf6879f845")
 			(effects
@@ -11240,7 +11240,7 @@
 		(descr "SOT, 3 Pin (https://www.jedec.org/system/files/docs/to-236h.pdf variant AB), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "SOT TO_SOT_SMD")
 		(property "Reference" "Q1"
-			(at 0 -2.4 270)
+			(at 0 -2.4 -90)
 			(layer "F.SilkS")
 			(uuid "9674d1ad-4389-46d6-82ff-400b6ea2dd97")
 			(effects
@@ -11251,7 +11251,7 @@
 			)
 		)
 		(property "Value" "DMG2305UX"
-			(at 0 2.4 270)
+			(at 0 2.4 -90)
 			(layer "F.Fab")
 			(uuid "de5583dc-b54f-4671-b951-448720fb8606")
 			(effects
@@ -11445,7 +11445,7 @@
 			(uuid "de13261e-35ed-4f14-8bfc-fa3d7a54d32e")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 270)
+			(at 0 0 -90)
 			(layer "F.Fab")
 			(uuid "999b6cbd-171c-459f-a4df-980a3e206467")
 			(effects
@@ -11865,7 +11865,7 @@
 	(footprint "Connector_JST:JST_EH_B3B-EH-A_1x03_P2.50mm_Vertical"
 		(layer "F.Cu")
 		(uuid "fd067d58-dd49-4f4a-b1eb-698c094fa538")
-		(at 154.5374 145.4704)
+		(at 144.5374 145.4704)
 		(descr "JST EH series connector, B3B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J5"
@@ -12533,8 +12533,8 @@
 		(uuid "013672bf-ded6-4a20-9f69-189ce9bff920")
 	)
 	(gr_rect
-		(start 138.7602 142.9972)
-		(end 174.7266 148.0264)
+		(start 128.7602 142.9972)
+		(end 164.7266 148.0264)
 		(stroke
 			(width 0.1)
 			(type default)
@@ -12542,6 +12542,28 @@
 		(fill none)
 		(layer "F.SilkS")
 		(uuid "030c389e-47ac-4ca2-aa06-c357c7c3b3a1")
+	)
+	(gr_rect
+		(start 119.4816 121.1326)
+		(end 136.2202 133.5278)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill none)
+		(layer "F.SilkS")
+		(uuid "32390471-7942-44c8-bf73-ebd3769734b3")
+	)
+	(gr_rect
+		(start 137.1774 126.4666)
+		(end 151.6808 140.462)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill none)
+		(layer "F.SilkS")
+		(uuid "817bd45e-6eac-44fd-a87e-affe467670cd")
 	)
 	(gr_line
 		(start 183.0918 54.909801)
@@ -12640,16 +12662,8 @@
 		)
 	)
 	(segment
-		(start 132.889 137.3172)
-		(end 139.8622 137.3172)
-		(width 0.2)
-		(layer "F.Cu")
-		(net 3)
-		(uuid "42e0913a-dc88-4ab6-bb4b-6c64106ac146")
-	)
-	(segment
-		(start 139.8622 137.3172)
-		(end 140.1718 137.0076)
+		(start 140.3622 137.3172)
+		(end 140.6718 137.0076)
 		(width 0.2)
 		(layer "F.Cu")
 		(net 3)
@@ -12694,22 +12708,6 @@
 		(layer "F.Cu")
 		(net 5)
 		(uuid "fb65ffbb-883c-4f79-9bb2-d04d6fb80680")
-	)
-	(segment
-		(start 138.6418 124.393)
-		(end 132.8852 130.1496)
-		(width 0.2)
-		(layer "F.Cu")
-		(net 28)
-		(uuid "091d3bc6-b75e-4222-a9a4-5f9d78f57eea")
-	)
-	(segment
-		(start 138.6418 109.1498)
-		(end 138.6418 124.393)
-		(width 0.2)
-		(layer "F.Cu")
-		(net 28)
-		(uuid "7163de3a-c643-4ea9-817d-423532a5fe86")
 	)
 	(segment
 		(start 147.4118 100.3798)
