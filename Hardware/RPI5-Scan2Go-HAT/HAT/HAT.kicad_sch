@@ -10,6 +10,7 @@
 		(rev "V0.2")
 		(company "UMC Utrecht")
 		(comment 1 "Casper R. Tak")
+		(comment 2 "HF-P99-006-01")
 	)
 	(lib_symbols
 		(symbol "Connector:Conn_01x02_Socket"
