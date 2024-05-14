@@ -6,3 +6,4 @@
 *.zip
 Hardware/RPI5-Scan2Go-HAT/HAT/~HAT.kicad_pcb.lck
 Hardware/RPI5-Scan2Go-HAT/HAT/HAT.kicad_prl
+Hardware/RPI5-Scan2Go-HAT/HAT/fabrication-toolkit-options.json
