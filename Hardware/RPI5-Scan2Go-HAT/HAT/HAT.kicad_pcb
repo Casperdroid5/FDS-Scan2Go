@@ -436,7 +436,7 @@
 		(descr "JST EH series connector, B3B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J6"
-			(at 2.5646 -2.3704 -0)
+			(at 2.5646 -2.3704 0)
 			(layer "B.SilkS")
 			(uuid "4bd167b6-e6ee-4c7f-9458-aa4ecbc7892d")
 			(effects
@@ -813,7 +813,7 @@
 		(descr "JST EH series connector, B5B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J20"
-			(at 5 -2.8 -0)
+			(at 5 -2.8 0)
 			(layer "B.SilkS")
 			(uuid "a1e5c037-326b-4cbf-a080-e187416e13c2")
 			(effects
@@ -1212,7 +1212,7 @@
 		(descr "JST EH series connector, B4B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J2"
-			(at 3.7157 -2.3876 -0)
+			(at 3.7157 -2.3876 0)
 			(layer "B.SilkS")
 			(uuid "9ef66a98-0063-402d-bde7-752af0ead06b")
 			(effects
@@ -2364,7 +2364,7 @@
 		(descr "JST EH series connector, B2B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J19"
-			(at 1.25 -2.8 -0)
+			(at 1.25 -2.8 0)
 			(layer "B.SilkS")
 			(uuid "07d221fa-f0b0-447d-b229-88780ff45493")
 			(effects
@@ -2730,7 +2730,7 @@
 		(descr "JST EH series connector, B2B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J8"
-			(at 1.25 -2.8 -0)
+			(at 1.25 -2.8 0)
 			(layer "B.SilkS")
 			(uuid "9b127535-d71b-4f16-bef4-2d7b9d1c3ae9")
 			(effects
@@ -3096,7 +3096,7 @@
 		(descr "JST EH series connector, B4B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J23"
-			(at 3.75 -2.8 -0)
+			(at 3.75 -2.8 0)
 			(layer "B.SilkS")
 			(uuid "2d427f04-0a6b-4fb6-8836-f158d96e9293")
 			(effects
@@ -4135,7 +4135,7 @@
 		(descr "Wuerth electronics barrel jack connector (5.5mm outher diameter, inner diameter 2.05mm or 2.55mm depending on exact order number), See: http://katalog.we-online.de/em/datasheet/6941xx301002.pdf")
 		(tags "connector barrel jack")
 		(property "Reference" "J15"
-			(at 0 -2.5 -0)
+			(at 0 -2.5 0)
 			(layer "B.SilkS")
 			(uuid "5a5de33d-8156-44fa-8b2f-a063da2ffcc5")
 			(effects
@@ -4494,7 +4494,7 @@
 		(descr "JST EH series connector, B3B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J4"
-			(at 2.5 -2.3704 -0)
+			(at 2.5 -2.3704 0)
 			(layer "B.SilkS")
 			(uuid "8c23ed72-158c-4dda-b691-d71954b1c2fa")
 			(effects
@@ -6142,7 +6142,7 @@
 		(descr "JST EH series connector, B2B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J14"
-			(at 1.25 -2.8 -0)
+			(at 1.25 -2.8 0)
 			(layer "B.SilkS")
 			(uuid "5c4dffb9-3a8b-46c5-a4a8-11074641a05a")
 			(effects
@@ -6508,7 +6508,7 @@
 		(descr "JST EH series connector, B2B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J9"
-			(at 1.25 -2.8 -0)
+			(at 1.25 -2.8 0)
 			(layer "B.SilkS")
 			(uuid "46a3f9ff-8082-4eb9-abc0-ffdece113e55")
 			(effects
@@ -6874,7 +6874,7 @@
 		(descr "JST EH series connector, B2B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J13"
-			(at 1.25 -2.8 -0)
+			(at 1.25 -2.8 0)
 			(layer "B.SilkS")
 			(uuid "678e6bff-8182-462f-ae0f-cdf4c7e91eee")
 			(effects
@@ -7240,7 +7240,7 @@
 		(descr "JST EH series connector, B2B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J22"
-			(at 1.25 -2.8 -0)
+			(at 1.25 -2.8 0)
 			(layer "B.SilkS")
 			(uuid "61975848-dedc-4b28-8b0b-d5993b90f5ff")
 			(effects
@@ -7606,7 +7606,7 @@
 		(descr "JST EH series connector, B2B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J24"
-			(at 1.25 -2.8 -0)
+			(at 1.25 -2.8 0)
 			(layer "B.SilkS")
 			(uuid "1655fd68-f7d9-49c8-b620-7abe34737047")
 			(effects
@@ -8447,7 +8447,7 @@
 		(descr "JST EH series connector, B4B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J7"
-			(at 3.75 -2.8 -0)
+			(at 3.75 -2.8 0)
 			(layer "B.SilkS")
 			(uuid "8aaad775-4eb9-4024-8efd-6139a8e7a1e2")
 			(effects
@@ -8846,7 +8846,7 @@
 			)
 		)
 		(property "Value" "10 A"
-			(at 0 2.28 270)
+			(at 0 2.28 -90)
 			(layer "F.Fab")
 			(uuid "a6398278-4800-45b4-a976-dab368107e1a")
 			(effects
@@ -9011,7 +9011,7 @@
 			(uuid "dff72c73-956b-4c3e-a440-0990f833004b")
 		)
 		(fp_text user "${REFERENCE}"
-			(at 0 0 270)
+			(at 0 0 -90)
 			(layer "F.Fab")
 			(uuid "043f363d-0af5-49e4-900a-16d4d9c6b57b")
 			(effects
@@ -9059,7 +9059,7 @@
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.SilkS")
-			(uuid "a3effa23-9288-461d-bb1f-edbf2343d390")
+			(uuid "1dedf2d2-7e54-469c-aa0b-b3a74549f560")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9070,7 +9070,7 @@
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
-			(uuid "0610eec1-6f1a-4cd3-a1c4-829772eeb7a4")
+			(uuid "b006d3e6-0ed8-40f6-bcf3-8a64ad15ef9c")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9125,7 +9125,7 @@
 			(layers "F&B.Cu" "*.Mask")
 			(solder_mask_margin 1.725)
 			(clearance 1.725)
-			(uuid "75ebf81c-674f-4990-8495-4defdec722a5")
+			(uuid "b97a2cf3-1aa0-447a-b501-1bf2d9becbfe")
 		)
 	)
 	(footprint "Connector_JST:JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical"
@@ -9135,7 +9135,7 @@
 		(descr "JST EH series connector, B2B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J18"
-			(at 1.2282 -2.5408 -0)
+			(at 1.2282 -2.5408 0)
 			(layer "B.SilkS")
 			(uuid "efe9b1d9-c836-411a-b47a-bea39e0313c0")
 			(effects
@@ -10041,7 +10041,6 @@
 			)
 			(fill none)
 			(layer "F.SilkS")
-			(net 9)
 			(uuid "745cd05b-bb89-4e10-b699-df8ddf8c9f7c")
 		)
 		(fp_rect
@@ -10053,7 +10052,6 @@
 			)
 			(fill none)
 			(layer "F.SilkS")
-			(net 9)
 			(uuid "33bbae2d-5f37-4e7b-825a-a70704b0aeda")
 		)
 		(fp_rect
@@ -10681,7 +10679,7 @@
 				(xyz 0 0 0)
 			)
 		)
-		(model "${KIPRJMOD}/Footprintsand3Dmodels/Library.pretty/raspberry pi pico with contacts.step"
+		(model "${KIPRJMOD}/sourcefootprintsand3dmodels/Library.pretty/raspberry pi pico with contacts.step"
 			(offset
 				(xyz 0 0 9)
 			)
@@ -11581,7 +11579,7 @@
 		(descr "JST EH series connector, B2B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J10"
-			(at 1.25 -2.8 -0)
+			(at 1.25 -2.8 0)
 			(layer "B.SilkS")
 			(uuid "4c4cd836-7763-44b3-b6a6-a79f83fe8ed4")
 			(effects
@@ -11947,7 +11945,7 @@
 		(descr "JST EH series connector, B5B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J21"
-			(at 5 -2.391 -0)
+			(at 5 -2.391 0)
 			(layer "B.SilkS")
 			(uuid "cd742bf7-2d20-43f3-81cd-1ddde7069e55")
 			(effects
@@ -12346,7 +12344,7 @@
 		(descr "JST EH series connector, B2B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J12"
-			(at 1.25 -2.8 -0)
+			(at 1.25 -2.8 0)
 			(layer "B.SilkS")
 			(uuid "bce27988-ccb0-42a8-ade3-53c9c198f940")
 			(effects
@@ -12712,7 +12710,7 @@
 		(descr "JST EH series connector, B3B-EH-A (http://www.jst-mfg.com/product/pdf/eng/eEH.pdf), generated with kicad-footprint-generator")
 		(tags "connector JST EH vertical")
 		(property "Reference" "J5"
-			(at 2.6626 -2.4704 -0)
+			(at 2.6626 -2.4704 0)
 			(layer "B.SilkS")
 			(uuid "0ce74f94-d2c6-487a-bba1-a6972cfcfbfd")
 			(effects
@@ -13373,7 +13371,7 @@
 			(at 0 0 90)
 			(layer "B.SilkS")
 			(hide yes)
-			(uuid "71277014-66e3-44d9-9094-04795c8e995a")
+			(uuid "d2d93ab5-d8aa-43ce-b426-f4be95d665bd")
 			(effects
 				(font
 					(size 1.5 1.5)
@@ -13386,7 +13384,7 @@
 			(at 0.75 0 90)
 			(layer "B.SilkS")
 			(hide yes)
-			(uuid "a17bc198-6cfe-45ab-9996-753f411bc79d")
+			(uuid "74c6117f-2094-4436-87c9-b110f4cd86af")
 			(effects
 				(font
 					(size 1.5 1.5)
@@ -13455,7 +13453,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "2aff42d0-72ee-40b5-bace-2900a07dd484")
+			(uuid "3d357788-ad66-4a01-b581-56fda79e1835")
 		)
 		(fp_poly
 			(pts
@@ -13477,7 +13475,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "ccaf3437-30d6-44c6-8dd0-d8e0e7a16523")
+			(uuid "2c4be929-cd67-4db4-8b19-ab009e952ae2")
 		)
 		(fp_poly
 			(pts
@@ -13503,7 +13501,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "ed1be2d6-d3c1-407d-a36d-40cbc5243939")
+			(uuid "ff2ca020-b895-4bef-b42f-e24eea8dca66")
 		)
 		(fp_poly
 			(pts
@@ -13528,7 +13526,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "3178f875-4878-4cd6-9f85-e22b700499c7")
+			(uuid "511fe101-726c-409d-b7fe-3794bceb4d81")
 		)
 		(fp_poly
 			(pts
@@ -13561,7 +13559,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "be7e5a8d-92b4-464a-a214-27e8899b4bee")
+			(uuid "436db843-e1b8-426a-86f6-7126e7adb40b")
 		)
 		(fp_poly
 			(pts
@@ -13593,7 +13591,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "a74acd52-8eb9-49f3-8bb6-bf57c555e9ea")
+			(uuid "53ea460e-6b1a-4a16-94ff-48a7f012f76f")
 		)
 		(fp_poly
 			(pts
@@ -13624,7 +13622,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "451d3831-0029-49e4-ae6b-bdd4ab823283")
+			(uuid "8edbebb4-da4a-44b9-a662-eba3152b5ee7")
 		)
 		(fp_poly
 			(pts
@@ -13656,7 +13654,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "157a76fa-8d25-44ca-b700-6dc030f74da3")
+			(uuid "9e1169ee-aca5-47f7-95ce-a10c5820fc8f")
 		)
 		(fp_poly
 			(pts
@@ -13690,7 +13688,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "2606c883-ef2f-45a1-baf8-3362345448fd")
+			(uuid "752562b0-3d76-4a37-a066-334d20ae869d")
 		)
 		(fp_poly
 			(pts
@@ -13730,7 +13728,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "8cf6a981-9205-4568-be8f-2dfd62536018")
+			(uuid "e07c4d03-28dd-4476-a9ce-035b8614e8f4")
 		)
 		(fp_poly
 			(pts
@@ -13769,7 +13767,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "51f055be-a421-4d15-8a45-9162a37908ac")
+			(uuid "d54065b0-4ecd-40a3-a9bd-3aaeae773054")
 		)
 		(fp_poly
 			(pts
@@ -14134,7 +14132,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "efdf56e2-e2a1-467c-8853-bca0a5415261")
+			(uuid "e292ffc9-99a2-49a1-bad8-97f61c3d1683")
 		)
 	)
 	(footprint "LOGO"
@@ -14145,7 +14143,7 @@
 			(at 0 0 90)
 			(layer "B.SilkS")
 			(hide yes)
-			(uuid "06a2f60f-31b5-45fe-84b3-e74efe0f4ae2")
+			(uuid "72396d84-d313-4481-9994-7d721851d001")
 			(effects
 				(font
 					(size 1.5 1.5)
@@ -14158,7 +14156,7 @@
 			(at 0.75 0 90)
 			(layer "B.SilkS")
 			(hide yes)
-			(uuid "71e433fa-6e65-4a34-9f51-3753a6e11284")
+			(uuid "7831d835-60a0-4e77-a061-8d9f5c8ab71a")
 			(effects
 				(font
 					(size 1.5 1.5)
@@ -14228,7 +14226,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "eb8271e1-6fac-4d55-83da-b31491157f15")
+			(uuid "ecda851a-762f-4c5c-8d18-aa23b8a06e08")
 		)
 		(fp_poly
 			(pts
@@ -14255,7 +14253,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "1526f9c8-35d6-4a87-abb4-8f384a2f8cc7")
+			(uuid "12dc6af7-a987-4069-bea8-b8ab576f351a")
 		)
 		(fp_poly
 			(pts
@@ -14282,7 +14280,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "8ac5acbb-8980-4263-bf61-f185f77e1bae")
+			(uuid "e6bf00f4-3934-47ee-b0cd-9743091ce420")
 		)
 		(fp_poly
 			(pts
@@ -14314,7 +14312,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "e0e0e060-5a56-449a-898a-614afdc487bd")
+			(uuid "aac93971-e495-40bf-80ec-3dbbaefd69ad")
 		)
 		(fp_poly
 			(pts
@@ -14346,7 +14344,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "126a047a-863a-4e18-8f81-31c92b4d63c8")
+			(uuid "29a1a355-ac33-4e98-8ef6-a5cffc21544e")
 		)
 		(fp_poly
 			(pts
@@ -14381,7 +14379,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "6e4f0ac9-2283-479c-a116-cdb8e938a50a")
+			(uuid "5ae3f7c0-d562-4d5a-9308-8d14a30694f7")
 		)
 		(fp_poly
 			(pts
@@ -14419,7 +14417,7 @@
 			)
 			(fill solid)
 			(layer "B.SilkS")
-			(uuid "1aee5e4b-3eeb-4034-9eaf-f2adf8f72e7b")
+			(uuid "4d827b92-5e16-4b66-b0a1-23fe0404cfdc")
 		)
 	)
 	(footprint "LOGO"
