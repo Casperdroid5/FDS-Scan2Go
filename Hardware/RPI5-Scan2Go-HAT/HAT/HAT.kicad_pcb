@@ -4116,7 +4116,7 @@
 				(xyz 0 -180 180)
 			)
 		)
-		(model "${KIPRJMOD}/Footprints/Library.pretty/raspberry-pi-5-sbc-simple.step"
+		(model "${KIPRJMOD}/Footprintsand3Dmodels/Library.pretty/raspberry-pi-5-sbc-simple.step"
 			(offset
 				(xyz -24.3 -10.1 -10)
 			)
@@ -10681,7 +10681,7 @@
 				(xyz 0 0 0)
 			)
 		)
-		(model "${KIPRJMOD}/Footprints/Library.pretty/raspberry pi pico with contacts.step"
+		(model "${KIPRJMOD}/Footprintsand3Dmodels/Library.pretty/raspberry pi pico with contacts.step"
 			(offset
 				(xyz 0 0 9)
 			)
@@ -11562,7 +11562,7 @@
 				(xyz 0 0 0)
 			)
 		)
-		(model "${KIPRJMOD}/Footprints/Library.pretty/adafruit_MAX9744 v3.step"
+		(model "${KIPRJMOD}/Footprintsand3Dmodels/Library.pretty/adafruit_MAX9744 v3.step"
 			(offset
 				(xyz -17.85 -16 7)
 			)
