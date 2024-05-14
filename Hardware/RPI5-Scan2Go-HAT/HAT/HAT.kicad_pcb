@@ -417,7 +417,7 @@
 			(pintype "passive")
 			(uuid "8d419679-81ed-488c-8079-4f9f5409ba59")
 		)
-		(model "C:\\Users\\crtak\\Documents\\KiCad\\SamacSys_Parts.3dshapes\\SMBJ26A.stp"
+		(model "${KIPRJMOD}/packages3D/SMBJ26A.stp"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -794,7 +794,7 @@
 			(pintype "passive")
 			(uuid "a29fd0ec-06c3-45df-a8d6-18fdc18e6c4b")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B3B-EH-A_1x03_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B3B-EH-A_1x03_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -1193,7 +1193,7 @@
 			(pintype "passive")
 			(uuid "0e97f325-6c11-40d7-b815-98e9e5ee4967")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B5B-EH-A_1x05_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B5B-EH-A_1x05_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -1581,7 +1581,7 @@
 			(pintype "passive")
 			(uuid "899ff643-b76d-41e2-b180-bbcec61b72b8")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -2711,7 +2711,7 @@
 			(pintype "passive")
 			(uuid "7d1158ab-b9fc-4397-b927-8fdda986c0e8")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -3077,7 +3077,7 @@
 			(pintype "passive")
 			(uuid "f768f657-fc28-4c5e-9f5d-65b225143442")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -3465,7 +3465,7 @@
 			(pintype "passive")
 			(uuid "26f6e46e-3bd8-4a54-9c51-bd359bd6b283")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -4116,7 +4116,7 @@
 				(xyz 0 -180 180)
 			)
 		)
-		(model "${KIPRJMOD}/Footprintsand3Dmodels/Library.pretty/raspberry-pi-5-sbc-simple.step"
+		(model "${KIPRJMOD}/packages3D/raspberry-pi-5-sbc-simple.step"
 			(offset
 				(xyz -24.3 -10.1 -10)
 			)
@@ -4475,7 +4475,7 @@
 			(pintype "passive")
 			(uuid "a44760f2-475a-49e1-87d5-95f91b08d493")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_BarrelJack.3dshapes/BarrelJack_Horizontal.step"
+		(model "${KIPRJMOD}/packages3D/BarrelJack_Horizontal.step"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -4852,7 +4852,7 @@
 			(pintype "passive")
 			(uuid "a54b9cf5-fb14-483e-87a6-045d1d731e68")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B3B-EH-A_1x03_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B3B-EH-A_1x03_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -5062,7 +5062,7 @@
 			(pintype "passive")
 			(uuid "5403c4f8-27ec-45f8-96d1-fd4c5817bb5c")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Capacitor_SMD.3dshapes/C_1206_3216Metric.wrl"
+		(model "${KIPRJMOD}/packages3D/C_1206_3216Metric.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -6489,7 +6489,7 @@
 			(pintype "passive")
 			(uuid "f4b10df3-062e-43ac-bc01-460950028291")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -6855,7 +6855,7 @@
 			(pintype "passive")
 			(uuid "978bcb0d-2174-410c-a11b-d77719d19bb6")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -7221,7 +7221,7 @@
 			(pintype "passive")
 			(uuid "c4e99931-201e-4216-adfc-e845171edd4a")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -7587,7 +7587,7 @@
 			(pintype "passive")
 			(uuid "cf3d5b07-d75e-4871-b328-92e853202b93")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -7953,7 +7953,7 @@
 			(pintype "passive")
 			(uuid "a3465ae3-918a-46a3-8629-d39718888923")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -8816,7 +8816,7 @@
 			(pintype "passive")
 			(uuid "468bbef3-3e8d-4061-904b-ee5663937e42")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -9039,7 +9039,7 @@
 			(pintype "passive")
 			(uuid "93237c16-1dce-4b74-ae91-a8c68aa61f27")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Fuse.3dshapes/Fuse_1210_3225Metric.wrl"
+		(model "${KIPRJMOD}/packages3D/Fuse_1210_3225Metric.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -9482,7 +9482,7 @@
 			(pintype "passive")
 			(uuid "551795f8-eb01-43d8-a5f2-10cca2ad48da")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -10692,7 +10692,7 @@
 				(xyz 0 0 0)
 			)
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_PinSocket_2.54mm.3dshapes/PinSocket_1x20_P2.54mm_Vertical.step"
+		(model "${KIPRJMOD}/packages3D/PinSocket_1x20_P2.54mm_Vertical.step"
 			(offset
 				(xyz 8.9 24.1 0)
 			)
@@ -11562,7 +11562,7 @@
 				(xyz 0 0 0)
 			)
 		)
-		(model "${KIPRJMOD}/Footprintsand3Dmodels/Library.pretty/adafruit_MAX9744 v3.step"
+		(model "${KIPRJMOD}/packages3D/adafruit_MAX9744 v3.step"
 			(offset
 				(xyz -17.85 -16 7)
 			)
@@ -11928,7 +11928,7 @@
 			(pintype "passive")
 			(uuid "effe9a83-7607-45a1-87a2-22c9d4fcdd59")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -12327,7 +12327,7 @@
 			(pintype "passive")
 			(uuid "4a11d44c-ec1c-402b-8798-77ea7766a0a8")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B5B-EH-A_1x05_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B5B-EH-A_1x05_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -12693,7 +12693,7 @@
 			(pintype "passive")
 			(uuid "8ad0512c-4e52-46de-96ff-607d5699458b")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -13070,7 +13070,7 @@
 			(pintype "passive")
 			(uuid "4ad636bb-2eb8-4f21-8f7c-d7296ab9d3ff")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/Connector_JST.3dshapes/JST_EH_B3B-EH-A_1x03_P2.50mm_Vertical.wrl"
+		(model "${KIPRJMOD}/packages3D/JST_EH_B3B-EH-A_1x03_P2.50mm_Vertical.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
@@ -13353,7 +13353,7 @@
 			(pintype "input")
 			(uuid "634e44c2-9268-4695-a916-1811e6f5287f")
 		)
-		(model "${KICAD8_3DMODEL_DIR}/LED_SMD.3dshapes/LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm.wrl"
+		(model "${KIPRJMOD}/packages3D/LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm.wrl"
 			(offset
 				(xyz 0 0 0)
 			)
