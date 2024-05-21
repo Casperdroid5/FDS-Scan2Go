@@ -6948,9 +6948,9 @@
 		)
 		(uuid "e26fb451-318b-4cc4-b6cd-addb285510dc")
 	)
-	(text "Ferro metaldetector \nlogic input\n"
+	(text "Ferro metaldetector \nrelay connector\n\n"
 		(exclude_from_sim no)
-		(at 24.638 176.276 0)
+		(at 25.654 176.53 0)
 		(effects
 			(font
 				(size 1.27 1.27)

@@ -66,8 +66,9 @@ class StateMachine:
         #self.button_door_mri_room.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door_mri_room_button_press)
 
         # Initialize ferrometal scanner
-        self.ferrometalscanner = Pin(18, Pin.IN, Pin.PULL_UP)
+        self.ferrometalscanner = Pin(16, Pin.IN, Pin.PULL_UP)
         self.ferrometalscanner.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_ferrometal_detected)
+        self.latchreset = Pin(22, Pin.OUT) # reset latch
 
         # Initialize UART-communication with RPI5
         self.RPI5_USB_LINE = USBCommunication()
@@ -169,9 +170,11 @@ class StateMachine:
             None
         """
         global ferrometaldetected
+        self.latchreset.value(1) # reset latch by sending a high signal
         self.RPI5_USB_LINE.send_message("Ferrometalscanner detected metal")
         systemlog.log_message("Ferrometalscanner detected metal")
         ferrometaldetected = True
+        self.latchreset.value(0) # latch reset, now ready for new detection
 
     def person_detected_in_field(self, field): 
         """
