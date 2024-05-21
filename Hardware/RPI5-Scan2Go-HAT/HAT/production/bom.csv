@@ -1,0 +1,15 @@
+﻿Designator,Footprint,Quantity,Value,LCSC Part #
+C1,1206,1,0.1uF,
+D1,DIOM5436X261N,1,SMBJ26A,C10216
+D2,LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm,1,WS2812B,
+F1,2010,1,10 A,C136353
+J1,Pin_Header_Straight_2x20,1,RPi_GPIO,
+"J10, J12, J13, J14, J18, J19, J22, J24, J8, J9",JST_EH_B2B-EH-A_1x02_P2.50mm_Vertical,10,Conn_01x02_Socket,
+J15,BarrelJack_Wuerth_6941xx301002,1,Jack-DC 5V,
+"J2, J23, J7",JST_EH_B4B-EH-A_1x04_P2.50mm_Vertical,3,Conn_01x04_Socket,
+"J20, J21",JST_EH_B5B-EH-A_1x05_P2.50mm_Vertical,2,Conn_01x05_Socket,
+J3,PinSocket_1x14_P2.54mm_Vertical,1,Conn_01x14_Socket,
+"J4, J5, J6",JST_EH_B3B-EH-A_1x03_P2.50mm_Vertical,3,Conn_01x03_Socket,
+"JP1, JP2",SolderJumper-2_P1.3mm_Open_TrianglePad1.0x1.5mm,2,Jumper_2_Open,
+TP1,TestPoint_Pad_2.0x2.0mm,1,TestPoint,
+U1,RPi_Pico_SMD_TH,1,Pico,
