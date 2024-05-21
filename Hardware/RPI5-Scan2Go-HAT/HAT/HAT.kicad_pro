@@ -15,7 +15,7 @@
         "copper_text_upright": false,
         "courtyard_line_width": 0.05,
         "dimension_precision": 4,
-        "dimension_units": 3,
+        "dimension_units": 2,
         "dimensions": {
           "arrow_length": 1270000,
           "extension_offset": 500000,
@@ -598,6 +598,36 @@
           "label": "Populate",
           "name": "Populate",
           "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Mouser Price/Stock",
+          "name": "Mouser Price/Stock",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Mouser Part Number",
+          "name": "Mouser Part Number",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Height",
+          "name": "Height",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Manufacturer_Part_Number",
+          "name": "Manufacturer_Part_Number",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Manufacturer_Name",
+          "name": "Manufacturer_Name",
+          "show": false
         }
       ],
       "filter_string": "",
@@ -635,7 +665,7 @@
     },
     "net_format_name": "",
     "page_layout_descr_file": "",
-    "plot_directory": "",
+    "plot_directory": "./",
     "spice_current_sheet_as_root": false,
     "spice_external_command": "spice \"%I\"",
     "spice_model_current_sheet_as_root": true,
