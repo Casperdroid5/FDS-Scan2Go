@@ -8845,7 +8845,7 @@
 				)
 			)
 		)
-		(property "Value" "10 A"
+		(property "Value" "5 A"
 			(at 0 2.28 -90)
 			(layer "F.Fab")
 			(uuid "a6398278-4800-45b4-a976-dab368107e1a")
