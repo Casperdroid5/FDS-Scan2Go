@@ -301,6 +301,7 @@ if __name__ == "__main__":
     FDS = StateMachine(led_controller, door_controller, sensor_controller, communication, systemlog, timer)
     try:
         SystemInitCheck().systemcheck()
+        systemlog.log_message("Systemcheck passed. Starting FDS...")
         while True:
             if running:
                 FDS.run()
@@ -316,4 +317,5 @@ if __name__ == "__main__":
         communication.send_message("System encountered unexpected error")
         systemlog.log_message("System encountered unexpected error")
         systemlog.close_log()
+
 
