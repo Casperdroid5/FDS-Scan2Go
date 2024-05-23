@@ -1,11 +1,25 @@
-# main.py
+"""
+Main module for the Scan2Go FDS
+"""
+
 from hardware_s2g import LD2410PersonDetector, Door, WS2812
 from system_utils import SystemInitCheck, Timer, USBCommunication, Log
 from machine import Pin
 
+global running   # system running global variable
+running = False  # wait for system to be initialised before starting the state machine
+global ferrometaldetected
+ferrometaldetected = False  # Global variable to check if metal is detected
+
 class StateMachine:
-    """Class representing the state machine of the MRI facility."""
+    """
+    Class representing the state machine.
+    """
+
     def __init__(self, led_controller, door_controller, sensor_controller, communication, logger, timer):
+        """
+        Initialize the state machine.
+        """
         self.state = None
         self.user_in_mri = False
         self.emergency_state_triggerd = False
@@ -33,6 +47,9 @@ class StateMachine:
         self.initialize_buttons()
 
     def initialize_buttons(self):
+        """
+        Initialize the hardware buttons and their IRQ handlers.
+        """
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)
         self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_emergencybutton_press)
 
@@ -48,16 +65,43 @@ class StateMachine:
         self.latchreset = Pin(22, Pin.OUT)
 
     def IRQ_handler_door_changeroom_button_press(self, pin):
+        """
+        Handler for the button press event for door in the change room.
+
+        Args:
+            pin (Pin): The pin object corresponding to the button press event.
+
+        Returns:
+            None
+        """
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
             if self.door_controller.is_changeroom_door_closed():
                 self.door_controller.open_changeroom_door()
 
     def IRQ_handler_door_mri_room_button_press(self, pin):
+        """
+        Handler for the button press event for door in the MRI room.
+
+        Args:
+            pin (Pin): The pin object corresponding to the button press event.
+
+        Returns:
+            None
+        """
         if self.state == self.USER_IN_MR_ROOM_STATE or (ferrometaldetected == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
             if self.door_controller.is_mri_room_door_closed():
                 self.door_controller.open_mri_room_door()
 
     def IRQ_handler_emergencybutton_press(self, pin):
+        """
+        Handler for the emergency button press event.
+
+        Args:
+            pin (Pin): The pin object corresponding to the emergency button press event.
+
+        Returns:
+            None
+        """
         self.communication.send_message("Emergency button")
         self.communication.send_message("showimage 7")
         self.logger.log_message("Emergency button pressed")
@@ -66,6 +110,15 @@ class StateMachine:
         running = False
 
     def IRQ_handler_button_system_reset(self, pin):
+        """
+        Handler for the system reset button press event.
+
+        Args:
+            pin (Pin): The pin object corresponding to the system reset button press event.
+
+        Returns:
+            None
+        """
         self.communication.send_message("System reset button")
         self.logger.log_message("System reset button pressed")
         self.system_initialised = False
@@ -76,6 +129,15 @@ class StateMachine:
         running = True
 
     def IRQ_handler_bypassbutton_press(self, pin):
+        """
+        Handler for the system override button press event.
+
+        Args:
+            pin (Pin): The pin object corresponding to the system override button press event.
+
+        Returns:
+            None
+        """
         self.communication.send_message("Override button pressed")
         self.communication.send_message("showimage 8")
         self.logger.log_message("System override button pressed")
@@ -85,6 +147,15 @@ class StateMachine:
         running = False
 
     def IRQ_handler_ferrometal_detected(self, pin):
+        """
+        Handler for the ferrometal detection event.
+
+        Args:
+            pin (Pin): The pin object corresponding to the ferrometal detection event.
+
+        Returns:
+            None
+        """
         global ferrometaldetected
         self.latchreset.value(1)
         self.communication.send_message("Ferrometalscanner detected metal")
@@ -93,9 +164,24 @@ class StateMachine:
         self.latchreset.value(0)
 
     def person_detected_in_field(self, field):
+        """
+        Check if a person is detected in a particular field.
+
+        Args:
+            field (str): The field identifier ('A' or 'B').
+
+        Returns:
+            bool: True if a person is detected, False otherwise.
+        """
         return self.sensor_controller.person_detected(field, self.sensor_to_object_distance_threshold)
 
     def systemset(self):
+        """
+        Initialize the system.
+
+        Returns:
+            None
+        """
         self.led_controller.turn_off_all()
         self.door_controller.close_mri_room_door()
         self.door_controller.open_changeroom_door()
@@ -104,6 +190,12 @@ class StateMachine:
         self.communication.send_message("playaudio 1")
 
     def run(self):
+        """
+        Run the state machine logic.
+
+        Returns:
+            None
+        """
         global ferrometaldetected
         global running
         self.state = self.INITIALISATION_STATE
@@ -125,6 +217,12 @@ class StateMachine:
                 self.freeze()
 
     def handle_initialisation_state(self):
+        """
+        Handle the initialisation state logic.
+
+        Returns:
+            None
+        """
         if not self.system_initialised:
             self.systemset()
         elif not self.image_opened:
@@ -139,6 +237,12 @@ class StateMachine:
             self.communication.send_message("showimage 1")
 
     def handle_user_field_a_response_state(self):
+        """
+        Handle the user field A response state logic.
+
+        Returns:
+            None
+        """
         if not self.audio_played:
             self.communication.send_message("playaudio 5")
             self.audio_played = True
@@ -155,6 +259,12 @@ class StateMachine:
             return
 
     def handle_user_field_b_response_state(self):
+        """
+        Handle the user field B response state logic.
+
+        Returns:
+            None
+        """
         if self.person_detected_in_field('B') and not self.person_detected_in_field('A') and not ferrometaldetected:
             self.communication.send_message("showimage 3")
             self.communication.send_message("playaudio 8")
@@ -167,11 +277,23 @@ class StateMachine:
             self.led_controller.set_color("FerrometalDetector", "yellow")
 
     def handle_user_in_mr_room_state(self):
+        """
+        Handle the user in MRI room state logic.
+
+        Returns:
+            None
+        """
         if not self.person_detected_in_field('B') and not self.person_detected_in_field('A'):
             self.communication.send_message("showimage 5")
             self.state = self.USER_RETURNS_FROM_MR_ROOM_STATE
 
     def handle_user_returns_from_mr_room_state(self):
+        """
+        Handle the user returns from MRI room state logic.
+
+        Returns:
+            None
+        """
         if self.person_detected_in_field('B') or self.person_detected_in_field('A'):
             self.communication.send_message("showimage 6")
             self.communication.send_message("playaudio 10")
@@ -179,11 +301,23 @@ class StateMachine:
             self.state = self.USER_EXITS_FDS_STATE
 
     def handle_user_exits_fds_state(self):
+        """
+        Handle the user exits FDS state logic.
+
+        Returns:
+            None
+        """
         if not self.person_detected_in_field('B') and self.person_detected_in_field('A'):
             self.door_controller.open_changeroom_door()
             self.state = self.INITIALISATION_STATE
 
     def handle_metal_detected(self):
+        """
+        Handle the metal detected scenario.
+
+        Returns:
+            None
+        """
         if not self.image_opened:
             self.communication.send_message("showimage 4")
             self.image_opened = True
@@ -193,6 +327,12 @@ class StateMachine:
         self.door_controller.open_changeroom_door()
 
     def reset_state(self):
+        """
+        Reset the state machine to initial state.
+
+        Returns:
+            None
+        """
         self.communication.send_message("closeimage")
         self.audio_played = False
         self.image_opened = False
@@ -201,6 +341,12 @@ class StateMachine:
         ferrometaldetected = False
 
     def freeze(self):
+        """
+        Freeze the system in case of emergency or override.
+
+        Returns:
+            None
+        """
         global running
         if not running and self.system_override_state_triggerd:
             self.led_controller.set_color_all("white")
@@ -211,7 +357,9 @@ class StateMachine:
             self.door_controller.open_all_doors()
 
 class LEDController:
-    """Controller for managing LED indicators."""
+    """
+    Controller for managing LED indicators.
+    """
     def __init__(self):
         self.leds = {
             "fieldA": WS2812(pin_number=2, num_leds=2, brightness=50),
@@ -232,7 +380,9 @@ class LEDController:
             led.set_color(color)
 
 class DoorController:
-    """Controller for managing doors."""
+    """
+    Controller for managing doors.
+    """
     def __init__(self):
         self.door_changeroom = Door(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19)
         self.door_mri_room = Door(pin_number=15, angle_closed=90, angle_open=185, position_sensor_pin=20)
@@ -260,7 +410,9 @@ class DoorController:
         return self.door_mri_room.door_state == "closed"
 
 class SensorController:
-    """Controller for managing sensors."""
+    """
+    Controller for managing sensors.
+    """
     def __init__(self):
         self.sensors = {
             "fieldA": LD2410PersonDetector(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1),
