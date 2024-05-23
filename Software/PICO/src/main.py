@@ -194,6 +194,7 @@ class StateMachine:
             self.state = self.INITIALISATION_STATE
 
     def handle_metal_detected(self):
+        systemlog.log_message("Metal detected")
         if not self.image_opened:
             self.communication.send_message("showimage 4")
             self.image_opened = True
@@ -209,6 +210,7 @@ class StateMachine:
         self.door_controller.open_changeroom_door()
         global ferrometaldetected
         ferrometaldetected = False
+        systemlog.log_message("Sysetm reset")
 
     def freeze(self):
         global running

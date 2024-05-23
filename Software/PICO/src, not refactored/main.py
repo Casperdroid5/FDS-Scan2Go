@@ -56,7 +56,7 @@ class StateMachine:
         # Initialize buttons
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)  # Emergency situation button
         self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_emergencybutton_press)
-        self.button_system_bypass = Pin(16, Pin.IN, Pin.PULL_UP)  # System override button
+        self.button_system_bypass = Pin(13, Pin.IN, Pin.PULL_UP)  # System override button
         self.button_system_bypass.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_bypassbutton_press)
         self.button_system_reset = Pin(17, Pin.IN, Pin.PULL_UP) # System bypass button
         self.button_system_reset.irq(trigger=Pin.IRQ_FALLING, handler= self.IRQ_handler_button_system_reset)
