@@ -270,8 +270,8 @@ class DoorController:
 class SensorController:
     def __init__(self):
         self.sensors = {
-            "A": LD2410PersonDetector(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1),
-            "B": LD2410PersonDetector(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
+            "B": LD2410PersonDetector(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1),
+            "A": LD2410PersonDetector(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
         }
 
     def person_detected(self, field, distance_threshold):
