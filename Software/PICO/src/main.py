@@ -44,7 +44,7 @@ class StateMachine:
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)
         self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_emergencybutton_press)
 
-        self.button_system_bypass = Pin(16, Pin.IN, Pin.PULL_UP)
+        self.button_system_bypass = Pin(13, Pin.IN, Pin.PULL_UP)
         self.button_system_bypass.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_bypassbutton_press)
 
         self.button_system_reset = Pin(17, Pin.IN, Pin.PULL_UP)
