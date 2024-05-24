@@ -1,6 +1,3 @@
-"""
-Main module for the Scan2Go FDS
-"""
 
 from hardware_s2g import LD2410PersonDetector, Door, WS2812
 from system_utils import SystemInitCheck, Timer, USBCommunication, Log
