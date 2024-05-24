@@ -146,7 +146,7 @@ class StateMachine:
         if not self.audio_played:
             self.communication.send_message("playaudio 5")
             self.audio_played = True
-        self.led_controller.start_pulsing("fieldALeds", "white", 3)  # Start pulsing fieldA LEDs
+            self.led_controller.start_pulsing("fieldALeds", "white", 3)  # Start pulsing fieldA LEDs
         if self.person_detected_in_field('A') and not self.person_detected_in_field('B'):
             self.audio_played = False
             self.door_controller.close_changeroom_door()
@@ -155,7 +155,8 @@ class StateMachine:
             if ferrometaldetected:
                 self.handle_metal_detected()
             else:
-                self.led_controller.turn_off_all()  # Stop pulsing LEDs
+                self.led_controller.stop_pulsing("fieldALeds", "white", 3)  # Stop pulsing fieldA LEDs
+                self.led_controller.start_pulsing("fieldBLeds", "white", 3)  # Start pulsing fieldB LEDs
                 self.state = self.USER_FIELD_B_RESPONSE_STATE
         elif not self.person_detected_in_field('A') and self.person_detected_in_field('B'):
             return
@@ -165,8 +166,7 @@ class StateMachine:
             self.communication.send_message("showimage 3")
             self.communication.send_message("playaudio 8")
             self.door_controller.open_mri_room_door()
-            self.led_controller.set_color("FerrometalDetectorLeds", "green")
-            self.led_controller.start_pulsing("fieldBLeds", "white", 3)  # Start pulsing fieldB LEDs
+            self.led_controller.stop_pulsing("fieldBLeds", "white", 3)  # Stop pulsing fieldB LEDs
             self.state = self.USER_IN_MR_ROOM_STATE
         elif ferrometaldetected:
             self.handle_metal_detected()
@@ -204,15 +204,19 @@ class StateMachine:
     def reset_state(self):
         self.communication.send_message("closeimage")
         self.audio_played = False
+        self.led_controller.stop_pulsing("fieldALeds")
+        self.led_controller.stop_pulsing("fieldBLeds")
         self.image_opened = False
         self.door_controller.open_changeroom_door()
         global ferrometaldetected
         ferrometaldetected = False
-        systemlog.log_message("Sysetm reset")
+        systemlog.log_message("System reset")
 
     def freeze(self):
         global running
         if not running and self.system_override_state_triggerd:
+            self.led_controller.stop_pulsing("fieldALeds")
+            self.led_controller.stop_pulsing("fieldBLeds")
             self.led_controller.set_color_all("white")
             self.door_controller.open_all_doors()
             self.emergency_state_triggerd = False
@@ -236,6 +240,10 @@ class LEDController:
         if led in self.leds:
             self.leds[led].start_pulsing(color, interval_ms)
 
+    def stop_pulsing(self, led, color, interval_ms):
+        if led in self.leds:
+            self.leds[led].stop_pulsing()
+
     def turn_off_all(self):
         for led in self.leds.values():
             led.off()
@@ -243,6 +251,7 @@ class LEDController:
     def set_color_all(self, color):
         for led in self.leds.values():
             led.set_color(color)
+
 
 class DoorController:
     def __init__(self):
@@ -318,6 +327,6 @@ if __name__ == "__main__":
         systemlog.close_log()
     except Exception as e:
         running = False
-        communication.send_message("System encountered unexpected error")
-        systemlog.log_message("System encountered unexpected error")
+        communication.send_message(f"System encountered unexpected error: {e}")
+        systemlog.log_message(f"System encountered unexpected error: {e}")
         systemlog.close_log()

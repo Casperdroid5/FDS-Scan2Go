@@ -5,6 +5,8 @@ from system_utils import Timer
 import _thread
 
 class WS2812:
+    _running_thread = None
+
     def __init__(self, pin_number, num_leds, brightness):
         self._np = neopixel.NeoPixel(Pin(pin_number), num_leds, bpp=3, timing=1)
         self._num_leds = num_leds
@@ -45,24 +47,39 @@ class WS2812:
         self.set_color("off")
 
     def start_pulsing(self, color, interval_ms):
+        if WS2812._running_thread:
+            self.stop_pulsing()
+            time.sleep(0.1)  # Allow time for the thread to stop
+
         self.pulse_color = color
         self.pulse_interval = interval_ms
         self.current_brightness = self.pulse_min_brightness
         self.pulse_state = "increasing"
         self.timer.start_timer()
         self.pulsing = True
-        _thread.start_new_thread(self._pulse, ())
+        WS2812._running_thread = _thread.start_new_thread(self._pulse, ())
 
     def stop_pulsing(self):
         self.pulsing = False
-        self.off
+        self._final_pulse()
+        WS2812._running_thread = None
 
     def _pulse(self):
-        while self.pulsing:
-            elapsed_time = self.timer.get_time()
-            if elapsed_time >= self.pulse_interval:
-                self._update_pulse()
-                self.timer.start_timer()  # Reset timer
+        try:
+            while self.pulsing:
+                elapsed_time = self.timer.get_time()
+                if elapsed_time >= self.pulse_interval:
+                    self._update_pulse()
+                    self.timer.start_timer()  # Reset timer
+        except Exception as e:
+            print(f"Error in _pulse: {e}")
+        finally:
+            WS2812._running_thread = None
+
+    def _final_pulse(self):
+        while self.current_brightness > 0:
+            self._decrease_pulse()
+            time.sleep(self.pulse_interval / 1000)
 
     def _update_pulse(self):
         if self.pulse_state == "increasing":
@@ -82,8 +99,8 @@ class WS2812:
         self.set_color(self.pulse_color)
         if self.current_brightness <= self.pulse_min_brightness:
             self.current_brightness = self.pulse_min_brightness
-            self.pulse_state = "increasing"
-
+            if self.pulsing:
+                self.pulse_state = "increasing"
 class ServoMotor:
     """Class for controlling a servo motor."""
     def __init__(self, pin_number):
