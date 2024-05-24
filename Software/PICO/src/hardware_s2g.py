@@ -1,11 +1,7 @@
-import time
-import neopixel
-from machine import Pin, PWM, I2C, UART
-from system_utils import Timer
 
 import time
 import neopixel
-from machine import Pin
+from machine import Pin, PWM, I2C, UART
 from system_utils import Timer
 
 class WS2812:
@@ -15,7 +11,6 @@ class WS2812:
         self.set_brightness(brightness)
         self.timer = Timer()
         self.pulse_state = "increasing"
-        self.brightness_step = 0.5  # Adjust step for smoother pulsing
         self.current_brightness = 0
         self.pulse_max_brightness = brightness
         self.pulse_min_brightness = 0
@@ -52,8 +47,14 @@ class WS2812:
         self.pulse_interval = interval_ms
         self.current_brightness = self.pulse_min_brightness
         self.pulse_state = "increasing"
+        self.brightness_step = self.calculate_brightness_step()
         self.timer.start_timer()
         self._pulse()
+
+    def calculate_brightness_step(self):
+        pulse_cycle_time = self.pulse_interval * 2  # Time for a full pulse cycle (up and down)
+        steps_per_cycle = 100  # Number of steps for a complete cycle
+        return self.pulse_max_brightness / steps_per_cycle
 
     def _pulse(self):
         while True:
@@ -71,7 +72,6 @@ class WS2812:
     def _increase_pulse(self):
         self.current_brightness += self.brightness_step
         self.set_color(self.pulse_color)
-        print(f"Increase: {self.current_brightness}%")  # Debug print
         if self.current_brightness >= self.pulse_max_brightness:
             self.current_brightness = self.pulse_max_brightness
             self.pulse_state = "decreasing"
@@ -79,11 +79,9 @@ class WS2812:
     def _decrease_pulse(self):
         self.current_brightness -= self.brightness_step
         self.set_color(self.pulse_color)
-        print(f"Decrease: {self.current_brightness}%")  # Debug print
         if self.current_brightness <= self.pulse_min_brightness:
             self.current_brightness = self.pulse_min_brightness
             self.pulse_state = "increasing"
-
 
 class ServoMotor:
     """Class for controlling a servo motor."""
@@ -473,10 +471,8 @@ class LD2410PersonDetector:
         return self.person_detected
 
 if __name__ == "__main__":
-    # Initialize the WS2812 LED strip on pin 2 with 8 LEDs and initial brightness of 50
-    led_strip = WS2812(pin_number=2, num_leds=2, brightness=100)
+    # Initialize the WS2812 LED strip on pin 2 with 2 LEDs and initial brightness of 100%
+    led_strip = WS2812(pin_number=2, num_leds=2, brightness= 25)
     
-    # Start pulsing with red color, pulse interval of 500 ms
-    led_strip.start_pulsing(color="green", interval_ms=3)
-
-
+    # Start pulsing with white color, pulse interval of x ms
+    led_strip.start_pulsing(color="white", interval_ms=10)
