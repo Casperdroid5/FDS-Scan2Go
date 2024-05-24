@@ -155,7 +155,7 @@ class StateMachine:
             if ferrometaldetected:
                 self.handle_metal_detected()
             else:
-                self.led_controller.stop_pulsing("fieldALeds", "white", 3)  # Stop pulsing fieldA LEDs
+                self.led_controller.stop_pulsing("fieldALeds")  # Stop pulsing fieldA LEDs
                 self.led_controller.start_pulsing("fieldBLeds", "white", 3)  # Start pulsing fieldB LEDs
                 self.state = self.USER_FIELD_B_RESPONSE_STATE
         elif not self.person_detected_in_field('A') and self.person_detected_in_field('B'):
@@ -166,7 +166,7 @@ class StateMachine:
             self.communication.send_message("showimage 3")
             self.communication.send_message("playaudio 8")
             self.door_controller.open_mri_room_door()
-            self.led_controller.stop_pulsing("fieldBLeds", "white", 3)  # Stop pulsing fieldB LEDs
+            self.led_controller.stop_pulsing("fieldBLeds")  # Stop pulsing fieldB LEDs
             self.state = self.USER_IN_MR_ROOM_STATE
         elif ferrometaldetected:
             self.handle_metal_detected()
@@ -240,7 +240,7 @@ class LEDController:
         if led in self.leds:
             self.leds[led].start_pulsing(color, interval_ms)
 
-    def stop_pulsing(self, led, color, interval_ms):
+    def stop_pulsing(self, led):
         if led in self.leds:
             self.leds[led].stop_pulsing()
 
