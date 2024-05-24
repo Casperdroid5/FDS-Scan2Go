@@ -470,22 +470,3 @@ class LD2410PersonDetector:
                 self.mmWaveTimer.reset()  # Reset the timer
                 return self.person_detected
         return self.person_detected
-
-
-# Test code for the WS2812 class
-if __name__ == "__main__":
-    print("Starting WS2812 multithreading test...")
-    # Initialize the WS2812 LED strip on pin 2 with 2 LEDs and initial brightness of 100
-    led_strip = WS2812(pin_number=2, num_leds=2, brightness=100)
-    
-    # Start pulsing with green color, pulse interval of 100 ms
-    led_strip.start_pulsing(color="green", interval_ms=3)
-
-    time.sleep(1)
-    print("hello")
-    time.sleep(1)
-    print("i'm doing 2 things at once!")
-    time.sleep(1)
-    print("bye")
-    led_strip.stop_pulsing()
-    print("WS2812 multithreading test stopped.")
