@@ -10,10 +10,10 @@ class WS2812:
         self.set_brightness(brightness)
         self.timer = Timer()
         self.pulse_state = "increasing"
-        self.brightness_step = 0.00001  # Adjust step for smoother pulsing
-        self.current_brightness = brightness / 10000
-        self.pulse_max_brightness = brightness / 10000
-        self.pulse_min_brightness = brightness - brightness
+        self.brightness_step = 0.000005  # Adjust step for smoother pulsing
+        self.current_brightness = 0
+        self.pulse_max_brightness = brightness 
+        self.pulse_min_brightness = 0
 
     def set_color(self, color):
         colors = {
@@ -37,7 +37,7 @@ class WS2812:
             return "Color not found"
 
     def set_brightness(self, brightness):
-        self._brightness = brightness / 10000
+        self._brightness = brightness
 
     def off(self):
         self.set_color("off")
@@ -50,7 +50,7 @@ class WS2812:
         self._pulse()
 
     def _init_pulse_parameters(self):
-        self.current_brightness = self.pulse_min_brightness
+        self.current_brightness = 0
         self.pulse_state = "increasing"
 
     def _pulse(self):
@@ -62,17 +62,24 @@ class WS2812:
 
     def _update_pulse(self):
         if self.pulse_state == "increasing":
-            self.current_brightness += self.brightness_step
-            if self.current_brightness >= self.pulse_max_brightness:
-                self.current_brightness = self.pulse_max_brightness
-                self.pulse_state = "decreasing"
+            self._increase_pulse()
         else:
-            self.current_brightness -= self.brightness_step
-            if self.current_brightness <= self.pulse_min_brightness:
-                self.current_brightness = self.pulse_min_brightness
-                self.pulse_state = "increasing"
-        self.set_color(self.pulse_color)
+            self._decrease_pulse()
 
+    def _increase_pulse(self):
+        self.current_brightness += self.brightness_step
+        self.set_color(self.pulse_color)
+        print(self.current_brightness)
+        if self.current_brightness >= self.pulse_max_brightness:
+            self.pulse_state = "decreasing"
+
+
+    def _decrease_pulse(self):
+        self.set_color(self.pulse_color)
+        print(self.current_brightness)
+        self.current_brightness -= self.brightness_step
+        if self.current_brightness <= self.pulse_min_brightness:
+            self.pulse_state = "increasing"
 
 class ServoMotor:
     """Class for controlling a servo motor."""
@@ -403,7 +410,7 @@ class LD2410PersonDetector:
         """
         # Dummy read to flush out the read buffer
         self.serial_flush()
-        time.sleep(0.05)
+        # time.sleep(0.05) 
         # Keep reading to see a header arrive
         header = self.read_serial_until(self.REPORT_HEADER)
         if header == None:
@@ -463,7 +470,8 @@ class LD2410PersonDetector:
 
 if __name__ == "__main__":
     # Initialize the WS2812 LED strip on pin 2 with 8 LEDs and initial brightness of 50
-    led_strip = WS2812(pin_number=2, num_leds=2, brightness=100)
+    led_strip = WS2812(pin_number=2, num_leds=2, brightness=0.001)
     
     # Start pulsing with red color, pulse interval of 500 ms
-    led_strip.start_pulsing(color="white", interval_ms=10)
+    led_strip.start_pulsing(color="green", interval_ms=3)
+
