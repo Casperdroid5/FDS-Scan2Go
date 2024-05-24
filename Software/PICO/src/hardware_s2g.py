@@ -1,8 +1,8 @@
-
 import time
 import neopixel
 from machine import Pin, PWM, I2C, UART
 from system_utils import Timer
+import _thread
 
 class WS2812:
     def __init__(self, pin_number, num_leds, brightness):
@@ -11,9 +11,11 @@ class WS2812:
         self.set_brightness(brightness)
         self.timer = Timer()
         self.pulse_state = "increasing"
+        self.brightness_step = 0.5  # Adjust step for smoother pulsing
         self.current_brightness = 0
         self.pulse_max_brightness = brightness
         self.pulse_min_brightness = 0
+        self.pulsing = False
 
     def set_color(self, color):
         colors = {
@@ -47,17 +49,16 @@ class WS2812:
         self.pulse_interval = interval_ms
         self.current_brightness = self.pulse_min_brightness
         self.pulse_state = "increasing"
-        self.brightness_step = self.calculate_brightness_step()
         self.timer.start_timer()
-        self._pulse()
+        self.pulsing = True
+        _thread.start_new_thread(self._pulse, ())
 
-    def calculate_brightness_step(self):
-        pulse_cycle_time = self.pulse_interval * 2  # Time for a full pulse cycle (up and down)
-        steps_per_cycle = 100  # Number of steps for a complete cycle
-        return self.pulse_max_brightness / steps_per_cycle
+    def stop_pulsing(self):
+        self.pulsing = False
+        self.off
 
     def _pulse(self):
-        while True:
+        while self.pulsing:
             elapsed_time = self.timer.get_time()
             if elapsed_time >= self.pulse_interval:
                 self._update_pulse()
@@ -66,7 +67,7 @@ class WS2812:
     def _update_pulse(self):
         if self.pulse_state == "increasing":
             self._increase_pulse()
-        else:
+        elif self.pulse_state == "decreasing":
             self._decrease_pulse()
 
     def _increase_pulse(self):
@@ -470,9 +471,21 @@ class LD2410PersonDetector:
                 return self.person_detected
         return self.person_detected
 
+
+# Test code for the WS2812 class
 if __name__ == "__main__":
-    # Initialize the WS2812 LED strip on pin 2 with 2 LEDs and initial brightness of 100%
-    led_strip = WS2812(pin_number=2, num_leds=2, brightness= 25)
+    print("Starting WS2812 multithreading test...")
+    # Initialize the WS2812 LED strip on pin 2 with 2 LEDs and initial brightness of 100
+    led_strip = WS2812(pin_number=2, num_leds=2, brightness=100)
     
-    # Start pulsing with white color, pulse interval of x ms
-    led_strip.start_pulsing(color="white", interval_ms=10)
+    # Start pulsing with green color, pulse interval of 100 ms
+    led_strip.start_pulsing(color="green", interval_ms=3)
+
+    time.sleep(1)
+    print("hello")
+    time.sleep(1)
+    print("i'm doing 2 things at once!")
+    time.sleep(1)
+    print("bye")
+    led_strip.stop_pulsing()
+    print("WS2812 multithreading test stopped.")

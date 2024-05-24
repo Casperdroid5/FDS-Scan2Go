@@ -1,4 +1,3 @@
-
 from hardware_s2g import LD2410PersonDetector, Door, WS2812
 from system_utils import SystemInitCheck, Timer, USBCommunication, Log
 from machine import Pin
@@ -147,6 +146,7 @@ class StateMachine:
         if not self.audio_played:
             self.communication.send_message("playaudio 5")
             self.audio_played = True
+        self.led_controller.start_pulsing("fieldALeds", "white", 3)  # Start pulsing fieldA LEDs
         if self.person_detected_in_field('A') and not self.person_detected_in_field('B'):
             self.audio_played = False
             self.door_controller.close_changeroom_door()
@@ -155,6 +155,7 @@ class StateMachine:
             if ferrometaldetected:
                 self.handle_metal_detected()
             else:
+                self.led_controller.turn_off_all()  # Stop pulsing LEDs
                 self.state = self.USER_FIELD_B_RESPONSE_STATE
         elif not self.person_detected_in_field('A') and self.person_detected_in_field('B'):
             return
@@ -165,6 +166,7 @@ class StateMachine:
             self.communication.send_message("playaudio 8")
             self.door_controller.open_mri_room_door()
             self.led_controller.set_color("FerrometalDetectorLeds", "green")
+            self.led_controller.start_pulsing("fieldBLeds", "white", 3)  # Start pulsing fieldB LEDs
             self.state = self.USER_IN_MR_ROOM_STATE
         elif ferrometaldetected:
             self.handle_metal_detected()
@@ -172,13 +174,12 @@ class StateMachine:
             self.led_controller.set_color("FerrometalDetectorLeds", "yellow")
 
     def handle_user_in_mr_room_state(self):
-
         if not self.person_detected_in_field('B') and not self.person_detected_in_field('A'):
             self.communication.send_message("showimage 5")
+            self.led_controller.turn_off_all()  # Stop pulsing LEDs
             self.state = self.USER_RETURNS_FROM_MR_ROOM_STATE
 
     def handle_user_returns_from_mr_room_state(self):
-
         if self.person_detected_in_field('B') or self.person_detected_in_field('A'):
             self.communication.send_message("showimage 6")
             self.communication.send_message("playaudio 10")
@@ -224,12 +225,16 @@ class LEDController:
         self.leds = {
             "fieldALeds": WS2812(pin_number=2, num_leds=2, brightness=50),
             "fieldBLeds": WS2812(pin_number=3, num_leds=2, brightness=50),
-            "FerrometalDetectorLedsLeds": WS2812(pin_number=6, num_leds=2, brightness=50)
+            "FerrometalDetectorLeds": WS2812(pin_number=6, num_leds=2, brightness=50)
         }
 
     def set_color(self, led, color):
         if led in self.leds:
             self.leds[led].set_color(color)
+
+    def start_pulsing(self, led, color, interval_ms):
+        if led in self.leds:
+            self.leds[led].start_pulsing(color, interval_ms)
 
     def turn_off_all(self):
         for led in self.leds.values():
@@ -316,5 +321,3 @@ if __name__ == "__main__":
         communication.send_message("System encountered unexpected error")
         systemlog.log_message("System encountered unexpected error")
         systemlog.close_log()
-
-
