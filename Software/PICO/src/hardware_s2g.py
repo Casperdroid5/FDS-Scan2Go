@@ -1,14 +1,10 @@
-# hardware_s2g.py
-
 import time
 import neopixel
 from machine import Pin, PWM, I2C, UART
-from system_utils import Timer
+from system_utils import Timer, CoreFlag
 import _thread
 
 class WS2812:
-    _running_thread = None
-
     def __init__(self, pin_number, num_leds, brightness):
         self._np = neopixel.NeoPixel(Pin(pin_number), num_leds, bpp=3, timing=1)
         self._num_leds = num_leds
@@ -49,7 +45,7 @@ class WS2812:
         self.set_color("off")
 
     def start_pulsing(self, color, interval_ms):
-        if WS2812._running_thread:
+        if self.pulsing:
             self.stop_pulsing()
             time.sleep(0.1)  # Allow time for the thread to stop
 
@@ -59,12 +55,11 @@ class WS2812:
         self.pulse_state = "increasing"
         self.timer.start_timer()
         self.pulsing = True
-        WS2812._running_thread = _thread.start_new_thread(self._pulse, ())
+        _thread.start_new_thread(self._pulse, ())
 
     def stop_pulsing(self):
         self.pulsing = False
         self._final_pulse()
-        WS2812._running_thread = None
 
     def _pulse(self):
         try:
@@ -75,8 +70,6 @@ class WS2812:
                     self.timer.start_timer()  # Reset timer
         except Exception as e:
             print(f"Error in _pulse: {e}")
-        finally:
-            WS2812._running_thread = None
 
     def _final_pulse(self):
         while self.current_brightness > 0:
@@ -103,6 +96,7 @@ class WS2812:
             self.current_brightness = self.pulse_min_brightness
             if self.pulsing:
                 self.pulse_state = "increasing"
+
 
 class ServoMotor:
     """Class for controlling a servo motor."""

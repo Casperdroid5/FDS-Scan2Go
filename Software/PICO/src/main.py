@@ -1,5 +1,5 @@
 from hardware_s2g import LD2410PersonDetector, Door, WS2812
-from system_utils import SystemInitCheck, Timer, USBCommunication, Log
+from system_utils import SystemInitCheck, Timer, USBCommunication, Log, CoreFlag
 from machine import Pin
 
 global running   # system running global variable
@@ -106,7 +106,7 @@ class StateMachine:
         self.latchreset.value(1)
         self.communication.send_message("Ferrometalscanner detected metal")
         self.logger.log_message("Ferrometalscanner detected metal")
-        ferrometaldetected = True
+        ferrometaldetected = False
         self.latchreset.value(0)
 
     def person_detected_in_field(self, field):
