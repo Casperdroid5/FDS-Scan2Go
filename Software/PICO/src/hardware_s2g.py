@@ -1,3 +1,5 @@
+# hardware_s2g.py
+
 import time
 import neopixel
 from machine import Pin, PWM, I2C, UART
@@ -101,6 +103,7 @@ class WS2812:
             self.current_brightness = self.pulse_min_brightness
             if self.pulsing:
                 self.pulse_state = "increasing"
+
 class ServoMotor:
     """Class for controlling a servo motor."""
     def __init__(self, pin_number):
@@ -191,7 +194,6 @@ class SeeedPersonDetector(PersonDetector):
 
     def get_detection_distance(self):
         return 180
-
 
 class LD2410PersonDetector:
     """Class for controlling LD2410 mmWave sensor."""
@@ -487,3 +489,20 @@ class LD2410PersonDetector:
                 self.mmWaveTimer.reset()  # Reset the timer
                 return self.person_detected
         return self.person_detected
+
+# Instances of hardware objects
+led_controller = {
+    "fieldALeds": WS2812(pin_number=2, num_leds=2, brightness=50),
+    "fieldBLeds": WS2812(pin_number=3, num_leds=2, brightness=50),
+    "FerrometalDetectorLeds": WS2812(pin_number=6, num_leds=2, brightness=50)
+}
+
+door_controller = {
+    "door_changeroom": Door(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19),
+    "door_mri_room": Door(pin_number=15, angle_closed=90, angle_open=185, position_sensor_pin=20)
+}
+
+sensor_controller = {
+    "B": LD2410PersonDetector(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1),
+    "A": LD2410PersonDetector(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
+}
