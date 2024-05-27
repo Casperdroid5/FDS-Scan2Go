@@ -1,5 +1,5 @@
 from hardware_s2g import LD2410PersonDetector, Door, WS2812
-from system_utils import SystemInitCheck, Timer, USBCommunication, Log, CoreFlag
+from system_utils import SystemInitCheck, Timer, USBCommunication, Log
 from machine import Pin
 
 global running   # system running global variable
@@ -67,8 +67,8 @@ class StateMachine:
         self.communication.send_message("showimage 7")
         self.logger.log_message("Emergency button pressed")
         self.emergency_state_triggerd = True
-        self.led_controllers['fieldALeds'].stop_pulsing()
-        self.led_controllers['fieldBLeds'].stop_pulsing()
+        self.led_controllers['fieldALeds'].off()
+        self.led_controllers['fieldBLeds'].off()
         global running
         running = False
 
@@ -83,8 +83,8 @@ class StateMachine:
         self.audio_played = False
         self.image_opened = False
         self.communication.send_message("closeimage")
-        self.led_controllers['fieldALeds'].stop_pulsing()
-        self.led_controllers['fieldBLeds'].stop_pulsing()
+        self.led_controllers['fieldALeds'].off()
+        self.led_controllers['fieldBLeds'].off()
         systemlog.log_message("System has been reset")
         self.state = self.INITIALISATION_STATE
         running = True
@@ -95,8 +95,8 @@ class StateMachine:
         self.communication.send_message("showimage 8")
         self.logger.log_message("System override button pressed")
         self.emergency_state_triggerd = False
-        self.led_controllers['fieldALeds'].stop_pulsing()
-        self.led_controllers['fieldBLeds'].stop_pulsing()
+        self.led_controllers['fieldALeds'].off()
+        self.led_controllers['fieldBLeds'].off()
         self.system_override_state_triggerd = True
         global running
         running = False
@@ -125,7 +125,7 @@ class StateMachine:
         global ferrometaldetected
         global running
         self.state = self.INITIALISATION_STATE
-
+        self.led_controllers['FerrometalDetectorLeds'].set_color("yellow")
         while running:
             if self.state == self.INITIALISATION_STATE:
                 self.handle_initialisation_state()
@@ -155,11 +155,11 @@ class StateMachine:
             self.audio_played = True
         elif not self.person_detected_in_field('A') and not self.person_detected_in_field('B'):
             if self._cleanupFlag == False:
-                self.led_controllers['fieldALeds'].stop_pulsing()
-                self.led_controllers['fieldBLeds'].stop_pulsing()
+                self.led_controllers['fieldALeds'].off()
+                self.led_controllers['fieldBLeds'].off()
                 ferrometaldetected = False
                 self._cleanupFlag = True
-                self.led_controllers['fieldALeds'].start_pulsing("white", 5)  # Start pulsing fieldA LEDs
+                self.led_controllers['fieldALeds'].set_color("white")  # Start pulsing fieldA LEDs
             self.state = self.USER_FIELD_A_RESPONSE_STATE
             self.communication.send_message("showimage 1")
 
@@ -167,7 +167,7 @@ class StateMachine:
         if not self.audio_played:
             self.communication.send_message("playaudio 5")
             self.audio_played = True
-            self.led_controllers['fieldALeds'].start_pulsing("white", 5)  # Start pulsing fieldA LEDs
+            self.led_controllers['fieldALeds'].set_color("white")  # Start pulsing fieldA LEDs
         if self.person_detected_in_field('A') and not self.person_detected_in_field('B'):
             self.audio_played = False
             self.door_controllers['changeroom'].close_door()
@@ -176,8 +176,8 @@ class StateMachine:
             if ferrometaldetected:
                 self.handle_metal_detected()
             else:
-                self.led_controllers['fieldALeds'].stop_pulsing()  # Stop pulsing fieldA LEDs
-                self.led_controllers['fieldBLeds'].start_pulsing("white", 5)  # Start pulsing fieldB LEDs
+                self.led_controllers['fieldALeds'].off()  # Stop pulsing fieldA LEDs
+                self.led_controllers['fieldBLeds'].set_color("white")  # Start pulsing fieldB LEDs
                 self.state = self.USER_FIELD_B_RESPONSE_STATE
         elif not self.person_detected_in_field('A') and self.person_detected_in_field('B'):
             return
@@ -187,7 +187,7 @@ class StateMachine:
             self.communication.send_message("showimage 3")
             self.communication.send_message("playaudio 8")
             self.door_controllers['mri_room'].open_door()
-            self.led_controllers['fieldBLeds'].stop_pulsing()  # Stop pulsing fieldB LEDs
+            self.led_controllers['fieldBLeds'].off()  # Stop pulsing fieldB LEDs
             self.state = self.USER_IN_MR_ROOM_STATE
         elif ferrometaldetected:
             self.handle_metal_detected()
@@ -197,8 +197,8 @@ class StateMachine:
     def handle_user_in_mr_room_state(self):
         if not self.person_detected_in_field('B') and not self.person_detected_in_field('A'):
             self.communication.send_message("showimage 5")
-            self.led_controllers['fieldBLeds'].stop_pulsing()
-            self.led_controllers['fieldALeds'].stop_pulsing()
+            self.led_controllers['fieldBLeds'].set_color()
+            self.led_controllers['fieldALeds'].off()
             self.state = self.USER_RETURNS_FROM_MR_ROOM_STATE
 
     def handle_user_returns_from_mr_room_state(self):
@@ -206,7 +206,7 @@ class StateMachine:
             self.communication.send_message("showimage 6")
             self.communication.send_message("playaudio 10")
             self.door_controllers['mri_room'].close_door()
-            self.led_controllers['fieldALeds'].start_pulsing("white", 5)  # Start pulsing fieldA LEDs
+            self.led_controllers['fieldALeds'].set_color("white")  # Start pulsing fieldA LEDs
             self.state = self.USER_EXITS_FDS_STATE
 
     def handle_user_exits_fds_state(self):

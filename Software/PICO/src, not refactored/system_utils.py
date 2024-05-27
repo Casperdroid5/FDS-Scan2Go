@@ -3,21 +3,6 @@ import time
 import select
 import sys
 
-class CoreFlag:
-    run_core_1 = False
-    
-    @classmethod    
-    def set_run_flag(cls):
-        cls.run_core_1 = True
-        
-    @classmethod
-    def clear_run_flag(cls):
-        return cls.run_core_1 == False
-    
-    @classmethod
-    def get_run_flag(cls):
-        return cls.run_core_1
-
 class Log: 
     """
     Log class to log messages to a file.
