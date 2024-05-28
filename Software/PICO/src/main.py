@@ -157,6 +157,7 @@ class StateMachine:
             self.latchreset.value(1)
             self.led_controllers['fieldALeds'].off()
             self.led_controllers['fieldBLeds'].off()
+            self.led_controllers['FerrometalDetectorLeds'].off()
             self.latchreset.value(0)
             ferrometaldetected = False
             self.led_controllers['fieldALeds'].set_color("white")  
@@ -209,6 +210,7 @@ class StateMachine:
             self.communication.send_message("showimage 6")
             self.communication.send_message("playaudio 10")
             self.door_controllers['mri_room'].close_door()
+            self.led_controllers['fieldBLeds'].off()
             self.led_controllers['fieldALeds'].set_color("white")  
             self.state = self.USER_EXITS_FDS_STATE
 
@@ -230,6 +232,7 @@ class StateMachine:
             self.communication.send_message("playaudio 9")
             self.audio_played = True
         self.door_controllers['changeroom'].open_door()
+        self.door_controllers['mri_room'].close_door()
         self.state = self.INITIALISATION_STATE
 
     def freeze(self):
