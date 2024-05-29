@@ -1,34 +1,62 @@
 from hardware_s2g import LD2410PersonDetector, WS2812
+import time
+
+def initialize_person_detector(uart_number, tx_pin, rx_pin):
+    return LD2410PersonDetector(uart_number=uart_number, baudrate=256000, tx_pin=tx_pin, rx_pin=rx_pin)
+
+
+def initialize_leds(pin_number, num_leds=2, brightness=50):
+    return WS2812(pin_number=pin_number, num_leds=num_leds, brightness=brightness)
+
+
+def check_and_update_led_for_field_A(mmWaveFieldA, led_fieldA):
+    print("Checking for person in field A")
+    person_detected_A = mmWaveFieldA.scan_for_people()
+    if person_detected_A and mmWaveFieldA.get_detection_distance() < 160:
+        print("Person detected in field A")
+        led_fieldA.set_color("green")  # Green LED when a person is detected
+    else:
+        led_fieldA.set_color("red")  # Red LED when no person is detected
+
+
+def check_and_update_led_for_field_B(mmWaveFieldB, led_fieldB):
+    print("Checking for person in field B")
+    person_detected_B = mmWaveFieldB.scan_for_people()
+    if person_detected_B and mmWaveFieldB.get_detection_distance() < 160:
+        print("Person detected in field B")
+        led_fieldB.set_color("green")  # Green LED when a person is detected
+    else:
+        led_fieldB.set_color("red")  # Red LED when no person is detected
 
 
 def test_person_detection_with_leds():
-    # Initialisatie van de personendetectors
-    mmWaveFieldA = LD2410PersonDetector(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
-    mmWaveFieldB = LD2410PersonDetector(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
+    # Initialization of person detectors
+    mmWaveFieldA = initialize_person_detector(uart_number=0, tx_pin=0, rx_pin=1)
+    mmWaveFieldB = initialize_person_detector(uart_number=1, tx_pin=4, rx_pin=5)
 
-    # Initialisatie van de LEDs voor elk veld
-    led_fieldA = WS2812(pin_number=3, num_leds=2, brightness=50)  # LED op pin 2 voor veld A
-    led_fieldB = WS2812(pin_number=2, num_leds=2, brightness=50)  # LED op pin 3 voor veld B
+    # Initialization of LEDs for each field
+    led_fieldA = initialize_leds(pin_number=3)
+    led_fieldB = initialize_leds(pin_number=2)
 
-    while True:  # Voer continu de detectielogica uit voor elk veld
-        # Veld A
-        print("Checking for person in field A")
-        person_detected_A = mmWaveFieldA.scan_for_people()  # Roep de methode aan om te controleren op een gedetecteerde persoon
-        if person_detected_A and mmWaveFieldA.get_detection_distance() < 160:
-            print("Person detected in field A")
-            led_fieldA.set_color("green")  # Groene LED brandt wanneer een persoon wordt gedetecteerd
-        else:
-            led_fieldA.set_color("red")  # Rode LED brandt wanneer geen persoon wordt gedetecteerd
+    while True:  # Continuously execute the detection logic for each field
+        check_and_update_led_for_field_A(mmWaveFieldA, led_fieldA)
+        check_and_update_led_for_field_B(mmWaveFieldB, led_fieldB)
 
-        # Veld B
-        print("Checking for person in field B")
-        person_detected_B = mmWaveFieldB.scan_for_people()  # Roep de methode aan om te controleren op een gedetecteerde persoon
-        if person_detected_B and mmWaveFieldB.get_detection_distance() < 160:
-            print("Person detected in field B")
-            led_fieldB.set_color("green")  # Groene LED brandt wanneer een persoon wordt gedetecteerd
-        else:
-            led_fieldB.set_color("red")  # Rode LED brandt wanneer geen persoon wordt gedetecteerd
 
 if __name__ == "__main__":
-    test_person_detection_with_leds()
+    # Initialization of person detectors
+    mmWaveFieldA = initialize_person_detector(uart_number=0, tx_pin=0, rx_pin=1)
+    mmWaveFieldB = initialize_person_detector(uart_number=1, tx_pin=4, rx_pin=5)
+
+    # Initialization of LEDs for each field
+    led_fieldA = initialize_leds(pin_number=3)
+    led_fieldB = initialize_leds(pin_number=2)
+
+    # Test individual field functions
+    while True:
+        check_and_update_led_for_field_B(mmWaveFieldB, led_fieldB)
+        check_and_update_led_for_field_A(mmWaveFieldA, led_fieldA)
+
+
+
 

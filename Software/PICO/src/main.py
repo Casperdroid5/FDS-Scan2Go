@@ -139,7 +139,7 @@ class StateMachine:
             self.communication.send_message("showimage 0") # verlaat de ruimte aub
             self.image_opened = True
         elif not self.audio_played:
-            self.communication.send_message("playaudio 4") # # verwijder alle personen uit de sluis
+            self.communication.send_message("playaudio 4") # verwijder alle personen uit de sluis
             self.audio_played = True
         elif not self.person_detected_in_field('A') and not self.person_detected_in_field('B'):
             self.latchreset.value(1)
@@ -148,23 +148,22 @@ class StateMachine:
             self.led_controllers['FerrometalDetectorLeds'].off()
             self.latchreset.value(0)
             self.led_controllers['fieldALeds'].set_color("white")  
+            self.communication.send_message("playaudio 5") # neem plaats in gebied A
             self.audio_played = False
+            self.image_opened = False
             self.state = self.USER_FIELD_A_RESPONSE_STATE
 
     def handle_user_field_a_response_state(self):
-        if not self.image_opened:
-            self.communication.send_message("showimage 1") # neem plaats in gebied A
-            self.image_opened = True
-        if not self.audio_played:
-            self.communication.send_message("playaudio 5")  # neem plaats in gebied A
-            self.audio_played = True
-            self.led_controllers['fieldALeds'].set_color("white")  
+        self.led_controllers['fieldALeds'].set_color("white")  
         if self.person_detected_in_field('A') and not self.person_detected_in_field('B'):
-            self.audio_played = False
             self.door_controllers['changeroom'].close_door()
-            self.communication.send_message("showimage 2") # neem plaats in gebied B
-            self.communication.send_message("playaudio 6") # neem plaats in gebied B
-            if self.ferrometalscanner.value() :
+            if not self.audio_played:
+                self.communication.send_message("playaudio 6")
+                self.audio_played = True
+            if not self.image_opened:
+                self.communication.send_message("showimage 2")
+                self.image_opened = True            
+            if self.ferrometalscanner.value():
                 self.state == self.METAL_DETECTED_STATE
             else:
                 self.led_controllers['fieldALeds'].off()  
@@ -172,7 +171,7 @@ class StateMachine:
                 self.state = self.USER_FIELD_B_RESPONSE_STATE
         elif not self.person_detected_in_field('A') and self.person_detected_in_field('B'):
             return
-
+        
     def handle_user_field_b_response_state(self):
         if self.person_detected_in_field('B') and not self.person_detected_in_field('A') and not self.ferrometalscanner.value():
             self.communication.send_message("showimage 3") # geen metalen gedetecteerd
@@ -278,5 +277,4 @@ if __name__ == "__main__":
         communication.send_message(f"System encountered unexpected error: {e}")
         systemlog.log_message(f"System encountered unexpected error: {e}")
         systemlog.close_log()
-
 
