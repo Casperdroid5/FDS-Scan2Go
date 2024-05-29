@@ -421,4 +421,9 @@ class LD2410PersonDetector:
                 self.person_detected = False
                 self.mmWaveTimer.reset()  # Reset the timer
                 return self.person_detected
-        return self.person_detected
+        if self.person_detected == True:
+            return True
+        elif self.person_detected == False:
+            return False
+        
+        self.person_detected = False

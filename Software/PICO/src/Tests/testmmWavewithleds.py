@@ -28,7 +28,6 @@ def check_and_update_led_for_field_B(mmWaveFieldB, led_fieldB):
     else:
         led_fieldB.set_color("red")  # Red LED when no person is detected
 
-
 def test_person_detection_with_leds():
     # Initialization of person detectors
     mmWaveFieldA = initialize_person_detector(uart_number=0, tx_pin=0, rx_pin=1)
@@ -41,7 +40,6 @@ def test_person_detection_with_leds():
     while True:  # Continuously execute the detection logic for each field
         check_and_update_led_for_field_A(mmWaveFieldA, led_fieldA)
         check_and_update_led_for_field_B(mmWaveFieldB, led_fieldB)
-
 
 if __name__ == "__main__":
     # Initialization of person detectors
