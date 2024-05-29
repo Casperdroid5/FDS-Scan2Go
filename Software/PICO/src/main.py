@@ -4,8 +4,6 @@ from machine import Pin
 
 global running   # system running global variable
 running = False  # wait for system to be initialised before starting the state machine
-global ferrometaldetected
-ferrometaldetected = False  # Global variable to check if metal is detected
 
 class StateMachine:
     def __init__(self, led_controllers, door_controllers, sensor_controllers, communication, logger, timer):
@@ -48,20 +46,19 @@ class StateMachine:
         self.button_system_reset.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_button_system_reset)
 
         self.ferrometalscanner = Pin(16, Pin.IN, Pin.PULL_UP)
-        self.ferrometalscanner.irq(trigger=Pin.IRQ_RISING, handler=self.IRQ_handler_ferrometal_detected)
 
         self.latchreset = Pin(22, Pin.OUT)
         self.latchreset.value(1)
 
-    def IRQ_handler_door_changeroom_button_press(self, pin):
-        if self.state == self.USER_FIELD_A_RESPONSE_STATE:
-            if self.door_controllers['changeroom'].door_state == "closed":
-                self.door_controllers['changeroom'].open_door()
+    # def IRQ_handler_door_changeroom_button_press(self, pin):
+    #     if self.state == self.USER_FIELD_A_RESPONSE_STATE:
+    #         if self.door_controllers['changeroom'].door_state == "closed":
+    #             self.door_controllers['changeroom'].open_door()
 
-    def IRQ_handler_door_mri_room_button_press(self, pin):
-        if self.state == self.USER_IN_MR_ROOM_STATE or (ferrometaldetected == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
-            if self.door_controllers['mri_room'].door_state == "closed":
-                self.door_controllers['mri_room'].open_door()
+    # def IRQ_handler_door_mri_room_button_press(self, pin):
+    #     if self.state == self.USER_IN_MR_ROOM_STATE or (self.ferrometalscanner.value() == "NoMetalDetected" and self.user_returned_from_mri) or self.user_in_mri:
+    #         if self.door_controllers['mri_room'].door_state == "closed":
+    #             self.door_controllers['mri_room'].open_door()
 
     def IRQ_handler_emergencybutton_press(self, pin):
         self.communication.send_message("Emergency button")
@@ -73,9 +70,19 @@ class StateMachine:
         global running
         running = False
 
+    def IRQ_handler_bypassbutton_press(self, pin):
+        self.communication.send_message("Override button pressed")
+        self.communication.send_message("showimage 8") # System override button pressed
+        self.logger.log_message("System override button pressed")
+        self.emergency_state_triggerd = False
+        self.led_controllers['fieldALeds'].off()
+        self.led_controllers['fieldBLeds'].off()
+        self.system_override_state_triggerd = True
+        global running
+        running = False
+
     def IRQ_handler_button_system_reset(self, pin):
         global running
-        global ferrometaldetected
         self.logger.log_message("System reset button pressed")
         self.communication.send_message("System reset button was pressed")
         self.system_initialised = False
@@ -89,24 +96,7 @@ class StateMachine:
         systemlog.log_message("System has been reset")
         self.state = self.INITIALISATION_STATE
         running = True
-        ferrometaldetected = False
         self.latchreset.value(0)
-
-    def IRQ_handler_bypassbutton_press(self, pin):
-        self.communication.send_message("Override button pressed")
-        self.communication.send_message("showimage 8") # System override button pressed
-        self.logger.log_message("System override button pressed")
-        self.emergency_state_triggerd = False
-        self.led_controllers['fieldALeds'].off()
-        self.led_controllers['fieldBLeds'].off()
-        self.system_override_state_triggerd = True
-        global running
-        running = False
-
-    def IRQ_handler_ferrometal_detected(self, pin):
-        global ferrometaldetected
-        ferrometaldetected = False
-        self.state = self.METAL_DETECTED_STATE    
 
     def person_detected_in_field(self, field):
         return self.sensor_controllers[field].scan_for_people() and self.sensor_controllers[field].get_detection_distance() < self.sensor_to_object_distance_threshold
@@ -121,7 +111,6 @@ class StateMachine:
         self.communication.send_message("playaudio 1") # systeem opgestart
 
     def run(self):
-        global ferrometaldetected
         global running
         self.state = self.INITIALISATION_STATE
         while running:
@@ -143,7 +132,6 @@ class StateMachine:
                 self.freeze()
 
     def handle_initialisation_state(self): 
-        global ferrometaldetected
         if not self.system_initialised:
             self.systeminit()
             self.led_controllers['fieldALeds'].set_color("white")
@@ -159,11 +147,9 @@ class StateMachine:
             self.led_controllers['fieldBLeds'].off()
             self.led_controllers['FerrometalDetectorLeds'].off()
             self.latchreset.value(0)
-            ferrometaldetected = False
             self.led_controllers['fieldALeds'].set_color("white")  
             self.audio_played = False
             self.state = self.USER_FIELD_A_RESPONSE_STATE
-            
 
     def handle_user_field_a_response_state(self):
         if not self.image_opened:
@@ -178,7 +164,7 @@ class StateMachine:
             self.door_controllers['changeroom'].close_door()
             self.communication.send_message("showimage 2") # neem plaats in gebied B
             self.communication.send_message("playaudio 6") # neem plaats in gebied B
-            if ferrometaldetected == True:
+            if self.ferrometalscanner.value() :
                 self.state == self.METAL_DETECTED_STATE
             else:
                 self.led_controllers['fieldALeds'].off()  
@@ -188,14 +174,14 @@ class StateMachine:
             return
 
     def handle_user_field_b_response_state(self):
-        if self.person_detected_in_field('B') and not self.person_detected_in_field('A') and not ferrometaldetected:
+        if self.person_detected_in_field('B') and not self.person_detected_in_field('A') and not self.ferrometalscanner.value():
             self.communication.send_message("showimage 3") # geen metalen gedetecteerd
             self.communication.send_message("playaudio 8")  # geen metalen gedetecteerd, naar MRI-ruimte aub
             self.door_controllers['mri_room'].open_door()
             self.led_controllers['fieldBLeds'].off()  
             self.led_controllers['FerrometalDetectorLeds'].set_color("green")  
             self.state = self.USER_IN_MR_ROOM_STATE
-        elif ferrometaldetected:
+        elif self.ferrometalscanner.value():
             self.handle_metal_detected()
         else:
             self.led_controllers['FerrometalDetectorLeds'].set_color("yellow")
@@ -292,4 +278,5 @@ if __name__ == "__main__":
         communication.send_message(f"System encountered unexpected error: {e}")
         systemlog.log_message(f"System encountered unexpected error: {e}")
         systemlog.close_log()
+
 
