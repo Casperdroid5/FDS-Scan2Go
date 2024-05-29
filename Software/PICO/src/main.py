@@ -152,7 +152,7 @@ class StateMachine:
             self.led_controllers['fieldBLeds'].off()
             self.led_controllers['FerrometalDetectorLeds'].off()
             self.ferrometalscanner_latchreset.value(0)
-            self.led_controllers['fieldALeds'].set_color("white")  
+            self.start_pulsing_leds('fieldALeds', 'white', 0.0030)
             self.communication.send_message("showimage 1")
             self.state = self.USER_FIELD_A_RESPONSE_STATE
 
@@ -160,8 +160,9 @@ class StateMachine:
         if not self.audio_played:
             self.communication.send_message("playaudio 5")
             self.audio_played = True
-            self.led_controllers['fieldALeds'].set_color("white")
+            
         if self.person_detected_in_field('A') and not self.person_detected_in_field('B'):
+            self.stop_pulsing_leds('fieldALeds')
             self.audio_played = False
             self.door_controllers['changeroom'].close_door()
             self.communication.send_message("showimage 2")
@@ -243,8 +244,8 @@ class StateMachine:
             self.door_controllers['changeroom'].open_door()
             self.door_controllers['mri_room'].open_door()
 
-    def start_pulsing_leds(self, field, color):
-        self.led_controllers[field].start_pulse(color=color, delay=0.05)
+    def start_pulsing_leds(self, field, color, delay):
+        self.led_controllers[field].start_pulse(color=color, delay=delay)
 
     def stop_pulsing_leds(self, field):
         self.led_controllers[field].stop_pulse()
@@ -281,8 +282,7 @@ async def main():
         print("Running system check...")
         SystemInitCheck().systemcheck()
         systemlog.log_message("Systemcheck passed. Starting FDS...")
-        FDS.start_pulsing_leds("fieldALeds", color="blue")
-
+        
         try:
             while True:
                 if running:
@@ -313,4 +313,5 @@ try:
     asyncio.run(main())
 except Exception as e:
     print(f"Error running main: {e}")
+
 

@@ -40,7 +40,7 @@ class WS2812:
     def off(self):
         self.set_color("off")
 
-    async def pulse(self, color, delay=0.01):
+    async def pulse(self, color, delay=0.00005):
         self._pulsing = True
         colors = {
             "red": (255, 0, 0),
@@ -70,7 +70,7 @@ class WS2812:
                 self._np.write()
                 await asyncio.sleep(delay)
 
-    def start_pulse(self, color="red", delay=0.01):
+    def start_pulse(self, color="blue", delay=0.00005):
         if self._pulse_task:
             self.stop_pulse()
         self._pulse_task = asyncio.create_task(self.pulse(color, delay))
@@ -80,6 +80,8 @@ class WS2812:
             self._pulsing = False
             self._pulse_task.cancel()
             self._pulse_task = None
+
+
 
 class ServoMotor:
     """Class for controlling a servo motor."""
