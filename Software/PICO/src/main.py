@@ -118,7 +118,7 @@ class StateMachine:
         self.door_controllers['changeroom'].open_door()
         self.system_initialised = True
         self.communication.send_message("System initialised")
-        self.communication.send_message("playaudio 1")
+        self.communication.send_message("playaudio 1") # systeem opgestart
 
     def run(self):
         global ferrometaldetected
@@ -148,10 +148,10 @@ class StateMachine:
             self.systeminit()
             self.led_controllers['fieldALeds'].set_color("white")
         elif not self.image_opened:
-            self.communication.send_message("showimage 0")
+            self.communication.send_message("showimage 0") # verlaat de ruimte aub
             self.image_opened = True
         elif not self.audio_played:
-            self.communication.send_message("playaudio 4")
+            self.communication.send_message("playaudio 4") # # verwijder alle personen uit de sluis
             self.audio_played = True
         elif not self.person_detected_in_field('A') and not self.person_detected_in_field('B'):
             self.latchreset.value(1)
@@ -161,20 +161,23 @@ class StateMachine:
             self.latchreset.value(0)
             ferrometaldetected = False
             self.led_controllers['fieldALeds'].set_color("white")  
-            self.communication.send_message("showimage 1")
+            self.audio_played = False
             self.state = self.USER_FIELD_A_RESPONSE_STATE
             
 
     def handle_user_field_a_response_state(self):
+        if not self.image_opened:
+            self.communication.send_message("showimage 1") # neem plaats in gebied A
+            self.image_opened = True
         if not self.audio_played:
-            self.communication.send_message("playaudio 5")
+            self.communication.send_message("playaudio 5")  # neem plaats in gebied A
             self.audio_played = True
             self.led_controllers['fieldALeds'].set_color("white")  
         if self.person_detected_in_field('A') and not self.person_detected_in_field('B'):
             self.audio_played = False
             self.door_controllers['changeroom'].close_door()
-            self.communication.send_message("showimage 2")
-            self.communication.send_message("playaudio 6")
+            self.communication.send_message("showimage 2") # neem plaats in gebied B
+            self.communication.send_message("playaudio 6") # neem plaats in gebied B
             if ferrometaldetected == True:
                 self.state == self.METAL_DETECTED_STATE
             else:
@@ -186,8 +189,8 @@ class StateMachine:
 
     def handle_user_field_b_response_state(self):
         if self.person_detected_in_field('B') and not self.person_detected_in_field('A') and not ferrometaldetected:
-            self.communication.send_message("showimage 3")
-            self.communication.send_message("playaudio 8")
+            self.communication.send_message("showimage 3") # geen metalen gedetecteerd
+            self.communication.send_message("playaudio 8")  # geen metalen gedetecteerd, naar MRI-ruimte aub
             self.door_controllers['mri_room'].open_door()
             self.led_controllers['fieldBLeds'].off()  
             self.led_controllers['FerrometalDetectorLeds'].set_color("green")  
@@ -199,7 +202,7 @@ class StateMachine:
 
     def handle_user_in_mr_room_state(self):
         if not self.person_detected_in_field('B') and not self.person_detected_in_field('A'):
-            self.communication.send_message("showimage 5")
+            self.communication.send_message("showimage 5") # U mag na uw scan plaatsnemen in gebied B
             self.led_controllers['FerrometalDetectorLeds'].off() 
             self.led_controllers['fieldBLeds'].set_color("white") 
             self.led_controllers['fieldALeds'].off()
@@ -207,8 +210,8 @@ class StateMachine:
 
     def handle_user_returns_from_mr_room_state(self):
         if self.person_detected_in_field('B') or self.person_detected_in_field('A'):
-            self.communication.send_message("showimage 6")
-            self.communication.send_message("playaudio 10")
+            self.communication.send_message("showimage 6") # Welkom terug, u mag naar de kleedruimte
+            self.communication.send_message("playaudio 10") # Welkom terug, u mag naar de kleedruimte
             self.door_controllers['mri_room'].close_door()
             self.led_controllers['fieldBLeds'].off()
             self.led_controllers['fieldALeds'].set_color("white")  
@@ -226,10 +229,10 @@ class StateMachine:
         self.led_controllers['fieldALeds'].set_color("white")
         self.led_controllers['fieldBLeds'].off() 
         if not self.image_opened:
-            self.communication.send_message("showimage 4")
+            self.communication.send_message("showimage 4") # Ferrometalen gedetecteerd, verlaat de sluis
             self.image_opened = True
         if not self.audio_played:
-            self.communication.send_message("playaudio 9")
+            self.communication.send_message("playaudio 9") # Ferrometalen gedetecteerd, verlaat de sluis
             self.audio_played = True
         self.door_controllers['changeroom'].open_door()
         self.door_controllers['mri_room'].close_door()
