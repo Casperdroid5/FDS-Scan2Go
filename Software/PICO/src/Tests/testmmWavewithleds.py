@@ -10,7 +10,7 @@ def initialize_leds(pin_number, num_leds=2, brightness=50):
 
 
 def check_and_update_led_for_field_A(mmWaveFieldA, led_fieldA):
-    print("Checking for person in field A")
+    #print("Checking for person in field A")
     person_detected_A = mmWaveFieldA.scan_for_people()
     if person_detected_A and mmWaveFieldA.get_detection_distance() < 160:
         print("Person detected in field A")
@@ -20,7 +20,7 @@ def check_and_update_led_for_field_A(mmWaveFieldA, led_fieldA):
 
 
 def check_and_update_led_for_field_B(mmWaveFieldB, led_fieldB):
-    print("Checking for person in field B")
+    #print("Checking for person in field B")
     person_detected_B = mmWaveFieldB.scan_for_people()
     if person_detected_B and mmWaveFieldB.get_detection_distance() < 160:
         print("Person detected in field B")

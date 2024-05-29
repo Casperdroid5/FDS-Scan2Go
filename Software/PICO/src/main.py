@@ -141,7 +141,7 @@ class StateMachine:
         elif not self.audio_played:
             self.communication.send_message("playaudio 4") # verwijder alle personen uit de sluis
             self.audio_played = True
-        elif not self.person_detected_in_field('A') and not self.person_detected_in_field('B'):
+        elif not self.person_detected_in_field('B') and not self.person_detected_in_field('A'):
             self.latchreset.value(1)
             self.led_controllers['fieldALeds'].off()
             self.led_controllers['fieldBLeds'].off()
@@ -155,7 +155,7 @@ class StateMachine:
 
     def handle_user_field_a_response_state(self):
         self.led_controllers['fieldALeds'].set_color("white")  
-        if self.person_detected_in_field('A') and not self.person_detected_in_field('B'):
+        if self.person_detected_in_field('B') and not self.person_detected_in_field('A'):
             self.door_controllers['changeroom'].close_door()
             if not self.audio_played:
                 self.communication.send_message("playaudio 6")
@@ -169,11 +169,11 @@ class StateMachine:
                 self.led_controllers['fieldALeds'].off()  
                 self.led_controllers['fieldBLeds'].set_color("white")  
                 self.state = self.USER_FIELD_B_RESPONSE_STATE
-        elif not self.person_detected_in_field('A') and self.person_detected_in_field('B'):
+        elif not self.person_detected_in_field('B') and self.person_detected_in_field('A'):
             return
         
     def handle_user_field_b_response_state(self):
-        if self.person_detected_in_field('B') and not self.person_detected_in_field('A') and not self.ferrometalscanner.value():
+        if self.person_detected_in_field('A') and not self.person_detected_in_field('B') and not self.ferrometalscanner.value():
             self.communication.send_message("showimage 3") # geen metalen gedetecteerd
             self.communication.send_message("playaudio 8")  # geen metalen gedetecteerd, naar MRI-ruimte aub
             self.door_controllers['mri_room'].open_door()
