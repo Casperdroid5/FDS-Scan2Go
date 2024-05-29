@@ -65,7 +65,7 @@ class StateMachine:
 
     def IRQ_handler_emergencybutton_press(self, pin):
         self.communication.send_message("Emergency button")
-        self.communication.send_message("showimage 7")
+        self.communication.send_message("showimage 7") # Emergency button pressed
         self.logger.log_message("Emergency button pressed")
         self.emergency_state_triggerd = True
         self.led_controllers['fieldALeds'].off()
@@ -83,7 +83,7 @@ class StateMachine:
         self.emergency_state_triggerd = False
         self.audio_played = False
         self.image_opened = False
-        self.communication.send_message("closeimage")
+        self.communication.send_message("closeimage") # close all images
         self.led_controllers['fieldALeds'].off()
         self.led_controllers['fieldBLeds'].off()
         systemlog.log_message("System has been reset")
@@ -94,7 +94,7 @@ class StateMachine:
 
     def IRQ_handler_bypassbutton_press(self, pin):
         self.communication.send_message("Override button pressed")
-        self.communication.send_message("showimage 8")
+        self.communication.send_message("showimage 8") # System override button pressed
         self.logger.log_message("System override button pressed")
         self.emergency_state_triggerd = False
         self.led_controllers['fieldALeds'].off()
