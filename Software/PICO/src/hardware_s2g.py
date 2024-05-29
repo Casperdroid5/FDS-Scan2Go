@@ -169,8 +169,8 @@ class LD2410PersonDetector:
         }
         self.mmWaveTimer = Timer()  # Initialize the Timer for mmWave sensor
         self.person_detected = False  # Variable to track person detection status
-        self.standing_timer = 5  # Timer to track how long someone has been standing
-        self.moving_timer = 3  # Timer to track how long someone has been moving
+        self.standing_timer = 10  # Timer to track how long someone has been standing
+        self.moving_timer = 6  # Timer to track how long someone has been moving
 
     def print_bytes(self, data):
         """
