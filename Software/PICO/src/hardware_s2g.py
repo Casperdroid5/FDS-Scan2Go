@@ -2,15 +2,12 @@ import time
 import neopixel
 from machine import Pin, PWM, I2C, UART
 from system_utils import Timer
-import uasyncio as asyncio
 
 class WS2812:
     def __init__(self, pin_number, num_leds, brightness):
         self._np = neopixel.NeoPixel(Pin(pin_number), num_leds, bpp=3, timing=1)
         self._num_leds = num_leds
         self._brightness = brightness
-        self._pulse_task = None
-        self._pulsing = False
 
     def set_color(self, color):
         colors = {
@@ -40,53 +37,10 @@ class WS2812:
     def off(self):
         self.set_color("off")
 
-    async def pulse(self, color, delay=0.00005):
-        self._pulsing = True
-        colors = {
-            "red": (255, 0, 0),
-            "green": (0, 255, 0),
-            "blue": (0, 0, 255),
-            "yellow": (255, 255, 0),
-            "cyan": (0, 255, 255),
-            "magenta": (255, 0, 255),
-            "white": (255, 255, 255),
-            "off": (0, 0, 0)
-        }
-        color_values = colors.get(color.lower(), (0, 0, 0))
-        
-        while self._pulsing:
-            for j in range(256):
-                brightness_factor = j / 255
-                pulsing_color = tuple(int(val * brightness_factor * self._brightness / 100) for val in color_values)
-                for i in range(self._num_leds):
-                    self._np[i] = pulsing_color
-                self._np.write()
-                await asyncio.sleep(delay)
-            for j in range(255, -1, -1):
-                brightness_factor = j / 255
-                pulsing_color = tuple(int(val * brightness_factor * self._brightness / 100) for val in color_values)
-                for i in range(self._num_leds):
-                    self._np[i] = pulsing_color
-                self._np.write()
-                await asyncio.sleep(delay)
-
-    def start_pulse(self, color="blue", delay=0.00005):
-        if self._pulse_task:
-            self.stop_pulse()
-        self._pulse_task = asyncio.create_task(self.pulse(color, delay))
-
-    def stop_pulse(self):
-        if self._pulse_task:
-            self._pulsing = False
-            self._pulse_task.cancel()
-            self._pulse_task = None
-
-
-
 class ServoMotor:
     """Class for controlling a servo motor."""
     def __init__(self, pin_number):
-        self.pwm = PWM(Pin(pin_number))
+        self.pwm = PWM(pin_number)
         self.pwm.freq(50)
         self.min_us = 600
         self.max_us = 2400
