@@ -160,14 +160,10 @@ class StateMachine:
             if not self.image_opened:
                 self.communication.send_message("showimage 2") # move through the metaldetector to field B
                 self.image_opened = True
-            if self.ferrometalscanner.value():
-                self.state == self.METAL_DETECTED_STATE
-                return
-            else:
-                self.field_A_leds.off()
-                self.field_B_leds.set_color("white")
-                self.state = self.USER_FIELD_B_RESPONSE_STATE
-                return      
+            self.field_A_leds.off()
+            self.field_B_leds.set_color("white")
+            self.state = self.USER_FIELD_B_RESPONSE_STATE
+            return      
         
     def handle_user_field_b_response_state(self):
         if self.detect_person('B') and not self.detect_person('A'):
