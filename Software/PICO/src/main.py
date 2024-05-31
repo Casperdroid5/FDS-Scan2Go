@@ -16,6 +16,7 @@ class StateMachine:
         self.sensor_to_object_distance_threshold = 180
         self.audio_played = False
         self.image_opened = False
+        self.mode = 'sensor'  # mode can be 'sensor' or 'keyboard'
 
         self.communication = communication
         self.logger = logger
@@ -135,7 +136,7 @@ class StateMachine:
             self.communication.send_message("showimage 0")  # Please leave the area
             self.image_opened = True
         elif not self.audio_played:
-            self.communication.send_message("playaudio 4")  # Remove all persons from the sluice
+            self.communication.send_message("playaudio 4")  # Please leave the area
             self.audio_played = True
         elif not self.detect_person('B') and not self.detect_person('A'):
             self.latchreset.value(1)
@@ -154,10 +155,10 @@ class StateMachine:
         if not self.detect_person('B') and self.detect_person('A'):
             self.changeroom_door.close_door()
             if not self.audio_played:
-                self.communication.send_message("playaudio 6")  # move through the metaldetector to field B
+                self.communication.send_message("playaudio 6") # move through the metaldetector to field B
                 self.audio_played = True
             if not self.image_opened:
-                self.communication.send_message("showimage 2")  # move through the metaldetector to field B
+                self.communication.send_message("showimage 2") # move through the metaldetector to field B
                 self.image_opened = True
             if self.ferrometalscanner.value():
                 self.state == self.METAL_DETECTED_STATE
@@ -166,8 +167,8 @@ class StateMachine:
                 self.field_A_leds.off()
                 self.field_B_leds.set_color("white")
                 self.state = self.USER_FIELD_B_RESPONSE_STATE
-                return
-
+                return      
+        
     def handle_user_field_b_response_state(self):
         if self.detect_person('B') and not self.detect_person('A'):
             if not self.ferrometalscanner.value():
@@ -239,10 +240,14 @@ class StateMachine:
             self.mri_room_door.open_door()
 
     def detect_person(self, field):
-        if field == 'A':
-            return self.mmWaveField_A.scan_for_people()
-        elif field == 'B':
-            return self.mmWaveField_B.scan_for_people()
+        if self.mode == 'sensor':
+            if field == 'A':
+                return self.mmWaveField_A.scan_for_people()
+            elif field == 'B':
+                return self.mmWaveField_B.scan_for_people()
+        elif self.mode == 'keyboard':
+            input_str = input(f"Is there a person in field {field}? (1 for yes, 2 for no): ")
+            return input_str.strip() == '1'
         return False
 
 if __name__ == "__main__":
@@ -259,6 +264,9 @@ if __name__ == "__main__":
         systemlog.log_message("System check passed. Starting FDS...")
         while True:
             if running:
+                mode_input = input("Select input mode (sensor/keyboard): ").strip().lower()
+                if mode_input in ['sensor', 'keyboard']:
+                    FDS.mode = mode_input
                 FDS.run()
             else:
                 FDS.freeze()
@@ -272,3 +280,4 @@ if __name__ == "__main__":
         communication.send_message(f"System encountered unexpected error: {e}")
         systemlog.log_message(f"System encountered unexpected error: {e}")
         systemlog.close_log()
+
