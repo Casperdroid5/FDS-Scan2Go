@@ -158,7 +158,6 @@ class StateMachine:
             self.field_A_leds.off()
             self.field_B_leds.set_color("white")
             self.state = self.USER_FIELD_B_RESPONSE_STATE
-            return      
         
     def handle_user_field_b_response_state(self):
         if self.mmWaveField_B.scan_for_people() and not self.mmWaveField_A.scan_for_people():
@@ -183,7 +182,7 @@ class StateMachine:
             self.state = self.USER_RETURNS_FROM_MR_ROOM_STATE
 
     def handle_user_returns_from_mr_room_state(self):
-        if self.mmWaveField_B.scan_for_people() or self.mmWaveField_A.scan_for_people():
+        if not self.mmWaveField_B.scan_for_people() and self.mmWaveField_A.scan_for_people():
             self.communication.send_message("showimage 6")  # Welcome back, you may proceed to the changing room
             self.communication.send_message("playaudio 10")  # Welcome back, you may proceed to the changing room
             self.mri_room_door.close_door()
@@ -204,12 +203,8 @@ class StateMachine:
         self.ferrometal_detector_leds.set_color("red")
         self.field_A_leds.set_color("white")
         self.field_B_leds.off()
-        if not self.image_opened:
-            self.communication.send_message("showimage 4")  # Ferrometals detected, please leave the sluice
-            self.image_opened = True
-        if not self.audio_played:
-            self.communication.send_message("playaudio 9")  # Ferrometals detected, please leave the sluice
-            self.audio_played = True
+        self.communication.send_message("showimage 4")  # Ferrometals detected, please leave the sluice
+        self.communication.send_message("playaudio 9")  # Ferrometals detected, please leave the sluice
         self.changeroom_door.open_door()
         self.mri_room_door.close_door()
         self.state = self.INITIALISATION_STATE
