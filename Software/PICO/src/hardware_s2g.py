@@ -105,20 +105,12 @@ class MAX9744:
         except OSError:
             return False
 
-class PersonDetector:
-    """Base class for person detectors."""
+class SeeedPersonDetector:
+    """Class for controlling Seeed Studio mmWave sensor."""
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
         self.uart = UART(uart_number, baudrate=baudrate, tx=Pin(tx_pin), rx=Pin(rx_pin))
         self.person_detected = False
 
-    def scan_for_people(self):
-        raise NotImplementedError
-
-    def get_detection_distance(self):
-        raise NotImplementedError
-
-class SeeedPersonDetector(PersonDetector):
-    """Class for controlling Seeed Studio mmWave sensor."""
     def scan_for_people(self):
         data = self.uart.read()
         if data:
@@ -126,7 +118,11 @@ class SeeedPersonDetector(PersonDetector):
         return self.person_detected
 
     def get_detection_distance(self):
-        return 180
+        return 150
+
+
+    def get_detection_distance(self): 
+        return 150
 
 class LD2410PersonDetector:
     """Class for controlling LD2410 mmWave sensor."""
