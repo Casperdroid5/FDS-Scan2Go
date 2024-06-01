@@ -1,4 +1,4 @@
-from hardware_s2g import LD2410PersonDetector, Door, WS2812
+from hardware_s2g import SeeedPersonDetector, Door, WS2812
 from system_utils import SystemInitCheck, Timer, USBCommunication, Log
 from machine import Pin
 
@@ -36,8 +36,8 @@ class StateMachine:
         self.changeroom_door = Door(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19)
         self.mri_room_door = Door(pin_number=15, angle_closed=90, angle_open=185, position_sensor_pin=20)
 
-        self.mmWaveField_A = LD2410PersonDetector(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
-        self.mmWaveField_B = LD2410PersonDetector(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
+        self.mmWaveField_A = SeeedPersonDetector(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
+        self.mmWaveField_B = SeeedPersonDetector(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
 
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)
         self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_emergencybutton_press)

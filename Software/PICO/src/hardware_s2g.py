@@ -107,21 +107,59 @@ class MAX9744:
 
 class SeeedPersonDetector:
     """Class for controlling Seeed Studio mmWave sensor."""
+    STATE_NO_TARGET = 0
+    STATE_MOVING_TARGET = 1
+    STATE_STATIONARY_TARGET = 2
+    STATE_COMBINED_TARGET = 3
+
+    standing_threshold = 10  # Threshold for determining if someone has been standing for too long
+    moving_threshold = 5  # Threshold for determining if someone has been moving for too long
+
     def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
         self.uart = UART(uart_number, baudrate=baudrate, tx=Pin(tx_pin), rx=Pin(rx_pin))
-        self.person_detected = False
+        self.meas = {
+            "state": self.STATE_NO_TARGET,
+            "detection_distance": 0 
+        }
+        self.mmWaveTimer = Timer()  # Initialize the Timer for mmWave sensor
+        self.person_detected = False  # Variable to track person detection status
+        self.standing_timer = 10  # Timer to track how long someone has been standing
+        self.moving_timer = 5  # Timer to track how long someone has been moving
 
     def scan_for_people(self):
         data = self.uart.read()
         if data:
-            self.person_detected = b'\x02' in data or b'\x03' in data
-        return self.person_detected
+            self.meas['state'] = self.STATE_MOVING_TARGET if b'\x02' in data else self.STATE_STATIONARY_TARGET if b'\x03' in data else self.STATE_NO_TARGET
+
+        if self.meas['state'] == self.STATE_MOVING_TARGET or self.meas['state'] == self.STATE_COMBINED_TARGET:
+            self.standing_timer = 0
+
+            if self.moving_timer < self.moving_threshold:
+                self.moving_timer += 1
+
+            elif self.moving_timer >= self.moving_threshold:
+                self.person_detected = True
+                self.moving_timer = 0
+                self.mmWaveTimer.reset()  # Reset the timer
+                return self.person_detected
+
+        elif self.meas['state'] == self.STATE_STATIONARY_TARGET:
+            self.standing_timer += 1
+
+            # Check if a person has been standing still for too long
+            if self.standing_timer >= self.standing_threshold:
+                self.moving_timer = 0
+                self.standing_timer = 0
+                self.person_detected = False
+                self.mmWaveTimer.reset()  # Reset the timer
+                return self.person_detected
+
+        if self.person_detected:
+            return True
+        else:
+            return False
 
     def get_detection_distance(self):
-        return 150
-
-
-    def get_detection_distance(self): 
         return 150
 
 class LD2410PersonDetector:
