@@ -29,10 +29,6 @@ class StateMachine:
         self.USER_EXITS_FDS_STATE = 5
         self.METAL_DETECTED_STATE = 6
 
-        self.initialize_hardware()
-        self.initialize_buttons()
-
-    def initialize_hardware(self):
         self.field_A_leds = WS2812(pin_number=2, num_leds=2, brightness=30)
         self.field_B_leds = WS2812(pin_number=3, num_leds=2, brightness=30)
         self.ferrometal_detector_leds = WS2812(pin_number=6, num_leds=2, brightness=30)
@@ -43,7 +39,6 @@ class StateMachine:
         self.mmWaveField_A = LD2410PersonDetector(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
         self.mmWaveField_B = LD2410PersonDetector(uart_number=1, baudrate=256000, tx_pin=4, rx_pin=5)
 
-    def initialize_buttons(self):
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)
         self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_emergencybutton_press)
 
