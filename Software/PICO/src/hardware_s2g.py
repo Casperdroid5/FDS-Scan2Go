@@ -107,7 +107,7 @@ class MAX9744:
 
 class SeeedPersonDetector:
     """Class for controlling Seeed Studio mmWave sensor."""
-    def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
+    def __init__(self, uart_number, tx_pin, rx_pin):
         self.uart = UART(uart_number, baudrate=115200, tx=Pin(tx_pin), rx=Pin(rx_pin))
         self.person_detected = False
 
@@ -141,7 +141,7 @@ class LD2410PersonDetector:
     standing_threshold = 20  # Threshold for determining if someone has been standing for too long (40 = 4 seconds somehow)
     moving_threshold = 40  # Threshold for determining if someone has been moving for too long
 
-    def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
+    def __init__(self, uart_number, tx_pin, rx_pin):
         """
         Initialize LD2410 mmWave sensor.
 
