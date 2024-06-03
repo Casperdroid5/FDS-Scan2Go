@@ -1,4 +1,4 @@
-from hardware_s2g import SeeedPersonDetector, Door, WS2812
+from hardware_s2g import LD2410PersonDetector, Door, WS2812
 from system_utils import SystemInitCheck, Timer, USBCommunication, Log
 from machine import Pin
 
@@ -36,8 +36,8 @@ class StateMachine:
         self.changeroom_door = Door(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19)
         self.mri_room_door = Door(pin_number=15, angle_closed=90, angle_open=185, position_sensor_pin=20)
 
-        self.mmWaveField_A = SeeedPersonDetector(uart_number=0, tx_pin=0, rx_pin=1)
-        self.mmWaveField_B = SeeedPersonDetector(uart_number=1, tx_pin=4, rx_pin=5)
+        self.mmWaveField_B = LD2410PersonDetector(uart_number=0, tx_pin=0, rx_pin=1)
+        self.mmWaveField_A = LD2410PersonDetector(uart_number=1, tx_pin=4, rx_pin=5)
 
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)
         self.button_emergency.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_emergencybutton_press)
@@ -182,7 +182,7 @@ class StateMachine:
             self.state = self.USER_RETURNS_FROM_MR_ROOM_STATE
 
     def handle_user_returns_from_mr_room_state(self):
-        if not self.mmWaveField_B.scan_for_people() and self.mmWaveField_A.scan_for_people():
+        if  self.mmWaveField_B.scan_for_people() or self.mmWaveField_A.scan_for_people():
             self.communication.send_message("showimage 6")  # Welcome back, you may proceed to the changing room
             self.communication.send_message("playaudio 10")  # Welcome back, you may proceed to the changing room
             self.mri_room_door.close_door()
@@ -251,4 +251,5 @@ if __name__ == "__main__":
         communication.send_message(f"System encountered unexpected error: {e}")
         systemlog.log_message(f"System encountered unexpected error: {e}")
         systemlog.close_log()
+
 
