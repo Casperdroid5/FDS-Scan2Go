@@ -193,6 +193,8 @@ class StateMachine:
         self.LEDStrip_mmWave_fieldA.off()
         self.LEDStrip_mmWave_fieldB.off()
         self.LEDStrip_FerrometalDetector.off() 
+        self.LEDStrip_fieldA.off()
+        self.LEDStrip_fieldB.off()
         self.door_mri_room.close_door()  
         self.door_changeroom.open_door()  
         self.system_initialised = True

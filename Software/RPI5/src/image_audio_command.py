@@ -60,7 +60,7 @@ def show_image(image_path):
     """
     if os.path.exists(image_path):
         print(f"Opening image: {image_path}")
-        os.system(f"feh {image_path} &")  # Open the image using feh
+        os.system(f"feh -ZF {image_path} &")  # Open the image using feh
     else:
         print("Image file not found:", image_path)
 
@@ -123,3 +123,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
