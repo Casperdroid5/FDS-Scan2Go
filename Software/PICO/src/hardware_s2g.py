@@ -138,8 +138,8 @@ class LD2410PersonDetector:
     STATE_COMBINED_TARGET = 3
     TARGET_NAME = ["no_target", "moving_target", "stationary_target", "combined_target"]
     
-    standing_threshold = 40  # Threshold for determining if someone has been standing for too long (40 = 4 seconds somehow)
-    moving_threshold = 20  # Threshold for determining if someone has been moving for too long
+    standing_threshold = 180  # Threshold for determining if someone has been standing for too long (40 = 4 seconds somehow)
+    moving_threshold = 50  # Threshold for determining if someone has been moving for too long
 
     def __init__(self, uart_number, tx_pin, rx_pin):
         """
@@ -425,3 +425,4 @@ class LD2410PersonDetector:
             return False
         
         self.person_detected = False
+
