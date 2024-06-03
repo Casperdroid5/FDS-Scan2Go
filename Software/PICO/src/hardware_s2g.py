@@ -105,24 +105,155 @@ class MAX9744:
         except OSError:
             return False
 
+from machine import UART, Pin
+
+# Define constants
+MESSAGE_HEAD1 = 0x53       # Data frame header1
+MESSAGE_HEAD2 = 0x59       # Data frame header2
+MESSAGE_END1  = 0x54       # End1 of data frame
+MESSAGE_END2  = 0x43       # End2 of data frame
+
+HUMANSTATUS   = 0x80       # Human Presence Information
+HUMANEXIST    = 0x01       # Presence of the human body
+HUMANMOVE     = 0x02       # Human movement information
+HUMANSIGN     = 0x03       # Body Signs Parameters
+HUMANDIRECT   = 0x0B       # Human movement trends
+
+SOMEBODY      = 0x01       # Somebody move
+NOBODY        = 0x00       # No one here
+
+NONE          = 0x00
+SOMEBODY_STOP = 0x01       # Somebody stop
+SOMEBODY_MOVE = 0x02       # Somebody move
+
+CA_CLOSE      = 0x01       # Someone approaches
+CA_AWAY       = 0x02       # Some people stay away
+
+DETAILSTATUS  = 0x08       # Underlying parameters of the human state
+DETAILINFO    = 0x01       # Detailed data on the state of human movement
+DETAILDIRECT  = 0x06       # Human movement trends
+DETAILSIGN    = 0x07       # Body Signs Parameters
+
+SOMEONE       = 0x01       # There are people
+NOONE         = 0x02       # No one
+NOTHING       = 0x03       # No message
+SOMEONE_STOP  = 0x04       # Somebody stop
+SOMEONE_MOVE  = 0x05       # Somebody move
+HUMANPARA     = 0x06       # Body Signs Parameters
+SOMEONE_CLOSE = 0x07       # Someone approaches
+SOMEONE_AWAY  = 0x08       # Some people stay away
+DETAILMESSAGE = 0x09       # Underlying parameters of the human state
+
+reset_frame_len = 10       # Reset data frame length
+
+# Reset data frame
+reset_frame = [0x53, 0x59, 0x01, 0x02, 0x00, 0x01, 0x0F, 0xBF, 0x54, 0x43]
+
 class SeeedPersonDetector:
     """Class for controlling Seeed Studio mmWave sensor."""
+
     def __init__(self, uart_number, tx_pin, rx_pin):
         self.uart = UART(uart_number, baudrate=115200, tx=Pin(tx_pin), rx=Pin(rx_pin))
         self.person_detected = False
 
-    def scan_for_people(self):
+    def recv_radar_bytes(self):
+        """Collects the data frames reported by the Sensor via UART."""
         data = self.uart.read()
         if data:
-            self.person_detected = b'\x02' in data or b'\x03' in data
+            return data
+        return None
+
+    def show_data(self, data):
+        """Prints out the complete data frame reported by the Sensor via the serial port."""
+        if data:
+            print("Data Frame: ", data)
+        else:
+            print("No data received")
+
+    def human_static_func(self, bodysign=False):
+        """Parses the data frames of the Sensor and outputs the relevant data on the state of human presence."""
+        data = self.recv_radar_bytes()
+        if data:
+            radar_status = None
+            bodysign_val = None
+            static_val = None
+            dynamic_val = None
+            dis_static = None
+            dis_move = None
+            speed = None
+
+            if HUMANMOVE in data or HUMANSIGN in data:
+                radar_status = "Human presence detected"
+                if bodysign:
+                    bodysign_val = data.get(HUMANSIGN)
+                    static_val = data.get(DETAILSTATUS)
+                    dynamic_val = data.get(DETAILDIRECT)
+                    dis_static = data.get(DETAILDIRECT)
+                    dis_move = data.get(DETAILDIRECT)
+                    speed = data.get(DETAILINFO)
+            else:
+                radar_status = "No human presence"
+
+            return {
+                "radar_status": radar_status,
+                "bodysign_val": bodysign_val,
+                "static_val": static_val,
+                "dynamic_val": dynamic_val,
+                "dis_static": dis_static,
+                "dis_move": dis_move,
+                "speed": speed
+            }
+        return None
+
+    def check_set_mode_func(self, buff, cyclic=False):
+        """Sends data frames to the Sensor."""
+        self.uart.write(bytearray(buff))
+        if cyclic:
+            while True:
+                self.uart.write(bytearray(buff))
+
+    def reset_func(self):
+        """Resets the Sensor using the predefined reset frame."""
+        self.uart.write(bytearray(reset_frame))
+        return self.uart.read()  # Assuming the sensor sends an acknowledgment
+
+    def scan_for_people(self):
+        """Scans for human presence."""
+        data = self.recv_radar_bytes()
+        if data:
+            if HUMANMOVE in data or HUMANSIGN in data:
+                self.person_detected = True
+            elif NOONE in data:
+                self.person_detected = False
         return self.person_detected
 
     def get_detection_distance(self):
+        """Returns a static distance for now. This could be updated to return dynamic values based on sensor data."""
         return 150
 
-
-    def get_detection_distance(self): 
-        return 150
+    def get_status(self):
+        """Returns detailed status information from the sensor."""
+        data = self.recv_radar_bytes()
+        if data:
+            if SOMEONE in data:
+                return "There are people"
+            elif NOONE in data:
+                return "No one"
+            elif SOMEBODY_STOP in data:
+                return "Somebody stopped"
+            elif SOMEBODY_MOVE in data:
+                return "Somebody moved"
+            elif HUMANPARA in data:
+                return "Body Signs Parameters"
+            elif SOMEONE_CLOSE in data:
+                return "Someone approaches"
+            elif SOMEONE_AWAY in data:
+                return "Someone moves away"
+            elif DETAILMESSAGE in data:
+                return "Underlying parameters of the human state"
+            else:
+                return "Unknown status"
+        return "No data received"
 
 class LD2410PersonDetector:
     """Class for controlling LD2410 mmWave sensor."""

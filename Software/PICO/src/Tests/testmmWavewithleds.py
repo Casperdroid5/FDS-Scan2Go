@@ -1,8 +1,8 @@
-from hardware_s2g import LD2410PersonDetector, WS2812
+from hardware_s2g import SeeedPersonDetector, WS2812
 import time
 
 def initialize_person_detector(uart_number, tx_pin, rx_pin):
-    return LD2410PersonDetector(uart_number=uart_number, baudrate=256000, tx_pin=tx_pin, rx_pin=rx_pin)
+    return SeeedPersonDetector(uart_number=uart_number, tx_pin=tx_pin, rx_pin=rx_pin)
 
 
 def initialize_leds(pin_number, num_leds=2, brightness=50):
