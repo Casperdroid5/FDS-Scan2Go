@@ -5815,10 +5815,6 @@
 		(uuid "7f906a41-1cfe-4024-bed5-9f236ec308cc")
 	)
 	(no_connect
-		(at 109.22 175.26)
-		(uuid "81a08e45-40a1-4ad9-931c-4af2bc44dd48")
-	)
-	(no_connect
 		(at 74.93 111.76)
 		(uuid "8466d7da-b235-4e58-b071-c62535aa4140")
 	)
@@ -10545,6 +10541,15 @@
 				)
 			)
 		)
+		(property "Farnell" "3545485 "
+			(at 34.29 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d0b1a544-4908-4f48-b0b3-7e707ca7436b")
 		)
@@ -11797,6 +11802,23 @@
 			)
 		)
 		(property "Description" "Operational Amplifier, DIP-8/TO-99-8"
+			(at 48.26 175.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Populate" ""
+			(at 48.26 175.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Farnell" "3117118 "
 			(at 48.26 175.26 0)
 			(effects
 				(font

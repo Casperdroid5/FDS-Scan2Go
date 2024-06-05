@@ -498,9 +498,9 @@
     "bom_fmt_presets": [],
     "bom_fmt_settings": {
       "field_delimiter": ";",
-      "keep_line_breaks": false,
-      "keep_tabs": false,
-      "name": "Semicolons",
+      "keep_line_breaks": true,
+      "keep_tabs": true,
+      "name": "---",
       "ref_delimiter": ",",
       "ref_range_delimiter": "",
       "string_delimiter": "'"
