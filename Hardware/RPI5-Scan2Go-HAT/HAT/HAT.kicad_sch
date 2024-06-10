@@ -6,8 +6,8 @@
 	(paper "User" 304.8 203.2)
 	(title_block
 		(title "Scan2Go FDS-HAT")
-		(date "2024-06-05")
-		(rev "V0.4")
+		(date "2024-06-10")
+		(rev "V0.4.1")
 		(company "UMC Utrecht")
 		(comment 1 "Casper R. Tak")
 		(comment 2 "HF-P99-006-01")
@@ -7304,9 +7304,9 @@
 		)
 		(uuid "76e4358d-a349-449f-802e-4d44464f5673")
 	)
-	(text "Ferrometaldetector resistance trigger"
+	(text "Ferrometaldetector resistance trigger (optional)"
 		(exclude_from_sim no)
-		(at 30.988 150.114 0)
+		(at 37.338 150.622 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -14519,7 +14519,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "10K"
+		(property "Value" "3.9K"
 			(at 77.47 172.7199 0)
 			(effects
 				(font
@@ -14564,6 +14564,15 @@
 			)
 		)
 		(property "Farnell" "3545485 "
+			(at 74.93 171.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Purpose" "A resistor is required to trigger the latch, matching the varying outputs of 2.2K and 6.8K from the metal detector."
 			(at 74.93 171.45 0)
 			(effects
 				(font
