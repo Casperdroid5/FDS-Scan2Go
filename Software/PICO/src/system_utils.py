@@ -5,7 +5,7 @@ import select
 import sys
 
 class Log:
-    """Log class to log messages to a file."""
+
     def __init__(self, filename="log.txt"):
         self.filename = filename
         self.file = None
@@ -32,7 +32,7 @@ class Log:
             self.file = None
 
 class USBCommunication:
-    """USBCommunication class to send and receive messages from the host."""
+
     def __init__(self):
         self.poll_obj = select.poll()
         self.poll_obj.register(sys.stdin, select.POLLIN)
@@ -50,7 +50,7 @@ class USBCommunication:
         return None
 
 class Timer:
-    """Timer class to measure time in ms."""
+
     def __init__(self):
         self.start_time = None
 
@@ -66,7 +66,7 @@ class Timer:
         self.start_time = None
 
 class ErrorHandler:
-    """ErrorHandler class to handle errors."""
+
     def report_error(self, components):
         for component in components:
             self.display_error(component)
@@ -82,7 +82,7 @@ def check_sensors():
     return True
 
 class SystemInitCheck:
-    """SystemInitCheck class to perform system initialization checks."""
+
     def __init__(self):
         failing_components = self.systemcheck()
         if failing_components:

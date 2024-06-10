@@ -2,7 +2,7 @@ import serial
 import os
 import subprocess
 
-# Paths for audio and image files. Comment out to use current folder.
+# Paths for audio and image files. Change path to use different location. Comment out to use current folder.
 audio_path = "/home/PIons3/FDS-Scan2GO/Software/FDS_media/Soundfiles_FDS/"  # change to the path of the audio files
 image_path = "/home/PIons3/FDS-Scan2GO/Software/FDS_media/Displayimages_FDS/"  # change to the path of the image files
 
@@ -10,15 +10,7 @@ image_path = "/home/PIons3/FDS-Scan2GO/Software/FDS_media/Displayimages_FDS/"  #
 current_audio_process = None
 
 def play_audio(audio_path):
-    """
-    Play audio file using VLC.
 
-    Args:
-        audio_path (str): The path to the audio file.
-
-    Returns:
-        None
-    """
     global current_audio_process
 
     if os.path.exists(audio_path):
@@ -34,12 +26,7 @@ def play_audio(audio_path):
         print("Audio file not found:", audio_path)
 
 def stop_audio():
-    """
-    Stop the audio playback.
 
-    Returns:
-        None
-    """
     global current_audio_process
 
     # Stop the current audio process if there is one
@@ -49,15 +36,7 @@ def stop_audio():
         current_audio_process = None
 
 def show_image(image_path):
-    """
-    Show image using feh.
 
-    Args:
-        image_path (str): The path to the image file.
-
-    Returns:
-        None
-    """
     if os.path.exists(image_path):
         print(f"Opening image: {image_path}")
         os.system(f"feh -ZF {image_path} &")  # Open the image using feh
@@ -65,21 +44,11 @@ def show_image(image_path):
         print("Image file not found:", image_path)
 
 def close_image():
-    """
-    Close all instances of feh.
 
-    Returns:
-        None
-    """
     os.system("pkill feh")  # Close all instances of feh
 
 def main():
-    """
-    Main function to handle serial communication and actions based on received messages.
 
-    Returns:
-        None
-    """
     global image_path
 
     # Open the serial port
