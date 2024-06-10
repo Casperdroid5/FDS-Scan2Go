@@ -6,8 +6,8 @@ from gpiozero import LED
 from signal import pause
 
 # Paths for audio and image files. Change path to use different location. Comment out to use current folder.
-audio_path = "/home/RPI-S2G/FDS-Scan2GO/Software/FDS_media/Soundfiles_FDS/"  # change to the path of the audio files
-image_path = "/home/RPI-S2G/FDS-Scan2GO/Software/FDS_media/Displayimages_FDS/"  # change to the path of the image files
+audio_path = "/home/ADMIN/FDS-Scan2Go/Software/FDS_media/Soundfiles_FDS/"  # change to the path of the audio files
+image_path = "/home/ADMIN/FDS-Scan2Go/Software/FDS_media/Displayimages_FDS/"  # change to the path of the image files
 
 # Variable to keep track of the current audio process
 current_audio_process = None
