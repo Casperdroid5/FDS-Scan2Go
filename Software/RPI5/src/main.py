@@ -2,6 +2,8 @@ import serial
 import os
 import subprocess
 import time
+from gpiozero import LED
+from signal import pause
 
 # Paths for audio and image files. Change path to use different location. Comment out to use current folder.
 audio_path = "/home/PIons3/FDS-Scan2GO/Software/FDS_media/Soundfiles_FDS/"  # change to the path of the audio files
@@ -11,7 +13,8 @@ image_path = "/home/PIons3/FDS-Scan2GO/Software/FDS_media/Displayimages_FDS/"  #
 current_audio_process = None
 
 # Reset pin for Pico
-PicoResetSignal = PIN(23)
+PicoResetSignal = LED(23)
+
 
 def play_audio(audio_path):
     global current_audio_process
@@ -48,12 +51,15 @@ def close_image():
     os.system("pkill feh")  # Close all instances of feh
 
 def connect_serial(port="/dev/ttyACM0", baudrate=115200, timeout=1):
+    attempt = 0
+    second_attempt = False
+    
     while True:
         try:
             return serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
         except serial.SerialException as e:
-            print(f"Failed to connect to {port}: {e}. Retrying in 5 seconds...")
-            time.sleep(5)
+            print(f"Failed to connect to {port}: {e}. Retrying in 3 seconds...")
+            time.sleep(3)
             attempt += 1
             if attempt >= 3 and second_attempt == False:
                 print("Failed to connect after 3 attempts. Forcefully rebooting Rasperberry Pi Pico")
@@ -69,13 +75,13 @@ def connect_serial(port="/dev/ttyACM0", baudrate=115200, timeout=1):
 
 def main():
     global image_path
-    s = connect_serial()
+    dataline = connect_serial()
 
     try:
         while True:
             try:
                 # Read a message from the serial port
-                received_message = s.readline().decode().strip()
+                received_message = dataline.readline().decode().strip()
                 print(received_message)
                 
                 # Check if the received message is for playing audio
@@ -106,12 +112,14 @@ def main():
                     print("Closed the image")
             except serial.SerialException as e:
                 print(f"Serial error: {e}")
-                s.close()
-                s = connect_serial()
+                dataline.close()
+                dataline = connect_serial()
     except Exception as e:
         print(f"An error occurred: {e}")
-        if s.is_open:
-            s.close()
+        if dataline.is_open:
+            dataline.close()
 
 if __name__ == "__main__":
     main()
+
+
