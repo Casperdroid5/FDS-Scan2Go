@@ -15,6 +15,10 @@ current_audio_process = None
 # Reset pin for Pico
 PicoResetSignal = LED(23)
 
+# Reset Pico no startup
+PicoResetSignal.off()
+time.sleep(0.5)
+PicoResetSignal.on()
 
 def play_audio(audio_path):
     global current_audio_process
@@ -62,7 +66,7 @@ def connect_serial(port="/dev/ttyACM0", baudrate=115200, timeout=1):
             time.sleep(1.5)
             attempt += 1
             if attempt >= 3 and second_attempt == False:
-                print("Failed to connect after 3 attempts. Forcefully rebooting Rasperberry Pi Pico")
+                print("Failed to connect after 3 attempts. Forcefully rebooting Raspberry Pi Pico")
                 PicoResetSignal.off()
                 time.sleep(0.5)
                 PicoResetSignal.on()
@@ -70,13 +74,13 @@ def connect_serial(port="/dev/ttyACM0", baudrate=115200, timeout=1):
                 second_attempt = True 
             if attempt >= 3 and second_attempt:
                 print("Failed to connect for the second time. Raising alarms")
-                time.sleep(0.5)
                 # Do something here to raise alarms or notify the user	
                 exit(1) # terminate the program
 
 def send_message(serial, message):
     try:
         serial.write((message + "\n").encode())
+        print(f"Sent message: {message}")
     except serial.SerialException as e:
         print(f"Failed to send message: {e}")
 
@@ -90,9 +94,10 @@ def main():
                 # Read a message from the serial port
                 received_message = dataline.readline().decode().strip()
                 print(received_message)
-                if received_message.startswith("[USBCommunication] stillalive"):
-                    send_message(dataline, "[USBCommunication] stillalive".encode())        
-
+                if received_message.startswith("[USBCommunication] stillalivemessage"):
+                    send_message(dataline, "[USBCommunication] stillalive")
+                    
+                # Check if the received message is for playing audio
                 if received_message.startswith("[USBCommunication] playaudio"):
                     # Extract the audio file number from the message
                     audio_number = received_message.split(" ")[-1]
@@ -129,5 +134,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
