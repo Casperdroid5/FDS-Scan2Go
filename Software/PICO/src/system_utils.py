@@ -45,7 +45,7 @@ class USBCommunication:
         poll_results = self.poll_obj.poll(1)
         if poll_results:
             data = sys.stdin.readline().strip()
-            if data.startswith("[USBCommunication]"):
+            if data.startswith("[USBCommunication] "):
                 return data
         return None
 

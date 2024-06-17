@@ -6,8 +6,8 @@
 	(paper "User" 304.8 203.2)
 	(title_block
 		(title "Scan2Go FDS-HAT")
-		(date "2024-06-10")
-		(rev "V0.4.2")
+		(date "2024-06-17")
+		(rev "V0.4.3")
 		(company "UMC Utrecht")
 		(comment 1 "Casper R. Tak")
 		(comment 2 "HF-P99-006-01")
@@ -5665,12 +5665,6 @@
 		(uuid "8b890ab7-5056-4e59-80fb-ce434d71345c")
 	)
 	(junction
-		(at 254 134.62)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "96afa0c6-80c5-4d6f-a84d-51964006c03d")
-	)
-	(junction
 		(at 30.48 172.72)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6030,6 +6024,26 @@
 	)
 	(wire
 		(pts
+			(xy 283.21 138.43) (xy 283.21 139.7)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "10851fd9-e3a2-4fea-8497-69ca2162b9de")
+	)
+	(wire
+		(pts
+			(xy 283.21 130.81) (xy 283.21 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "125c8ffa-4431-4018-85d8-695e96a6ddd8")
+	)
+	(wire
+		(pts
 			(xy 187.96 115.57) (xy 185.42 115.57)
 		)
 		(stroke
@@ -6147,6 +6161,16 @@
 			(type default)
 		)
 		(uuid "2554dc6f-ebaf-4ec4-a6f6-9c45d4f7f012")
+	)
+	(wire
+		(pts
+			(xy 252.73 105.41) (xy 252.73 135.89)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2768d65b-339f-418c-95e6-d465006627bf")
 	)
 	(wire
 		(pts
@@ -6610,16 +6634,6 @@
 	)
 	(wire
 		(pts
-			(xy 254 134.62) (xy 254 105.41)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7ef61b9a-fe73-413e-92ed-fca95a081d59")
-	)
-	(wire
-		(pts
 			(xy 175.26 95.25) (xy 175.26 123.19)
 		)
 		(stroke
@@ -6900,6 +6914,16 @@
 	)
 	(wire
 		(pts
+			(xy 283.21 128.27) (xy 260.35 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "af0f609a-4b8e-4738-adaa-94c9c0c9ba54")
+	)
+	(wire
+		(pts
 			(xy 33.02 26.67) (xy 34.29 26.67)
 		)
 		(stroke
@@ -6947,16 +6971,6 @@
 			(type default)
 		)
 		(uuid "c042bea4-0536-48c8-b458-9f21c7947940")
-	)
-	(wire
-		(pts
-			(xy 254 134.62) (xy 261.62 134.62)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c291cb54-3e58-4fa3-9c3d-a4acf5c107fb")
 	)
 	(wire
 		(pts
@@ -7010,7 +7024,7 @@
 	)
 	(wire
 		(pts
-			(xy 254 105.41) (xy 223.52 105.41)
+			(xy 223.52 105.41) (xy 252.73 105.41)
 		)
 		(stroke
 			(width 0)
@@ -7494,7 +7508,7 @@
 		(uuid "1bafaf77-1cab-4aea-80cf-426ab03e62d5")
 	)
 	(label "VBUS"
-		(at 269.24 127 0)
+		(at 266.7 128.27 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -9681,16 +9695,15 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 254 138.43 0)
+		(at 283.21 134.62 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "4c816f21-be97-4c9d-96ec-b7fe028fc623")
 		(property "Reference" "C1"
-			(at 257.81 137.1599 0)
+			(at 286.258 133.35 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9699,7 +9712,7 @@
 			)
 		)
 		(property "Value" "0.1uF"
-			(at 257.81 139.6999 0)
+			(at 286.258 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9708,7 +9721,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
-			(at 254.9652 142.24 0)
+			(at 284.1752 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9717,7 +9730,7 @@
 			)
 		)
 		(property "Datasheet" "https://nl.mouser.com/datasheet/2/40/cx5r-2835979.pdf"
-			(at 254 138.43 0)
+			(at 283.21 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9726,7 +9739,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 254 138.43 0)
+			(at 283.21 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9735,7 +9748,7 @@
 			)
 		)
 		(property "Mouser" "581-12066D104KAT4A "
-			(at 254 138.43 0)
+			(at 283.21 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9744,7 +9757,7 @@
 			)
 		)
 		(property "Farnell" ""
-			(at 254 138.43 0)
+			(at 283.21 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9753,7 +9766,7 @@
 			)
 		)
 		(property "Conrad" ""
-			(at 254 138.43 0)
+			(at 283.21 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9762,7 +9775,7 @@
 			)
 		)
 		(property "TinyTronics" ""
-			(at 254 138.43 0)
+			(at 283.21 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9951,16 +9964,15 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 276.86 134.62 270)
+		(at 267.97 135.89 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "51fb3f1c-1aa9-4da5-afd8-055e34da4f98")
 		(property "Reference" "TP1"
-			(at 281.94 133.3499 90)
+			(at 272.542 135.89 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9969,7 +9981,7 @@
 			)
 		)
 		(property "Value" "TestPoint"
-			(at 281.94 135.8899 90)
+			(at 272.542 138.43 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9978,7 +9990,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_2.0x2.0mm"
-			(at 276.86 139.7 0)
+			(at 267.97 140.97 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9987,7 +9999,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 276.86 139.7 0)
+			(at 267.97 140.97 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9996,7 +10008,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 276.86 134.62 0)
+			(at 267.97 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10005,7 +10017,7 @@
 			)
 		)
 		(property "Farnell" ""
-			(at 276.86 134.62 0)
+			(at 267.97 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10014,7 +10026,7 @@
 			)
 		)
 		(property "Conrad" ""
-			(at 276.86 134.62 0)
+			(at 267.97 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10023,7 +10035,7 @@
 			)
 		)
 		(property "TinyTronics" ""
-			(at 276.86 134.62 0)
+			(at 267.97 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10273,7 +10285,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 269.24 142.24 0)
+		(at 260.35 143.51 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10282,7 +10294,7 @@
 		(fields_autoplaced yes)
 		(uuid "5a41d2d6-6999-4242-b61a-2cc5fcbf42d5")
 		(property "Reference" "#PWR027"
-			(at 269.24 148.59 0)
+			(at 260.35 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10291,7 +10303,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 269.24 147.32 0)
+			(at 260.35 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10299,7 +10311,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 269.24 142.24 0)
+			(at 260.35 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10308,7 +10320,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 269.24 142.24 0)
+			(at 260.35 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10317,7 +10329,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 269.24 142.24 0)
+			(at 260.35 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10339,7 +10351,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 254 142.24 0)
+		(at 283.21 139.7 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10348,7 +10360,7 @@
 		(fields_autoplaced yes)
 		(uuid "5e034679-25b3-4930-8550-4e0d76324146")
 		(property "Reference" "#PWR018"
-			(at 254 148.59 0)
+			(at 283.21 146.05 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10357,7 +10369,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 254 147.32 0)
+			(at 283.21 144.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10365,7 +10377,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 254 142.24 0)
+			(at 283.21 139.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10374,7 +10386,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 254 142.24 0)
+			(at 283.21 139.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10383,7 +10395,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 254 142.24 0)
+			(at 283.21 139.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14449,7 +14461,7 @@
 	)
 	(symbol
 		(lib_id "LED:WS2812B")
-		(at 269.24 134.62 0)
+		(at 260.35 135.89 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -14457,7 +14469,7 @@
 		(dnp no)
 		(uuid "e60d7f7a-5120-4004-902b-4dcdd8ceab9a")
 		(property "Reference" "D2"
-			(at 280.67 128.3014 0)
+			(at 271.78 129.5714 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14465,7 +14477,7 @@
 			)
 		)
 		(property "Value" "WS2812B"
-			(at 280.67 130.8414 0)
+			(at 271.78 132.1114 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14473,7 +14485,7 @@
 			)
 		)
 		(property "Footprint" "LED_SMD:LED_WS2812B_PLCC4_5.0x5.0mm_P3.2mm"
-			(at 270.51 142.24 0)
+			(at 261.62 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14483,7 +14495,7 @@
 			)
 		)
 		(property "Datasheet" "https://cdn-shop.adafruit.com/datasheets/WS2812B.pdf"
-			(at 271.78 144.145 0)
+			(at 262.89 145.415 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14493,7 +14505,7 @@
 			)
 		)
 		(property "Description" "RGB LED with integrated controller"
-			(at 269.24 134.62 0)
+			(at 260.35 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14502,7 +14514,7 @@
 			)
 		)
 		(property "Purpose" "usr rgbled"
-			(at 275.082 141.732 0)
+			(at 266.192 143.002 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14510,7 +14522,7 @@
 			)
 		)
 		(property "Mouser" " 474-COM-16346 "
-			(at 269.24 134.62 0)
+			(at 260.35 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14519,7 +14531,7 @@
 			)
 		)
 		(property "Farnell" ""
-			(at 269.24 134.62 0)
+			(at 260.35 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14528,7 +14540,7 @@
 			)
 		)
 		(property "Conrad" ""
-			(at 269.24 134.62 0)
+			(at 260.35 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14537,7 +14549,7 @@
 			)
 		)
 		(property "TinyTronics" ""
-			(at 269.24 134.62 0)
+			(at 260.35 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)

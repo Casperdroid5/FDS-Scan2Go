@@ -34,6 +34,7 @@ class StateMachine:
         self.LEDStrip_FerrometalDetector = WS2812(pin_number=6, num_leds=2, brightness=50)
         self.LEDStrip_fieldA = WS2812(pin_number=7, num_leds=48, brightness=50)
         self.LEDStrip_fieldB = WS2812(pin_number=8, num_leds=48, brightness=50)
+        self.BoardLED = WS2812(pin_number=20, num_leds= 1, brightness= 50)
 
         # Initialize persondetectors
         self.mmWave_fieldB = LD2410PERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
@@ -41,7 +42,7 @@ class StateMachine:
 
         # Initialize doors
         self.door_changeroom = DOOR(pin_number=14, angle_closed=90, angle_open=0, position_sensor_pin=19)
-        self.door_mri_room = DOOR(pin_number=15, angle_closed=90, angle_open=185, position_sensor_pin=20)
+        self.door_mri_room = DOOR(pin_number=15, angle_closed=90, angle_open=185, position_sensor_pin=21)
 
         # Initialize buttons
         self.button_emergency = Pin(10, Pin.IN, Pin.PULL_UP)  # Emergency situation button
@@ -126,19 +127,21 @@ class StateMachine:
                 return False
 
     def systemset(self):
-
-        self.LEDStrip_mmWave_fieldA.off()
-        self.LEDStrip_mmWave_fieldB.off()
-        self.LEDStrip_FerrometalDetector.off() 
-        self.LEDStrip_fieldA.off()
-        self.LEDStrip_fieldB.off()
-        self.door_mri_room.close_door()  
-        self.door_changeroom.open_door()  
-        self.system_initialised = True
-        self.RPI5_USB_LINE.send_message("System initialised")
-        self.RPI5_USB_LINE.send_message("playaudio 1") # system initialised audio
-        time.sleep(2) # wait for audio to finish playing
-        
+        self.RPI5_USB_LINE.send_message("stillalivemessage")
+        if self.RPI5_USB_LINE.receive_message() == "stillalive":
+            print("RPI5 is still alive")
+            systemlog.log_message("RPI5 is still alive")
+            self.LEDStrip_mmWave_fieldA.off()
+            self.LEDStrip_mmWave_fieldB.off()
+            self.LEDStrip_FerrometalDetector.off() 
+            self.LEDStrip_fieldA.off()
+            self.LEDStrip_fieldB.off()
+            self.door_mri_room.close_door()  
+            self.door_changeroom.open_door()  
+            self.system_initialised = True
+            self.RPI5_USB_LINE.send_message("System initialised")
+            self.RPI5_USB_LINE.send_message("playaudio 1") # system initialised audio
+            time.sleep(2) # wait for audio to finish playing   
 
     def run(self): # State machine logic
 
@@ -148,7 +151,8 @@ class StateMachine:
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 if self.system_initialised == False:
-                    self.systemset()
+                    #self.systemset()
+                    self.system_initialised = True
                 elif not self.image_opened:
                     self.RPI5_USB_LINE.send_message("showimage 0")
                     self.image_opened = True
@@ -173,6 +177,11 @@ class StateMachine:
                     self.LEDStrip_fieldA.set_color("white")
                 if not self.image_opened:
                     self.RPI5_USB_LINE.send_message("showimage 1")  # move to field A image
+                    self.RPI5_USB_LINE.send_message("LED ON")  # move to field A image
+                    self.BoardLED.set_color("green")
+                    time.sleep(2)
+                    self.RPI5_USB_LINE.send_message("LED OFF")  # move to field A image
+                    self.BoardLED.off()
                     self.image_opened = True
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                     
@@ -247,7 +256,6 @@ class StateMachine:
             self.LEDStrip_mmWave_fieldB.set_color("white")
             self.LEDStrip_fieldA.set_color("white")
             self.LEDStrip_fieldB.set_color("white")
-            
             self.door_changeroom.open_door()
             self.door_mri_room.open_door() 
             self.emergency_state_triggerd = False
@@ -269,6 +277,8 @@ if __name__ == "__main__":
     FDS = StateMachine()
     try:
         SystemInitCheck().systemcheck()
+        
+
         while True:
             if running:  
                 FDS.run()
@@ -286,3 +296,4 @@ if __name__ == "__main__":
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System encountered unexpected error")
         systemlog.log_message("System encountered unexpected error")
         systemlog.close_log()
+
