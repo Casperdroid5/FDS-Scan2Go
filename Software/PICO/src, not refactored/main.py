@@ -129,22 +129,19 @@ class StateMachine:
 
     def systemset(self):
         if self.FDStimer.get_time() > 0 and self.FDStimer.get_time() < 1000:    
-            self.BoardLED.set_color("red")
+            self.BoardLED.set_color("white")
             if self.messagecounter < 1:
                 self.RPI5_USB_LINE.send_message("stillalivemessage")
                 self.messagecounter += 1
         if self.FDStimer.get_time() > 1000 and self.FDStimer.get_time() < 2000: 
-            self.BoardLED.set_color("green")
             if self.messagecounter < 2:
                 self.RPI5_USB_LINE.send_message("stillalivemessage")
                 self.messagecounter += 1
         if self.FDStimer.get_time() > 2000 and self.FDStimer.get_time() < 3000:
-            self.BoardLED.set_color("blue")
             if self.messagecounter < 3:
                 self.RPI5_USB_LINE.send_message("stillalivemessage")
                 self.messagecounter += 1
         if self.FDStimer.get_time() > 3000 and self.FDStimer.get_time() < 3500:
-            self.BoardLED.set_color("white")
             if self.messagecounter < 4:
                 self.RPI5_USB_LINE.send_message("stillalivemessage")
                 self.messagecounter += 1
@@ -166,8 +163,7 @@ class StateMachine:
             time.sleep(2) # wait for audio to finish playing   
 
         if self.FDStimer.get_time() > 4000 and self.FDStimer.get_time() < 5000 and self.messagecounter > 3:
-            print("Failed to recieve message from RPI5")
-            systemlog.log_message("Failed to recieve message from RPI5")	
+            systemlog.log_message("Failed to get first contact with RPI5")	
             self.BoardLED.set_color("red")
             self.system_initialised = True 
 
@@ -298,9 +294,10 @@ if __name__ == "__main__":
     systemlog = Log()
     systemlog.open_log()
     FDS = StateMachine()
+
     try:
         SystemInitCheck().systemcheck()
-
+        
         while True:
             if running:  
                 FDS.run()
@@ -312,11 +309,13 @@ if __name__ == "__main__":
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System Exiting")
         systemlog.log_message("System Exiting")
         systemlog.close_log()
+        FDS.BoardLED.set_color("purple") # indicate system error
 
     except Exception as e:
         running = False
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System encountered unexpected error")
         systemlog.log_message("System encountered unexpected error")
         systemlog.close_log()
+        FDS.BoardLED.set_color("purple") # indicate system error
 
 
