@@ -63,9 +63,9 @@ def connect_serial(port="/dev/ttyACM0", baudrate=115200, timeout=1):
             attempt += 1
             if attempt >= 3 and second_attempt == False:
                 print("Failed to connect after 3 attempts. Forcefully rebooting Rasperberry Pi Pico")
-                PicoResetSignal.on()
-                time.sleep(0.5)
                 PicoResetSignal.off()
+                time.sleep(0.5)
+                PicoResetSignal.on()
                 attempt = 0  
                 second_attempt = True 
             if attempt >= 3 and second_attempt:
