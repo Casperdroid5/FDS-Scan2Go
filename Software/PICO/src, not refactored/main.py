@@ -130,17 +130,23 @@ class StateMachine:
 
     def RPI5healthchecker(self):
         self.RPI5connected = False
-        while self.RPI5connected == False:
-            if self.timer1.get_time() > 0 and self.timer1.get_time() < 50:    
+        self.timer1.reset()
+        self.messagecounter = 0
+        current_time = 0
+
+        while not self.RPI5connected:
+            current_time = self.timer1.get_time()
+            
+            if 0 < current_time < 50:
                 self.BoardLED.set_color("white")
                 if self.messagecounter < 1:
                     self.RPI5_USB_LINE.send_message("stillalivemessage")
-                    self.messagecounter += 1
-            if self.timer1.get_time() > 100 and self.timer1.get_time() < 1000: 
+                    self.messagecounter += 1              
+            elif 100 < current_time < 1000:
                 if self.messagecounter < 2:
                     self.RPI5_USB_LINE.send_message("stillalivemessage")
-                    self.messagecounter += 1
-            if self.timer1.get_time() > 2000 and self.timer1.get_time() < 5000:
+                    self.messagecounter += 1              
+            elif 2000 < current_time < 5000:
                 if self.messagecounter < 3:
                     self.RPI5_USB_LINE.send_message("stillalivemessage")
                     self.messagecounter += 1
@@ -149,13 +155,13 @@ class StateMachine:
                 print("RPI5 is still alive")
                 self.RPI5_USB_LINE.send_message("stillalive")
                 self.BoardLED.set_color("green")
-                self.timer1.reset()
                 self.RPI5connected = True
-
-            if self.timer1.get_time() > 5000 and self.timer1.get_time() < 10000 and self.messagecounter == 3:
-                systemlog.log_message("Failed to communicate with RPI5, shutting down system")	
+            
+            if 5000 < current_time < 10000 and self.messagecounter == 3:
+                systemlog.log_message("Failed to communicate with RPI5, shutting down system")
                 self.BoardLED.set_color("red")
                 exit(1)
+
 
     def systemset(self):    
             self.LEDStrip_mmWave_fieldA.off()
