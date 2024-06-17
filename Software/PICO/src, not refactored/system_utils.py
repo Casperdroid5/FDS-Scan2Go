@@ -18,6 +18,7 @@ class Log:
         if self.file:
             timestamp = self.get_timestamp()
             log_entry = f"{timestamp},{message}\n"
+            print(log_entry) # Print to console
             self.file.write(log_entry)
             self.file.flush()
 

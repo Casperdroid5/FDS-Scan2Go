@@ -34,7 +34,7 @@ class StateMachine:
         self.LEDStrip_FerrometalDetector = WS2812(pin_number=6, num_leds=2, brightness=50)
         self.LEDStrip_fieldA = WS2812(pin_number=7, num_leds=48, brightness=50)
         self.LEDStrip_fieldB = WS2812(pin_number=8, num_leds=48, brightness=50)
-        self.BoardLED = WS2812(pin_number=20, num_leds= 1, brightness= 5)
+        self.BoardLED = WS2812(pin_number=20, num_leds= 1, brightness= 30)
 
         # Initialize persondetectors
         self.mmWave_fieldB = LD2410PERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
@@ -137,6 +137,9 @@ class StateMachine:
         if self.FDStimer.get_time() > 2500 and self.FDStimer.get_time() < 3000:
             self.BoardLED.set_color("white")
 
+        if self.FDStimer.get_time() > 3000 and self.FDStimer.get_time() < 10000:
+                self.RPI5_USB_LINE.send_message("stillalivemessage")
+
         if self.RPI5_USB_LINE.receive_message() == "stillalive":
             print("RPI5 is still alive")
             systemlog.log_message("RPI5 is still alive")
@@ -150,12 +153,15 @@ class StateMachine:
             self.system_initialised = True
             self.RPI5_USB_LINE.send_message("System initialised")
             self.RPI5_USB_LINE.send_message("playaudio 1") # system initialised audio
-            self.BoardLED.off()
+            self.BoardLED.set_color("green")
             time.sleep(2) # wait for audio to finish playing   
-        else:
-            self.system_initialised = False
-            self.RPI5_USB_LINE.send_message("stillalivemessage")
 
+        if self.FDStimer.get_time() > 10000 and self.FDStimer.get_time() < 11000:
+            systemlog.log_message("Failed to recieve message from RPI5")	
+            print("Failed to recieve message from RPI5")
+            self.BoardLED.set_color("red")
+            self.system_initialised = True 
+            
     def run(self): # State machine logic
 
         global running 
