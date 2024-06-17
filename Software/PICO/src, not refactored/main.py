@@ -65,8 +65,8 @@ class StateMachine:
         self.RPI5_USB_LINE = USBCommunication()
 
         # Initialize the timer
-        self.FDStimer = Timer()  
-        self.FDStimer.start_timer() # Start the timer 
+        self.timer1 = Timer()  
+        self.timer1.start_timer() # Start the timer 
 
     def IRQ_handler_door_changeroom_button_press(self, pin):
         
@@ -128,48 +128,44 @@ class StateMachine:
                 return False
 
     def RPI5healthchecker(self):
-        if self.FDStimer.get_time() > 0 and self.FDStimer.get_time() < 50:    
-            self.BoardLED.set_color("white")
-            if self.messagecounter < 1:
-                self.RPI5_USB_LINE.send_message("stillalivemessage")
-                self.messagecounter += 1
-        if self.FDStimer.get_time() > 100 and self.FDStimer.get_time() < 200: 
-            if self.messagecounter < 2:
-                self.RPI5_USB_LINE.send_message("stillalivemessage")
-                self.messagecounter += 1
-        if self.FDStimer.get_time() > 200 and self.FDStimer.get_time() < 500:
-            if self.messagecounter < 3:
-                self.RPI5_USB_LINE.send_message("stillalivemessage")
-                self.messagecounter += 1
+        while True:
+            if self.timer1.get_time() > 0 and self.timer1.get_time() < 50:    
+                self.BoardLED.set_color("white")
+                if self.messagecounter < 1:
+                    self.RPI5_USB_LINE.send_message("stillalivemessage")
+                    self.messagecounter += 1
+            if self.timer1.get_time() > 100 and self.timer1.get_time() < 200: 
+                if self.messagecounter < 2:
+                    self.RPI5_USB_LINE.send_message("stillalivemessage")
+                    self.messagecounter += 1
+            if self.timer1.get_time() > 200 and self.timer1.get_time() < 500:
+                if self.messagecounter < 3:
+                    self.RPI5_USB_LINE.send_message("stillalivemessage")
+                    self.messagecounter += 1
 
-        if self.RPI5_USB_LINE.receive_message():
-            print("RPI5 is still alive")
-            self.BoardLED.set_color("green")
-            return True
+            if self.RPI5_USB_LINE.receive_message():
+                print("RPI5 is still alive")
+                self.BoardLED.set_color("green")
+                self.timer1.reset()
 
-        if self.FDStimer.get_time() > 500 and self.FDStimer.get_time() < 1000 and self.messagecounter == 3:
-            systemlog.log_message("Failed to communicate with RPI5")	
-            self.BoardLED.set_color("red")
-            return False
+            if self.timer1.get_time() > 500 and self.timer1.get_time() < 1000 and self.messagecounter == 3:
+                systemlog.log_message("Failed to communicate with RPI5, shutting down system")	
+                self.BoardLED.set_color("red")
+                exit(1)
 
     def systemset(self):    
             self.LEDStrip_mmWave_fieldA.off()
             self.LEDStrip_mmWave_fieldB.off()
             self.LEDStrip_FerrometalDetector.off() 
-            if self.RPI5healthchecker() == True:
-                self.LEDStrip_fieldA.off()
-                self.LEDStrip_fieldB.off()
-                self.door_mri_room.close_door()  
-                self.door_changeroom.open_door()  
-                self.system_initialised = True
-                self.RPI5_USB_LINE.send_message("System initialised")
-                self.RPI5_USB_LINE.send_message("playaudio 1") # system initialised audio
-                time.sleep(2) # wait for audio to finish playing  
-            elif self.RPI5healthchecker() == False:
-                self.system_initialised = False
-                self.RPI5_USB_LINE.send_message("Failed to initialise system")
-                exit(1) # terminate the program
-
+            self.RPI5healthchecker()
+            self.LEDStrip_fieldA.off()
+            self.LEDStrip_fieldB.off()
+            self.door_mri_room.close_door()  
+            self.door_changeroom.open_door()  
+            self.system_initialised = True
+            self.RPI5_USB_LINE.send_message("System initialised")
+            self.RPI5_USB_LINE.send_message("playaudio 1") # system initialised audio
+            time.sleep(2) # wait for audio to finish playing  
 
     def run(self): # State machine logic
 
@@ -186,6 +182,7 @@ class StateMachine:
                 elif not self.audio_played :
                     self.RPI5_USB_LINE.send_message("playaudio 4")  
                     self.audio_played = True   
+                    self.RPI5healthchecker()
                 elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == False:
                     self.LEDStrip_fieldA.off()
                     self.LEDStrip_fieldB.off()
@@ -311,14 +308,17 @@ if __name__ == "__main__":
         running = False
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System Exiting")
         systemlog.log_message("System Exiting")
+        FDS.BoardLED.set_color("magenta") # indicate system error
         systemlog.close_log()
-        FDS.BoardLED.set_color("purple") # indicate system error
+
 
     except Exception as e:
         running = False
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System encountered unexpected error")
         systemlog.log_message("System encountered unexpected error")
+        FDS.BoardLED.set_color("magenta") # indicate system error
         systemlog.close_log()
-        FDS.BoardLED.set_color("purple") # indicate system error
+
+
 
 
