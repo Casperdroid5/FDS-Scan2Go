@@ -19,6 +19,7 @@ class StateMachine:
         self.sensor_to_object_distance_threshold = 180 # distance threshold for person detection in cm
         self.audio_played = False  # Flag to track whether the audio has been played
         self.image_opened = False
+        self.messagecounter = 0
 
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
@@ -127,20 +128,28 @@ class StateMachine:
                 return False
 
     def systemset(self):
-
-        if self.FDStimer.get_time() > 500 and self.FDStimer.get_time() < 1000:    
+        if self.FDStimer.get_time() > 0 and self.FDStimer.get_time() < 1000:    
             self.BoardLED.set_color("red")
-        if self.FDStimer.get_time() > 1000 and self.FDStimer.get_time() < 1500: 
-            self.BoardLED.set_color("green")
-        if self.FDStimer.get_time() > 1500 and self.FDStimer.get_time() < 2000:
-            self.BoardLED.set_color("blue")
-        if self.FDStimer.get_time() > 2500 and self.FDStimer.get_time() < 3000:
-            self.BoardLED.set_color("white")
-
-        if self.FDStimer.get_time() > 3000 and self.FDStimer.get_time() < 10000:
+            if self.messagecounter < 1:
                 self.RPI5_USB_LINE.send_message("stillalivemessage")
+                self.messagecounter += 1
+        if self.FDStimer.get_time() > 1000 and self.FDStimer.get_time() < 2000: 
+            self.BoardLED.set_color("green")
+            if self.messagecounter < 2:
+                self.RPI5_USB_LINE.send_message("stillalivemessage")
+                self.messagecounter += 1
+        if self.FDStimer.get_time() > 2000 and self.FDStimer.get_time() < 3000:
+            self.BoardLED.set_color("blue")
+            if self.messagecounter < 3:
+                self.RPI5_USB_LINE.send_message("stillalivemessage")
+                self.messagecounter += 1
+        if self.FDStimer.get_time() > 3000 and self.FDStimer.get_time() < 3500:
+            self.BoardLED.set_color("white")
+            if self.messagecounter < 4:
+                self.RPI5_USB_LINE.send_message("stillalivemessage")
+                self.messagecounter += 1
 
-        if self.RPI5_USB_LINE.receive_message() == "stillalive":
+        if self.RPI5_USB_LINE.receive_message():
             print("RPI5 is still alive")
             systemlog.log_message("RPI5 is still alive")
             self.LEDStrip_mmWave_fieldA.off()
@@ -156,12 +165,13 @@ class StateMachine:
             self.BoardLED.set_color("green")
             time.sleep(2) # wait for audio to finish playing   
 
-        if self.FDStimer.get_time() > 10000 and self.FDStimer.get_time() < 11000:
-            systemlog.log_message("Failed to recieve message from RPI5")	
+        if self.FDStimer.get_time() > 4000 and self.FDStimer.get_time() < 5000 and self.messagecounter > 3:
             print("Failed to recieve message from RPI5")
+            systemlog.log_message("Failed to recieve message from RPI5")	
             self.BoardLED.set_color("red")
             self.system_initialised = True 
-            
+
+
     def run(self): # State machine logic
 
         global running 
@@ -308,4 +318,5 @@ if __name__ == "__main__":
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System encountered unexpected error")
         systemlog.log_message("System encountered unexpected error")
         systemlog.close_log()
+
 

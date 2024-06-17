@@ -58,8 +58,8 @@ def connect_serial(port="/dev/ttyACM0", baudrate=115200, timeout=1):
         try:
             return serial.Serial(port=port, baudrate=baudrate, timeout=timeout)
         except serial.SerialException as e:
-            print(f"Failed to connect to {port}: {e}. Retrying in 3 seconds...")
-            time.sleep(3)
+            print(f"Failed to connect to {port}: {e}. Retrying in 1.5 seconds...")
+            time.sleep(1.5)
             attempt += 1
             if attempt >= 3 and second_attempt == False:
                 print("Failed to connect after 3 attempts. Forcefully rebooting Rasperberry Pi Pico")
@@ -70,6 +70,7 @@ def connect_serial(port="/dev/ttyACM0", baudrate=115200, timeout=1):
                 second_attempt = True 
             if attempt >= 3 and second_attempt:
                 print("Failed to connect for the second time. Raising alarms")
+                time.sleep(0.5)
                 # Do something here to raise alarms or notify the user	
                 exit(1) # terminate the program
 
@@ -83,8 +84,9 @@ def main():
                 # Read a message from the serial port
                 received_message = dataline.readline().decode().strip()
                 print(received_message)
-                
-                # Check if the received message is for playing audio
+                if received_message.startswith("[USBCommunication] stillalive"):
+                    dataline.write("[USBCommunication] stillalive".encode())        
+
                 if received_message.startswith("[USBCommunication] playaudio"):
                     # Extract the audio file number from the message
                     audio_number = received_message.split(" ")[-1]
