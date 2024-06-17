@@ -9,7 +9,7 @@ class WS2812:
 
         self._np = neopixel.NeoPixel(Pin(pin_number), num_leds, bpp=3, timing=1)
         self._num_leds = num_leds
-        self._brightness = brightness / 10000  
+        self._brightness = brightness / 65535  
 
         self._COLORS = {
             "red": (65535, 0, 0),

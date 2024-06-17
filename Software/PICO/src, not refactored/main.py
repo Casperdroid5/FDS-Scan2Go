@@ -34,7 +34,7 @@ class StateMachine:
         self.LEDStrip_FerrometalDetector = WS2812(pin_number=6, num_leds=2, brightness=50)
         self.LEDStrip_fieldA = WS2812(pin_number=7, num_leds=48, brightness=50)
         self.LEDStrip_fieldB = WS2812(pin_number=8, num_leds=48, brightness=50)
-        self.BoardLED = WS2812(pin_number=20, num_leds= 1, brightness= 50)
+        self.BoardLED = WS2812(pin_number=20, num_leds= 1, brightness= 5)
 
         # Initialize persondetectors
         self.mmWave_fieldB = LD2410PERSONDETECTOR(uart_number=0, baudrate=256000, tx_pin=0, rx_pin=1)
@@ -129,16 +129,13 @@ class StateMachine:
     def systemset(self):
 
         if self.FDStimer.get_time() > 500 and self.FDStimer.get_time() < 1000:    
-            self.BoardLED.off()
             self.BoardLED.set_color("red")
         if self.FDStimer.get_time() > 1000 and self.FDStimer.get_time() < 1500: 
-            self.BoardLED.off()
             self.BoardLED.set_color("green")
         if self.FDStimer.get_time() > 1500 and self.FDStimer.get_time() < 2000:
-            self.BoardLED.off()
             self.BoardLED.set_color("blue")
         if self.FDStimer.get_time() > 2500 and self.FDStimer.get_time() < 3000:
-            self.BoardLED.off()
+            self.BoardLED.set_color("white")
 
         if self.RPI5_USB_LINE.receive_message() == "stillalive":
             print("RPI5 is still alive")

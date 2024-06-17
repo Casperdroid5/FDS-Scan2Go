@@ -64,6 +64,7 @@ class Timer:
 
     def reset(self):
         self.start_time = None
+        self.start_timer()
 
 class ErrorHandler:
 
