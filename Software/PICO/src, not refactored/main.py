@@ -202,6 +202,7 @@ class StateMachine:
                     self.image_opened = False
                     self.latchreset.value(0) # reset latch
                     self.door_changeroom.open_door()
+                    self.RPI5healthchecker()
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
 
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
@@ -213,7 +214,6 @@ class StateMachine:
                     self.RPI5_USB_LINE.send_message("showimage 1")  # move to field A image
                     self.image_opened = True
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
-                    
                     self.door_changeroom.close_door()
                     self.RPI5_USB_LINE.send_message("showimage 2") # move to field B image
                     self.RPI5_USB_LINE.send_message("playaudio 6") # move to field B audio
@@ -221,6 +221,7 @@ class StateMachine:
                     self.image_opened = False
                     self.LEDStrip_fieldA.off()
                     self.LEDStrip_fieldB.set_color("white")
+                    self.RPI5healthchecker()
                     self.state = self.USER_FIELD_B_RESPONSE_STATE
                 elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
                     # Wait for user to move to field A
@@ -233,6 +234,7 @@ class StateMachine:
                     self.RPI5_USB_LINE.send_message("playaudio 8") # you may proceed to MR room audio
                     self.door_mri_room.open_door()
                     self.LEDStrip_FerrometalDetector.set_color("green")
+                    self.RPI5healthchecker()
                     self.state = self.USER_IN_MR_ROOM_STATE
                     self.LEDStrip_fieldB.off()
                 elif self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False and self.ferrometalscanner.value() == 1:                   
@@ -247,6 +249,7 @@ class StateMachine:
                     self.LEDStrip_FerrometalDetector.set_color("red")
                     self.audio_played = False
                     self.image_opened = False
+                    self.RPI5healthchecker()
                     self.state = self.USER_EXITS_FDS_STATE
                 else:
                     self.LEDStrip_FerrometalDetector.set_color("yellow")
@@ -255,6 +258,7 @@ class StateMachine:
                 if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == False:
                     self.LEDStrip_fieldB.set_color("white")
                     self.RPI5_USB_LINE.send_message("showimage 5") # wait for return from MR room image
+                    self.RPI5healthchecker()
                     self.state = self.USER_RETURNS_FROM_MR_ROOM_STATE
 
             elif self.state == self.USER_RETURNS_FROM_MR_ROOM_STATE:
@@ -264,12 +268,14 @@ class StateMachine:
                     self.RPI5_USB_LINE.send_message("playaudio 10") # exit to change room audio      
                     self.door_mri_room.close_door()
                     self.LEDStrip_fieldA.set_color("white")
+                    self.RPI5healthchecker()
                     self.state = self.USER_EXITS_FDS_STATE
             
             elif self.state == self.USER_EXITS_FDS_STATE:
                 if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == True: 
                     self.LEDStrip_fieldA.off()
                     self.door_changeroom.open_door()
+                    self.RPI5healthchecker()
                     self.state = self.INITIALISATION_STATE
 
             else:
