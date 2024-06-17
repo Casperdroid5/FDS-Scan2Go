@@ -78,8 +78,8 @@ class Timer:
             return time.ticks_ms() - self.start_time  # Return the time difference  
 
     def reset(self):
-
         self.start_time = None  # Reset the timer
+        self.start_timer()  # Start the timer again
 
 
 class ErrorHandler: 

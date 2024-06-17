@@ -127,7 +127,19 @@ class StateMachine:
                 return False
 
     def systemset(self):
-        self.RPI5_USB_LINE.send_message("stillalivemessage")
+
+        if self.FDStimer.get_time() > 500 and self.FDStimer.get_time() < 1000:    
+            self.BoardLED.off()
+            self.BoardLED.set_color("red")
+        if self.FDStimer.get_time() > 1000 and self.FDStimer.get_time() < 1500: 
+            self.BoardLED.off()
+            self.BoardLED.set_color("green")
+        if self.FDStimer.get_time() > 1500 and self.FDStimer.get_time() < 2000:
+            self.BoardLED.off()
+            self.BoardLED.set_color("blue")
+        if self.FDStimer.get_time() > 2500 and self.FDStimer.get_time() < 3000:
+            self.BoardLED.off()
+
         if self.RPI5_USB_LINE.receive_message() == "stillalive":
             print("RPI5 is still alive")
             systemlog.log_message("RPI5 is still alive")
@@ -141,7 +153,11 @@ class StateMachine:
             self.system_initialised = True
             self.RPI5_USB_LINE.send_message("System initialised")
             self.RPI5_USB_LINE.send_message("playaudio 1") # system initialised audio
+            self.BoardLED.off()
             time.sleep(2) # wait for audio to finish playing   
+        else:
+            self.system_initialised = False
+            self.RPI5_USB_LINE.send_message("stillalivemessage")
 
     def run(self): # State machine logic
 
@@ -151,8 +167,7 @@ class StateMachine:
         while running: 
             if self.state == self.INITIALISATION_STATE:
                 if self.system_initialised == False:
-                    #self.systemset()
-                    self.system_initialised = True
+                    self.systemset()
                 elif not self.image_opened:
                     self.RPI5_USB_LINE.send_message("showimage 0")
                     self.image_opened = True
@@ -177,11 +192,6 @@ class StateMachine:
                     self.LEDStrip_fieldA.set_color("white")
                 if not self.image_opened:
                     self.RPI5_USB_LINE.send_message("showimage 1")  # move to field A image
-                    self.RPI5_USB_LINE.send_message("LED ON")  # move to field A image
-                    self.BoardLED.set_color("green")
-                    time.sleep(2)
-                    self.RPI5_USB_LINE.send_message("LED OFF")  # move to field A image
-                    self.BoardLED.off()
                     self.image_opened = True
                 if self.person_detected_in_field('A') == True and self.person_detected_in_field('B') == False: 
                     
@@ -277,7 +287,6 @@ if __name__ == "__main__":
     FDS = StateMachine()
     try:
         SystemInitCheck().systemcheck()
-        
 
         while True:
             if running:  
