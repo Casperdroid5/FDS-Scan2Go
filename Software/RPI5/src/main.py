@@ -74,6 +74,12 @@ def connect_serial(port="/dev/ttyACM0", baudrate=115200, timeout=1):
                 # Do something here to raise alarms or notify the user	
                 exit(1) # terminate the program
 
+def send_message(serial, message):
+    try:
+        serial.write((message + "\n").encode())
+    except serial.SerialException as e:
+        print(f"Failed to send message: {e}")
+
 def main():
     global image_path
     dataline = connect_serial()
@@ -85,7 +91,7 @@ def main():
                 received_message = dataline.readline().decode().strip()
                 print(received_message)
                 if received_message.startswith("[USBCommunication] stillalive"):
-                    dataline.write("[USBCommunication] stillalive".encode())        
+                    send_message(dataline, "[USBCommunication] stillalive".encode())        
 
                 if received_message.startswith("[USBCommunication] playaudio"):
                     # Extract the audio file number from the message
