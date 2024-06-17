@@ -20,7 +20,8 @@ class StateMachine:
         self.audio_played = False  # Flag to track whether the audio has been played
         self.image_opened = False
         self.messagecounter = 0
-
+        self.RPI5connected = False
+        
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
         self.USER_FIELD_A_RESPONSE_STATE = 1
@@ -128,27 +129,30 @@ class StateMachine:
                 return False
 
     def RPI5healthchecker(self):
-        while True:
+        self.RPI5connected = False
+        while self.RPI5connected == False:
             if self.timer1.get_time() > 0 and self.timer1.get_time() < 50:    
                 self.BoardLED.set_color("white")
                 if self.messagecounter < 1:
                     self.RPI5_USB_LINE.send_message("stillalivemessage")
                     self.messagecounter += 1
-            if self.timer1.get_time() > 100 and self.timer1.get_time() < 200: 
+            if self.timer1.get_time() > 100 and self.timer1.get_time() < 1000: 
                 if self.messagecounter < 2:
                     self.RPI5_USB_LINE.send_message("stillalivemessage")
                     self.messagecounter += 1
-            if self.timer1.get_time() > 200 and self.timer1.get_time() < 500:
+            if self.timer1.get_time() > 2000 and self.timer1.get_time() < 5000:
                 if self.messagecounter < 3:
                     self.RPI5_USB_LINE.send_message("stillalivemessage")
                     self.messagecounter += 1
 
             if self.RPI5_USB_LINE.receive_message():
                 print("RPI5 is still alive")
+                self.RPI5_USB_LINE.send_message("stillalive")
                 self.BoardLED.set_color("green")
                 self.timer1.reset()
+                self.RPI5connected = True
 
-            if self.timer1.get_time() > 500 and self.timer1.get_time() < 1000 and self.messagecounter == 3:
+            if self.timer1.get_time() > 5000 and self.timer1.get_time() < 10000 and self.messagecounter == 3:
                 systemlog.log_message("Failed to communicate with RPI5, shutting down system")	
                 self.BoardLED.set_color("red")
                 exit(1)
