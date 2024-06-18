@@ -22,13 +22,14 @@ The Ferrous Metal Detection Gate (FDS) is a sophisticated system designed to enh
 
 ## Hardware Requirements
 ### Raspberry Pi Pico
-- Metal detection sensors
-- NeoPixel LEDs
-- Machine interface components (I2C, UART)
+- All the wanted peripherals (buttons, sensors etc.)
+- Micro usb cable (ensure it has data wires)
+
 ### Raspberry Pi 5
-- Power supply
-- Connecting cables and breadboard
-- Display for output (e.g., using `feh` or `vlc` for visual alerts)
+- Raspberry Pi 25W, power supply
+- USB to 3.5mm audio adapter
+- Display/monitor for imageoutput
+- MicroHDMI to HDMI adapter 
 
 ## Software Setup
 ### Prerequisites
