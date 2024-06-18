@@ -2,6 +2,7 @@ from hardware_s2g import LD2410PERSONDETECTOR, DOOR, WS2812
 from system_utils import SystemInitCheck, Timer, USBCommunication, Log
 from machine import Pin
 import time
+
 global running   # system running global variable
 running = False  # wait for system to be initialised before starting the state machine
 
@@ -16,11 +17,13 @@ class StateMachine:
         self.system_initialised = False
         self.system_override_state_triggerd = False
         self.user_returned_from_mri = False
-        self.sensor_to_object_distance_threshold = 180 # distance threshold for person detection in cm
-        self.audio_played = False  # Flag to track whether the audio has been played
+        self.audio_played = False 
         self.image_opened = False
-        self.messagecounter = 0
         self.RPI5connected = False
+        self.messagecounter = 0
+        
+        # Sensor thresholds
+        self.sensor_to_object_distance_threshold = 180 # distance threshold for person detection in cm
         
         # Define integer constants for states
         self.INITIALISATION_STATE = 0
@@ -58,32 +61,29 @@ class StateMachine:
         #self.button_door_mri_room = Pin(X, Pin.IN, Pin.PULL_UP)  # Door 2 button (open door)
         #self.button_door_mri_room.irq(trigger=Pin.IRQ_FALLING, handler=self.IRQ_handler_door_mri_room_button_press)
 
-        # Initialize ferrometal scanner
-        self.ferrometalscanner = Pin(16, Pin.IN, Pin.PULL_UP)
-        self.latchreset = Pin(22, Pin.OUT) # reset latch
+        # Initialize ferrometal detector input and latch reset
+        self.ferrometaldetectorinput = Pin(16, Pin.IN, Pin.PULL_UP) # Ferrometal detector input pin
+        self.latchreset = Pin(22, Pin.OUT) # reset latch pin
 
-        # Initialize UART-communication with RPI5
+        # Initialize UART-communication with RPI5 over USB
         self.RPI5_USB_LINE = USBCommunication()
 
-        # Initialize the timer
+        # Initialize a timer
         self.timer1 = Timer()  
-        self.timer1.start_timer() # Start the timer 
+        self.timer1.start_timer()
 
     def IRQ_handler_door_changeroom_button_press(self, pin):
-        
         if self.state == self.USER_FIELD_A_RESPONSE_STATE:
-            if self.door_changeroom.door_state == "closed": # check if door is open
+            if self.door_changeroom.door_state == "closed":
                 self.door_changeroom.open_door() 
 
     def IRQ_handler_door_mri_room_button_press(self, pin):
-
-        if self.state == self.USER_IN_MR_ROOM_STATE or (self.ferrometalscanner.value() == 0 and self.user_returned_from_mri) or self.user_in_mri:
+        if self.state == self.USER_IN_MR_ROOM_STATE or (self.ferrometaldetectorinput.value() == 0 and self.user_returned_from_mri) or self.user_in_mri:
             if self.door_mri_room.door_state == "closed":
                 self.door_mri_room.open_door()  
 
     def IRQ_handler_emergencybutton_press(self, pin):
-
-        self.RPI5_USB_LINE.send_message("Emergency button")  # Pass the message parameter
+        self.RPI5_USB_LINE.send_message("Emergency button") 
         self.RPI5_USB_LINE.send_message("showimage 7") # emergency situation image
         systemlog.log_message("Emergency button pressed")
         self.emergency_state_triggerd = True
@@ -91,8 +91,7 @@ class StateMachine:
         running = False # stop the state machine
 
     def IRQ_handler_button_system_reset(self, pin):
-
-        self.RPI5_USB_LINE.send_message("System reset button")  # Pass the message parameter
+        self.RPI5_USB_LINE.send_message("System reset button")
         systemlog.log_message("System reset button pressed")
         self.system_initialised = False
         self.system_override_state_triggerd = False
@@ -102,20 +101,19 @@ class StateMachine:
         running = True # start the state machine
 
     def IRQ_handler_bypassbutton_press(self, pin):
-
         self.RPI5_USB_LINE.send_message("Override button pressed")
         self.RPI5_USB_LINE.send_message("showimage 8") # system override image 
         systemlog.log_message("System override button pressed")
         self.emergency_state_triggerd = False
         self.system_override_state_triggerd = not self.system_override_state_triggerd # toggle system override state
         global running
-        running = False # toggle statemachine running state
+        running = False # stop the state machine
 
     def person_detected_in_field(self, field): 
 
         if field == 'A':
             if self.mmWave_fieldA.scan_for_people() and self.mmWave_fieldA.get_detection_distance() < self.sensor_to_object_distance_threshold:
-                self.LEDStrip_mmWave_fieldA.set_color("green")
+                self.LEDStrip_mmWave_fieldA.set_color("green") 
                 return True
             else:
                 self.LEDStrip_mmWave_fieldA.set_color("red")
@@ -134,7 +132,7 @@ class StateMachine:
         self.messagecounter = 0
         current_time = 0
 
-        while not self.RPI5connected:
+        while not self.RPI5connected: 
             current_time = self.timer1.get_time()
             
             if 0 < current_time < 50:
@@ -157,13 +155,13 @@ class StateMachine:
                 self.BoardLED.set_color("green")
                 self.RPI5connected = True
             
-            if 5000 < current_time < 10000 and self.messagecounter == 3:
+            if 5000 < current_time < 10000 and self.messagecounter == 3: # if RPI5 does not respond after 10 seconds, shut down the system
                 systemlog.log_message("Failed to communicate with RPI5, shutting down system")
                 self.BoardLED.set_color("red")
                 exit(1)
 
 
-    def systemset(self):    
+    def systemset(self):     
             self.LEDStrip_mmWave_fieldA.off()
             self.LEDStrip_mmWave_fieldB.off()
             self.LEDStrip_FerrometalDetector.off() 
@@ -197,10 +195,10 @@ class StateMachine:
                     self.LEDStrip_fieldA.off()
                     self.LEDStrip_fieldB.off()
                     self.RPI5_USB_LINE.send_message("closeimage") # close all images
-                    self.latchreset.value(1) # reset latch
+                    self.latchreset.value(1) # clear/reset the metal detector latch
                     self.audio_played = False 
                     self.image_opened = False
-                    self.latchreset.value(0) # reset latch
+                    self.latchreset.value(0)
                     self.door_changeroom.open_door()
                     self.RPI5healthchecker()
                     self.state = self.USER_FIELD_A_RESPONSE_STATE
@@ -208,7 +206,7 @@ class StateMachine:
             elif self.state == self.USER_FIELD_A_RESPONSE_STATE:
                 if not self.audio_played:
                     self.RPI5_USB_LINE.send_message("playaudio 5") # move to field A audio 
-                    self.audio_played = True  # Set the flag to indicate that audio has been played  
+                    self.audio_played = True  
                     self.LEDStrip_fieldA.set_color("white")
                 if not self.image_opened:
                     self.RPI5_USB_LINE.send_message("showimage 1")  # move to field A image
@@ -223,13 +221,11 @@ class StateMachine:
                     self.LEDStrip_fieldB.set_color("white")
                     self.RPI5healthchecker()
                     self.state = self.USER_FIELD_B_RESPONSE_STATE
-                elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True:
-                    # Wait for user to move to field A
+                elif self.person_detected_in_field('A') == False and self.person_detected_in_field('B') == True: # Wait for user to move to field A
                     self.LEDStrip_fieldA.set_color("white")
-                    return 0
 
             elif self.state == self.USER_FIELD_B_RESPONSE_STATE:
-                if self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False and self.ferrometalscanner.value() == 0:                    
+                if self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False and self.ferrometaldetectorinput.value() == 0:                    
                     self.RPI5_USB_LINE.send_message("showimage 3") # move to MR room image
                     self.RPI5_USB_LINE.send_message("playaudio 8") # you may proceed to MR room audio
                     self.door_mri_room.open_door()
@@ -237,7 +233,7 @@ class StateMachine:
                     self.RPI5healthchecker()
                     self.state = self.USER_IN_MR_ROOM_STATE
                     self.LEDStrip_fieldB.off()
-                elif self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False and self.ferrometalscanner.value() == 1:                   
+                elif self.person_detected_in_field('B') == True and self.person_detected_in_field('A') == False and self.ferrometaldetectorinput.value() == 1:                   
                     if self.image_opened == False:
                         self.RPI5_USB_LINE.send_message("showimage 4") # metal detected image
                         self.image_opened = True
@@ -252,7 +248,7 @@ class StateMachine:
                     self.RPI5healthchecker()
                     self.state = self.USER_EXITS_FDS_STATE
                 else:
-                    self.LEDStrip_FerrometalDetector.set_color("yellow")
+                    self.LEDStrip_FerrometalDetector.set_color("yellow") # wait for user to move trouhg the ferrometal detector
 
             elif self.state == self.USER_IN_MR_ROOM_STATE:
                 if self.person_detected_in_field('B') == False and self.person_detected_in_field('A') == False:
@@ -279,13 +275,11 @@ class StateMachine:
                     self.state = self.INITIALISATION_STATE
 
             else:
-                self.freeze()
+                self.freeze() # freeze the state machine
 
     def freeze(self):
-
         global running
-        if running == False and self.system_override_state_triggerd == True: # override system
-            #print("System is bypassed")
+        if running == False and self.system_override_state_triggerd == True: # overridestate system 
             self.LEDStrip_FerrometalDetector.set_color("white")
             self.LEDStrip_mmWave_fieldA.set_color("white")
             self.LEDStrip_mmWave_fieldB.set_color("white")
@@ -294,8 +288,7 @@ class StateMachine:
             self.door_changeroom.open_door()
             self.door_mri_room.open_door() 
             self.emergency_state_triggerd = False
-        elif running == False and self.emergency_state_triggerd == True and self.system_override_state_triggerd == False: # emergency system
-            #print("Emergency triggerd")
+        elif running == False and self.emergency_state_triggerd == True and self.system_override_state_triggerd == False: # emergencystate system
             self.LEDStrip_FerrometalDetector.set_color("yellow")
             self.LEDStrip_mmWave_fieldA.set_color("yellow")
             self.LEDStrip_mmWave_fieldB.set_color("yellow")
@@ -313,27 +306,28 @@ if __name__ == "__main__":
 
     try:
         SystemInitCheck().systemcheck()
-        
+
         while True:
             if running:  
                 FDS.run()
             else:
                 FDS.freeze() 
 
-    except SystemExit as s:
+    except SystemExit as s: # catch system exit
         running = False
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System Exiting")
         systemlog.log_message("System Exiting")
-        FDS.BoardLED.set_color("magenta") # indicate system error
+        FDS.BoardLED.set_color("magenta") # indicate system error on board for user
         systemlog.close_log()
+        exit(1)
 
-
-    except Exception as e:
+    except Exception as e: # catch unexpected errors
         running = False
         USBCommunication.send_message(FDS.RPI5_USB_LINE, "System encountered unexpected error")
         systemlog.log_message("System encountered unexpected error")
-        FDS.BoardLED.set_color("magenta") # indicate system error
+        FDS.BoardLED.set_color("magenta") # indicate system error on board for user
         systemlog.close_log()
+        exit(1) 
 
 
 

@@ -5,7 +5,6 @@ import select
 import sys
 
 class Log:
-
     def __init__(self, filename="log.txt"):
         self.filename = filename
         self.file = None
@@ -33,13 +32,12 @@ class Log:
             self.file = None
 
 class USBCommunication:
-
     def __init__(self):
         self.poll_obj = select.poll()
         self.poll_obj.register(sys.stdin, select.POLLIN)
 
     def send_message(self, message):
-        prefixed_message = "[USBCommunication] " + message
+        prefixed_message = "[USBCommunication] " + message # Prefix to differnatiate from other serial messages sent by the RPI Pico
         print(prefixed_message)
 
     def receive_message(self):
@@ -47,12 +45,11 @@ class USBCommunication:
         if poll_results:
             data = sys.stdin.readline()
             self.send_message(data) # Echo back to console for debugging purposes
-            if data.startswith("[USBCommunication] "):
+            if data.startswith("[USBCommunication] "): # Watch for prefix to differentiate from other serial messages from the RPI5
                 return data
         return None
 
 class Timer:
-
     def __init__(self):
         self.start_time = None
 
@@ -64,12 +61,11 @@ class Timer:
             return 0
         return time.ticks_ms() - self.start_time
 
-    def reset(self):
+    def reset(self): # TODO: This function should be implemented differently in further development
         self.start_time = None
         self.start_timer()
 
 class ErrorHandler:
-
     def report_error(self, components):
         for component in components:
             self.display_error(component)
@@ -81,11 +77,12 @@ class ErrorHandler:
     def display_error(self, component):
         print(f"Error in component: {component}")
 
-def check_sensors():
+def check_sensors(): # Placeholder function for checking sensors TODO: Logic should be implemented in further development
+    # check sensor_A() 
+    # check sensor_B()
     return True
 
 class SystemInitCheck:
-
     def __init__(self):
         failing_components = self.systemcheck()
         if failing_components:
