@@ -87,4 +87,4 @@ We welcome contributions to the FDS-Scan2Go project. If you would like to contri
 If you would like to emplement this code into your own project, ensure to give credit to the original author and mention any significant changes or improvements.
 
 ## Disclaimer
-This project is licensed under the MIT License. See the [DISCLAIMER](/Software/DISCLAIMER.txt) file for more details.
+This project is licensed under the MIT License. See the [DISCLAIMER](/Software/DISCLAIMER.md) file for more details.
