@@ -18,6 +18,7 @@ class Log:
         if self.file:
             timestamp = self.get_timestamp()
             log_entry = f"{timestamp},{message}\n"
+            print(log_entry) # Print to console
             self.file.write(log_entry)
             self.file.flush()
 
@@ -44,7 +45,8 @@ class USBCommunication:
     def receive_message(self):
         poll_results = self.poll_obj.poll(1)
         if poll_results:
-            data = sys.stdin.readline().strip()
+            data = sys.stdin.readline()
+            self.send_message(data) # Echo back to console for debugging purposes
             if data.startswith("[USBCommunication] "):
                 return data
         return None

@@ -1,0 +1,5 @@
+micropython-neopixel
+micropython-machine
+micropython-time
+micropython-i2c
+micropython-uart

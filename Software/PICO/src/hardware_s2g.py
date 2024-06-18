@@ -4,259 +4,177 @@ from machine import Pin, PWM, I2C, UART
 from system_utils import Timer
 
 class WS2812:
+
     def __init__(self, pin_number, num_leds, brightness):
+
         self._np = neopixel.NeoPixel(Pin(pin_number), num_leds, bpp=3, timing=1)
         self._num_leds = num_leds
-        self._brightness = brightness
+        self._brightness = brightness / 65535  
+
+        self._COLORS = {
+            "red": (65535, 0, 0),
+            "green": (0, 65535, 0),
+            "blue": (0, 0, 65535),
+            "yellow": (65535, 65535, 0),
+            "cyan": (0, 65535, 65535),
+            "magenta": (65535, 0, 65535),
+            "white": (65535, 65535, 65535),
+        }
 
     def set_color(self, color):
-        colors = {
-            "red": (255, 0, 0),
-            "green": (0, 255, 0),
-            "blue": (0, 0, 255),
-            "yellow": (255, 255, 0),
-            "cyan": (0, 255, 255),
-            "magenta": (255, 0, 255),
-            "white": (255, 255, 255),
-            "off": (0, 0, 0)
-        }
-        color_values = colors.get(color.lower())
+
+        color_values = self._COLORS.get(color.lower())
         if color_values:
             for i in range(self._num_leds):
-                adjusted_color = tuple(int(val * self._brightness / 100) for val in color_values)
+                adjusted_color = tuple(int(val * self._brightness) for val in color_values)
                 self._np[i] = adjusted_color
             self._np.write()
             return color
         else:
-            print("Color not found")
             return "Color not found"
 
     def set_brightness(self, brightness):
-        self._brightness = brightness
+
+        self._brightness = brightness  
+
+    def on(self):
+
+        return self.set_color("white")
 
     def off(self):
-        self.set_color("off")
 
-class ServoMotor:
-    """Class for controlling a servo motor."""
+        for i in range(self._num_leds):
+            self._np[i] = (0, 0, 0)
+        self._np.write()
+        return "off"
+
+class SERVOMOTOR:
+
     def __init__(self, pin_number):
+
         self.pwm = PWM(pin_number)
-        self.pwm.freq(50)
-        self.min_us = 600
-        self.max_us = 2400
-        self.current_angle = 0
+        self.pwm.freq(50)  # Set PWM frequency to 50 Hz for servo control
+        self.min_us = 600  # Minimum pulse width in microseconds for 0 degrees
+        self.max_us = 2400  # Maximum pulse width in microseconds for 180 degrees
+        self.current_angle = 0  # Initialize current angle to 0
 
     def set_angle(self, angle):
-        pulse_width_us = self.min_us + (self.max_us - self.min_us) * angle / 180
-        duty_cycle = int(pulse_width_us / 20000 * 65535)
-        self.pwm.duty_u16(duty_cycle)
-        self.current_angle = angle
+
+        pulse_width_us = self.min_us + (self.max_us - self.min_us) * angle / 180  # Convert angle to pulse width
+        duty_cycle = int(pulse_width_us / 20000 * 65535) # Convert pulse width from microseconds to duty cycle (0-65535)
+        self.pwm.duty_u16(duty_cycle)  # Set duty cycle to control servo position
+        self.current_angle = angle  # Update current angle
 
     def get_current_angle(self):
+
         return self.current_angle
 
-class Door:
-    """Class for controlling a door motor and position sensor."""
+    def wait_for_completion(self):
+
+        while True:
+            # Check if current angle matches target angle within a tolerance
+            if abs(self.current_angle - self.get_current_angle()) < 1:
+                break
+
+class DOOR:
+
     def __init__(self, pin_number, angle_closed, angle_open, position_sensor_pin):
-        self.servo = ServoMotor(pin_number)
-        self.angle_open = angle_open
-        self.angle_closed = angle_closed
+
+        self.servo = SERVOMOTOR(pin_number) 
+        self.pin_number = pin_number 
+        self.angle_open = angle_open  # Maximum opening angle
+        self.angle_closed = angle_closed  # Maximum closing angle
         self.door_sensor = Pin(position_sensor_pin, Pin.IN, Pin.PULL_UP)
-        self.door_state = "closed"
+        self.door_state = "closed"  # Initialize door state
+
+    def __repr__(self):
+
+        return f"DOOR at Pin {self.pin_number}, State: {self.door_state}"
 
     def open_door(self):
+
         self.servo.set_angle(self.angle_open)
         if self.servo.get_current_angle() == self.angle_open and self.door_sensor.value() == 0:
             self.door_state = "open"
-        return self.door_state
+            return self.door_state
 
     def close_door(self):
+
         self.servo.set_angle(self.angle_closed)
         if self.servo.get_current_angle() == self.angle_closed and self.door_sensor.value() == 1:
             self.door_state = "closed"
-        return self.door_state
+            return self.door_state
 
-class DoorWithLED(Door, WS2812):
-    """Class for controlling a door with an integrated LED strip."""
+class DOORWITHLED(DOOR, WS2812):
+
     def __init__(self, door_pin_number, door_angle_closed, door_angle_open, door_position_sensor_pin, led_pin_number, num_leds, brightness):
-        Door.__init__(self, door_pin_number, door_angle_closed, door_angle_open, door_position_sensor_pin)
+
+        DOOR.__init__(self, door_pin_number, door_angle_closed, door_angle_open, door_position_sensor_pin)
         WS2812.__init__(self, led_pin_number, num_leds, brightness)
 
     def open_door(self):
-        Door.open_door(self)
-        self.set_color("green")
+
+        super().open_door()
+        self.set_color("green")  # Set LED color to green when the door is opened
 
     def close_door(self):
-        Door.close_door(self)
-        self.set_color("red")
+
+        super().close_door()
+        self.set_color("red")  # Set LED color to red when the door is closed
 
 class MAX9744:
-    """Class for controlling MAX9744 audio amplifier."""
-    def __init__(self, i2c_port, address=0x4B):
-        self.i2c = I2C(i2c_port)
-        self.address = address
-        self.volume = 63
 
-    def set_volume(self, volume):
-        self.volume = max(0, min(63, volume))
-        try:
-            self.i2c.writeto(self.address, bytes([self.volume]))
-            return True
-        except OSError:
-            return False
+    class MAX9744:
+        def __init__(self, i2c_port, address=0x4B):
 
-from machine import UART, Pin
+            self.i2c = I2C(i2c_port)
+            self.address = address
+            self.volume = 63
+        
+        def set_volume(self, volume):
 
-# Define constants
-MESSAGE_HEAD1 = 0x53       # Data frame header1
-MESSAGE_HEAD2 = 0x59       # Data frame header2
-MESSAGE_END1  = 0x54       # End1 of data frame
-MESSAGE_END2  = 0x43       # End2 of data frame
+            # Volume can't be higher than 63 or lower than 0
+            self.volume = max(0, min(63, volume))
+            try:
+                self.i2c.writeto(self.address, bytes([self.volume]))
+                print("Volume set to:", self.volume)
+                return True
+            except OSError:
+                print("Failed to set volume, MAX9744 not found!")
+                return False
 
-HUMANSTATUS   = 0x80       # Human Presence Information
-HUMANEXIST    = 0x01       # Presence of the human body
-HUMANMOVE     = 0x02       # Human movement information
-HUMANSIGN     = 0x03       # Body Signs Parameters
-HUMANDIRECT   = 0x0B       # Human movement trends
+class SEEEDPERSONDETECTOR:
 
-SOMEBODY      = 0x01       # Somebody move
-NOBODY        = 0x00       # No one here
+    def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
 
-NONE          = 0x00
-SOMEBODY_STOP = 0x01       # Somebody stop
-SOMEBODY_MOVE = 0x02       # Somebody move
-
-CA_CLOSE      = 0x01       # Someone approaches
-CA_AWAY       = 0x02       # Some people stay away
-
-DETAILSTATUS  = 0x08       # Underlying parameters of the human state
-DETAILINFO    = 0x01       # Detailed data on the state of human movement
-DETAILDIRECT  = 0x06       # Human movement trends
-DETAILSIGN    = 0x07       # Body Signs Parameters
-
-SOMEONE       = 0x01       # There are people
-NOONE         = 0x02       # No one
-NOTHING       = 0x03       # No message
-SOMEONE_STOP  = 0x04       # Somebody stop
-SOMEONE_MOVE  = 0x05       # Somebody move
-HUMANPARA     = 0x06       # Body Signs Parameters
-SOMEONE_CLOSE = 0x07       # Someone approaches
-SOMEONE_AWAY  = 0x08       # Some people stay away
-DETAILMESSAGE = 0x09       # Underlying parameters of the human state
-
-reset_frame_len = 10       # Reset data frame length
-
-# Reset data frame
-reset_frame = [0x53, 0x59, 0x01, 0x02, 0x00, 0x01, 0x0F, 0xBF, 0x54, 0x43]
-
-class SeeedPersonDetector:
-    """Class for controlling Seeed Studio mmWave sensor."""
-
-    def __init__(self, uart_number, tx_pin, rx_pin):
-        self.uart = UART(uart_number, baudrate=115200, tx=Pin(tx_pin), rx=Pin(rx_pin))
-        self.person_detected = False
-
-    def recv_radar_bytes(self):
-        """Collects the data frames reported by the Sensor via UART."""
-        data = self.uart.read()
-        if data:
-            return data
-        return None
-
-    def show_data(self, data):
-        """Prints out the complete data frame reported by the Sensor via the serial port."""
-        if data:
-            print("Data Frame: ", data)
-        else:
-            print("No data received")
-
-    def human_static_func(self, bodysign=False):
-        """Parses the data frames of the Sensor and outputs the relevant data on the state of human presence."""
-        data = self.recv_radar_bytes()
-        if data:
-            radar_status = None
-            bodysign_val = None
-            static_val = None
-            dynamic_val = None
-            dis_static = None
-            dis_move = None
-            speed = None
-
-            if HUMANMOVE in data or HUMANSIGN in data:
-                radar_status = "Human presence detected"
-                if bodysign:
-                    bodysign_val = data.get(HUMANSIGN)
-                    static_val = data.get(DETAILSTATUS)
-                    dynamic_val = data.get(DETAILDIRECT)
-                    dis_static = data.get(DETAILDIRECT)
-                    dis_move = data.get(DETAILDIRECT)
-                    speed = data.get(DETAILINFO)
-            else:
-                radar_status = "No human presence"
-
-            return {
-                "radar_status": radar_status,
-                "bodysign_val": bodysign_val,
-                "static_val": static_val,
-                "dynamic_val": dynamic_val,
-                "dis_static": dis_static,
-                "dis_move": dis_move,
-                "speed": speed
-            }
-        return None
-
-    def check_set_mode_func(self, buff, cyclic=False):
-        """Sends data frames to the Sensor."""
-        self.uart.write(bytearray(buff))
-        if cyclic:
-            while True:
-                self.uart.write(bytearray(buff))
-
-    def reset_func(self):
-        """Resets the Sensor using the predefined reset frame."""
-        self.uart.write(bytearray(reset_frame))
-        return self.uart.read()  # Assuming the sensor sends an acknowledgment
+        self.uart_number = uart_number
+        self.baudrate = baudrate
+        self.tx_pin = tx_pin  
+        self.rx_pin = rx_pin 
+        self._uart_sensor = UART(uart_number, baudrate, tx_pin, rx_pin)
+        self.person_detected = "unknown"
 
     def scan_for_people(self):
-        """Scans for human presence."""
-        data = self.recv_radar_bytes()
+
+        data = self._uart_sensor.read()
         if data:
-            if HUMANMOVE in data or HUMANSIGN in data:
+            if b'\x02' in data:
                 self.person_detected = True
-            elif NOONE in data:
+            elif b'\x01' in data:
                 self.person_detected = False
-        return self.person_detected
-
+            elif b'\x03' in data:
+                self.person_detected = True
+            elif b'\x04' in data:
+                self.person_detected = False
+        return self.person_detected 
+    
     def get_detection_distance(self):
-        """Returns a static distance for now. This could be updated to return dynamic values based on sensor data."""
-        return 150
 
-    def get_status(self):
-        """Returns detailed status information from the sensor."""
-        data = self.recv_radar_bytes()
-        if data:
-            if SOMEONE in data:
-                return "There are people"
-            elif NOONE in data:
-                return "No one"
-            elif SOMEBODY_STOP in data:
-                return "Somebody stopped"
-            elif SOMEBODY_MOVE in data:
-                return "Somebody moved"
-            elif HUMANPARA in data:
-                return "Body Signs Parameters"
-            elif SOMEONE_CLOSE in data:
-                return "Someone approaches"
-            elif SOMEONE_AWAY in data:
-                return "Someone moves away"
-            elif DETAILMESSAGE in data:
-                return "Underlying parameters of the human state"
-            else:
-                return "Unknown status"
-        return "No data received"
+        # To be implemented, currently returning a dummy value
+        return 180  # Dummy value
 
-class LD2410PersonDetector:
-    """Class for controlling LD2410 mmWave sensor."""
+class LD2410PERSONDETECTOR:
+
     HEADER = bytes([0xfd, 0xfc, 0xfb, 0xfa])
     TERMINATOR = bytes([0x04, 0x03, 0x02, 0x01])
     NULLDATA = bytes([])
@@ -269,23 +187,12 @@ class LD2410PersonDetector:
     STATE_COMBINED_TARGET = 3
     TARGET_NAME = ["no_target", "moving_target", "stationary_target", "combined_target"]
     
-    standing_threshold = 180  # Threshold for determining if someone has been standing for too long (40 = 4 seconds somehow)
-    moving_threshold = 50  # Threshold for determining if someone has been moving for too long
+    standing_threshold = 40  # Threshold for determining if someone has been standing for too long (40 = 4 seconds somehow)
+    moving_threshold = 20  # Threshold for determining if someone has been moving for too long
 
-    def __init__(self, uart_number, tx_pin, rx_pin):
-        """
-        Initialize LD2410 mmWave sensor.
+    def __init__(self, uart_number, baudrate, tx_pin, rx_pin):
 
-        Args:
-            uart_number (int): UART number.
-            baudrate (int): Baud rate of the UART communication.
-            tx_pin (int): Transmit pin number.
-            rx_pin (int): Receive pin number.
-
-        Returns:
-            None
-        """
-        self.ser = UART(uart_number, baudrate=256000, tx=Pin(tx_pin), rx=Pin(rx_pin), timeout=1)
+        self.ser = UART(uart_number, baudrate=baudrate, tx=Pin(tx_pin), rx=Pin(rx_pin), timeout=1)
         self.meas = {
             "state": self.STATE_NO_TARGET,
             "moving_distance": 0,
@@ -296,21 +203,11 @@ class LD2410PersonDetector:
         }
         self.mmWaveTimer = Timer()  # Initialize the Timer for mmWave sensor
         self.person_detected = False  # Variable to track person detection status
-
         self.standing_timer = 0  # Timer to track how long someone has been standing
         self.moving_timer = 0  # Timer to track how long someone has been moving
 
-
     def print_bytes(self, data):
-        """
-        Print byte data in hexadecimal format.
 
-        Args:
-            data (bytes): Byte data to be printed.
-
-        Returns:
-            None
-        """
         if len(data) == 0:
             print("<no data>")
             return
@@ -320,17 +217,7 @@ class LD2410PersonDetector:
         print(text)
 
     def send_command(self, cmd, data=NULLDATA, response_expected=True):
-        """
-        Send a command to the sensor.
-
-        Args:
-            cmd (bytes): Command bytes.
-            data (bytes): Data bytes to be sent with the command.
-            response_expected (bool): Whether to expect a response from the sensor.
-
-        Returns:
-            bytes: Response from the sensor, if expected.
-        """
+        
         cmd_data_len = bytes([len(cmd) + len(data), 0x00])
         frame = self.HEADER + cmd_data_len + cmd + data + self.TERMINATOR
         self.ser.write(frame)
@@ -341,31 +228,16 @@ class LD2410PersonDetector:
         return response
 
     def enable_config(self):
-        """
-        Enable configuration mode for the sensor.
-
-        Returns:
-            None
-        """
+        
         response = self.send_command(bytes([0xff, 0x00]), bytes([0x01, 0x00]))
         self.print_bytes(response)
 
     def end_config(self):
-        """
-        End configuration mode for the sensor.
 
-        Returns:
-            None
-        """
         response = self.send_command(bytes([0xfe, 0x00]), response_expected=False)
 
     def read_firmware_version(self):
-        """
-        Read the firmware version of the sensor.
 
-        Returns:
-            None
-        """
         response = self.ser.read()
         if response is None:
             print("Error: No response from serial.")
@@ -373,43 +245,23 @@ class LD2410PersonDetector:
         self.print_bytes(response)
 
     def enable_engineering(self):
-        """
-        Enable engineering mode outputs for the sensor.
 
-        Returns:
-            None
-        """
         response = self.send_command(bytes([0x62, 0x00]))
         self.print_bytes(response)
 
     def end_engineering(self):
-        """
-        End engineering mode outputs for the sensor.
 
-        Returns:
-            None
-        """
         response = self.send_command(bytes([0x63, 0x00]))
         self.print_bytes(response)
 
     def read_serial_buffer(self):
-        """
-        Read the serial buffer.
 
-        Returns:
-            bytes: Data read from the serial buffer.
-        """
         response = self.ser.read()
         self.print_bytes(response)
         return response
 
     def print_meas(self):
-        """
-        Print the sensor measurement data.
 
-        Returns:
-            None
-        """
         print(f"state: {self.TARGET_NAME[self.meas['state']]}")
         print(f"moving distance: {self.meas['moving_distance']}")
         print(f"moving energy: {self.meas['moving_energy']}")
@@ -418,15 +270,7 @@ class LD2410PersonDetector:
         print(f"detection distance: {self.meas['detection_distance']}")
 
     def parse_report(self, data):
-        """
-        Parse the sensor report data.
 
-        Args:
-            data (bytes): Data received from the sensor.
-
-        Returns:
-            None
-        """
         # Sanity checks
         if len(data) < 23:
             print(f"error, frame length {data} is too short")
@@ -452,15 +296,7 @@ class LD2410PersonDetector:
         self.meas["detection_distance"] = data[15] + (data[16] << 8)
 
     def read_serial_until(self, identifier):
-        """
-        Read serial data until a specific identifier is found.
 
-        Args:
-            identifier (bytes): Identifier to search for.
-
-        Returns:
-            bytes: Data read until the identifier is found.
-        """
         content = bytes([])
         while len(identifier) > 0:
             v = self.ser.read(1)
@@ -476,25 +312,15 @@ class LD2410PersonDetector:
         return content
 
     def serial_flush(self):
-        """
-        Flush the serial buffer.
 
-        Returns:
-            bytes: Data read from the serial buffer.
-        """
         dummy = self.ser.read()
         return dummy
 
     def read_serial_frame(self):
-        """
-        Read the serial data frame.
 
-        Returns:
-            bytes: Data read from the serial buffer.
-        """
         # Dummy read to flush out the read buffer
         self.serial_flush()
-        # time.sleep(0.05) 
+        time.sleep(0.05)
         # Keep reading to see a header arrive
         header = self.read_serial_until(self.REPORT_HEADER)
         if header == None:
@@ -510,21 +336,11 @@ class LD2410PersonDetector:
         return response
 
     def get_detection_distance(self):
-        """
-        Get the detection distance from the sensor.
 
-        Returns:
-            int: Detection distance.
-        """
         return self.meas["detection_distance"]
                 
     def scan_for_people(self):
-        """
-        Scan for people using the sensor and determine if they are moving or stationary.
 
-        Returns:
-            bool: True if person detected, False otherwise.
-        """
         # Check for the presence of people using the sensor
         self.read_serial_frame()
 
@@ -550,10 +366,4 @@ class LD2410PersonDetector:
                 self.person_detected = False
                 self.mmWaveTimer.reset()  # Reset the timer
                 return self.person_detected
-        if self.person_detected == True:
-            return True
-        elif self.person_detected == False:
-            return False
-        
-        self.person_detected = False
-
+        return self.person_detected

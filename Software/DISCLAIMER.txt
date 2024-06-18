@@ -22,5 +22,5 @@ Modification and Distribution
 Users are allowed to modify and distribute the code under the terms of the applicable open-source license, provided that this disclaimer is included with any distribution of the code. The author(s) and distributor(s) disclaim any responsibility for modifications made to the code by third parties.
 
 Acceptance of Terms
-By using the code, the user acknowledges that they have read and understood this disclaimer and agree to be bound by its terms and conditions. If the user does not agree to these terms, they should not use the code.
+DISCLAIMERBy using the code, the user acknowledges that they have read and understood this disclaimer and agree to be bound by its terms and conditions. If the user does not agree to these terms, they should not use the code.
 
